@@ -1,1 +1,170 @@
 <h1>Help</h1>
+
+<b id="paste_seq">
+    Pasting sequences:
+</b>
+<p>
+   Ensure that the pasted sequence only contains a string of single letter amino acid codes.
+<br>
+   Pasted sequences can only be uploaded one at a time. 
+<br>
+   Between successive uploads, the 'upload' button must be clicked to clear the field.
+<br>
+   A successful upload of a pasted sequence is reflected in the counter below the field.
+</p>
+<br>
+
+<b id="file_upload">
+    File upload:
+</b>
+<p>
+    The server can recognize the contents of the following file formats:
+<br>
+    Alignment files: <a href="/salign/formats.html#pir">PIR</a> or <a href="/salign/formats.html#fasta">FASTA</a>
+<br>    
+    Structure files: <a href="http://www.rcsb.org/pdb/">PDB</a> format (atomic coordinate files can have '.ent', '.pdb' or no extension at all)
+<br>    
+    Compressed files (.zip or .tar.gzip) consisting of files of one or more of the above formats are also allowed.
+<br><br>
+    Multiple files can be uploaded by iteratively clicking 'upload' after every upload.
+<br><br>
+    PIR structure entries are considered structures if the corresponding PDB file can be found among the uploaded files or in the Sali Lab PDB library.
+<br>
+    If not found it is simply considered a sequence.
+<br><br>
+    The web page displays all files that have been uploaded, their sizes and when they were uploaded (when they were compressed for compressed files).
+</p>
+
+<br>
+<b id="lib_PDBs">
+    Choosing PDB structures:
+</b>
+<p>
+    The user can choose structures to align from the PDB without having to upload his/her own structure files.
+<br><br>
+    Structures are chosen by entering their 4 letter PDB codes.
+<br>
+    Multiple structures are entered on separate lines.
+<br>
+    Each PDB should be entered only once, even if several segments of the same PDB are to be aligned.
+<br>
+    Residue ranges are chosen in the next step.
+</p>
+<br>
+ 
+<b id="email">
+    E-mail address:
+</b>
+<p>
+   This is an essential field as a link to the results page will be sent to the e-mail address entered.
+</p>
+<br>
+
+<b id="ali_cat_choice">
+    Choice of alignment category:
+</b> 
+<p>
+    Upon submission of the start page inputs the SALIGN server determines the alignment category which is likely to produce the most accurate alignment.
+<br>
+    Click <a href="/salign/app_note.html">here</a> for more information about the decision process
+<br>
+    The proposed alignment category can be changed by pressing 'Advanced' if other options exist.
+<br>
+    For a flowchart of default and optional alignment categories, click 
+<a href="/salign/FlowchartsComb.pdf">here</a> 
+</p>
+<br>
+    
+<b id="segments">
+    PDB segments:
+</b>
+<p>
+    Segments of the structure files can be chosen by specifying the capping residues and chain identifiers
+<br>    
+    eg. 1a0l  20:A:40:A   will choose residues 20 though 40 from chain A of the PDB file identified as 1a0l
+<br><br>
+     Default values of the structure segment always span all residues of the first chain of the given structure file.
+<br>
+     If residue ranges are specified in the input PIR files, these are taken instead of the default. 
+<br>
+    Multiple segments from the same PDB should be entered on separate lines.
+<br>
+    If the user chooses to only align the sequences of structures (advanced), the segments to align are still to be set here.
+</p>
+<br>
+
+
+<b id="ali_cat">
+    Alignment category:
+</b>
+<p>
+    The user can override the default alignment category choice. 
+<br><br><i>
+    Examples:
+<br><br>
+    If only structures have been uploaded, SALIGN will by default do a multiple structure alignment. This can be overridden to perform a multiple sequence alignment instead. Structure-sequence alignment is not an option when only structures have been uploaded. See third example below for structure-sequence.
+<br><br>
+    If two sets of sequences have been uploaded, SALIGN will by default align each set separately, then align the resulting profiles to each other. This can be overriden to perform a multiple sequence alignment of all uploaded sequences instead.
+<br><br>
+    If structures and sequences have been uploaded, SALIGN will by default do a structure-sequence alignment. This can be overriden to perform a multiple sequence alignment instead.
+</i><br><br>
+    Only viable alternatives to the alignment category are displayed.
+<br>
+    For a flowchart of default and optional alignment categories, click 
+<a href="/salign/FlowchartsComb.pdf">here</a> 
+</p>
+<br>
+
+
+<b id="ali_type">
+    Optimal alignment type:
+</b>
+<p>
+    To optimize alignment time and quality the following scheme has been chosen as default:
+<br>    
+    30 structures/sequences or less are aligned using the tree algorithm, while progressive alignments are performed for larger numbers of entries
+<br>
+    For information about exceptions and intricate scenarios, click 
+<a href="/salign/app_note.html">here</a>
+</p>
+<br>
+
+<b id="1D_gap_pen">
+    1D gap penalties:
+</b>
+<p>
+    In most cases there is only one set of 1D gap penalties - in these situations the defaults (-450.00 and -50.00) are simply the values for these.
+<br>
+    In some situations more than one set of 1D gap penalties exist - in these cases the default setting may have different values for different sets of 1D gap penalties. In such cases the displayed values reflect the main set of 1D gap penalties.
+<br>    
+    If the user changes the 1D gap penalties all sets of 1D gap penalties will acquire this value.
+<br>
+    Scenarios with multiple sets of 1D gap penalties only arise in alignments that contain multiple alignment steps.
+<br><br><i>
+    Example: A structure-sequence alignment of multiple structures and sequences includes one multiple structure alignment, one multiple sequence alignment and one structure-sequence alignment.
+<br>
+    Each of these alignments have a distinct set of 1D gap penalties.
+</i><br><br>
+    For more information about 1D gap penalties, click 
+<a href="/salign/manual.html#1D_gap_pen">here</a>
+</p>
+<br>
+
+<b id="citations">
+    Citations:
+</b>
+<p>
+    In addition to the SALIGN web server, please cite the following publications:
+<br><i>
+    Profile-profile sequence aligments
+<br></i>
+    M.A. Marti-Renom, M.S. Madhusudhan, A. Sali. Alignment of protein sequences by their profiles. Protein Sci 13, 1071-1087, 2004.
+<br><i>
+    Structure-sequence aligments
+<br></i>
+    M.S. Madhusudhan, M.A. Marti-Renom, R. Sanchez, A. Sali. Variable gap penalty for protein sequence-structure alignment. Protein Eng Des Sel 19, 129-133, 2006.
+<br><i>
+    Structure-structure alignments
+<br></i>
+    M.S. Madhusudhan, B.M. Webb, M.A. Marti-Renom, N. Eswar, A. Sali. Alignment of multiple protein structures based on sequence and structure features. Protein Eng Des Sel 22, 569-574, 2009.
+</p>
