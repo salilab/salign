@@ -3,8 +3,11 @@ use base qw(saliweb::frontend);
 use strict;
 
 use constant MAX_POST_SIZE => 1073741824; # 1GB maximum upload size
+use salign::Utils;
+use salign::CGI_Utils;
 use Cwd;
 use Fcntl qw( :DEFAULT :flock);
+use DB_File;
 
 # Enable users to upload files to our server
 $CGI::DISABLE_UPLOADS = 0;
@@ -61,7 +64,7 @@ sub get_index_page {
     my $self = shift;
     my $q = $self->cgi;
 
-    my $job_name = $q->param('job_name');
+    my $job_name = $q->param('job_name') || '';
     my $cur_state = $q->param('state') || 'home';
     my $upld_pseqs = $q->param('upld_pseqs') || 0;
     my $email = $q->param('email') || "";
@@ -71,7 +74,7 @@ sub get_index_page {
     if ($cur_state eq "home") {
         return $self->home($q,$job_name,$upld_pseqs,$email,$pdb_id);
     } elsif ($cur_state eq "Upload") {
-        return upload_main($q,$job_name,$upld_pseqs,$email,$pdb_id);
+        return $self->upload_main($q,$job_name,$upld_pseqs,$email,$pdb_id);
     } elsif ($cur_state eq "Continue") {
         return customizer($q,$job_name,$upld_pseqs,$email,$pdb_id);
     } elsif ($cur_state eq "Advanced") {
@@ -104,11 +107,8 @@ sub home {
 
   # Get job object (including upload directory)
   my $job;
-  if (defined($job_name)) {
+  if ($job_name) {
     $job = $self->resume_job($job_name);
-  } else {
-    $job = $self->make_job("job");
-    $job_name = $job->name;
   }
 
   my $page =
@@ -143,7 +143,7 @@ sub home {
         $q->hr.
         $q->p("Uploaded files:");
 
-  {
+  if ($job) {
      # fetch the names of all uploaded files
      my $upl_dir = $job->directory . "/upload";
      my @file_names;
@@ -181,6 +181,8 @@ sub home {
            $page .= $q->p("$file_names[$i],  $nice_size,  $file_times[$i]");
         }
      }
+  } else {
+    $page .= $q->p("No files uploaded");
   }
 
   if ($upld_pseqs > 0)
@@ -237,55 +239,38 @@ sub get_results_page {
 # conformity, i suggest to use the customizer method in both places.
 sub upload_main
 {
+  my $self = shift;
   my $q = shift;
   my $job_name = shift;
   my $upld_pseqs = shift;
   my $email = shift;
   my $pdb_id = shift;
-  # Read configuration file
-  my $conf_file = '/modbase5/home/salign/conf/salign.conf';
-  my $conf_ref = read_conf($conf_file);
-  my $todo_dir = $conf_ref->{'TODO_DIR'};
-  my $block_dir = $conf_ref->{'BLOCK_DIR'};
-  my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
-  my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
-  my $max_open_tries = $conf_ref->{'MAX_OPEN_TRIES'};
+# my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
+  my $max_dir_size = 1073741824; # TODO
+  my $buffer_size = 1024; # TODO
 
-  # untaint todo directory 
-  if ($todo_dir =~ /(.+)/) {$todo_dir = $1;}
-  else {error($q,"Can't untaint todo directory");}
-  # untaint block directory
-  if ($block_dir =~ /(.+)/) {$block_dir = $1;}
-  else {error($q,"Can't untaint block directory");}
-
+  my $job;
+  if ($job_name) {
+    $job = $self->resume_job($job_name);
+  } else {
+    $job = $self->make_job("job");
+    $job_name = $job->name;
+    mkdir $job->directory . "/upload"
+      or die "Can't create sub directory " . $job->directory . "/upload: $!\n";
+  }
   # Run sub check_dir_size to see that there is space for the request
-  check_dir_size($q,$todo_dir,$max_dir_size);
+  check_dir_size($q,$job->directory,$max_dir_size);
   
   # Check what is being uploaded
   my $upl_file = $q->param('upl_file'); 
   my $paste_seq = $q->param('paste_seq'); 
   if ( $upl_file eq "" && $paste_seq eq "" )
   {
-     home($q,$job_name,$upld_pseqs,$email,$pdb_id);
+     return $self->home($q,$job_name,$upld_pseqs,$email,$pdb_id);
   }   
   else
   {
-     # If job name doesn't exist, create it
-     if ($job_name eq "no_name")
-     {
-        $job_name = create_jobn($q,$block_dir,$max_open_tries);
-        # Create unique sub directory for current job
-        mkdir $todo_dir . "/$job_name" 
-	  or die "Can't create sub directory $job_name: $!\n";
-        chmod(oct(777),$todo_dir . "/$job_name") 
-	  or die "Can't change dir mode: $!\n";
-	mkdir $todo_dir . "/$job_name/upload" 
-	  or die "Can't create sub directory $job_name/upload: $!\n";
-        chmod(oct(777),$todo_dir . "/$job_name/upload") 
-	  or die "Can't change dir mode: $!\n";
-     }
-     my $job_dir = $todo_dir . "/" . $job_name;
-     my $upl_dir = $job_dir . "/upload";
+     my $upl_dir = $job->directory . "/upload";
      #save all filenames present in $upl_dir in hash
      my %upldir_files;
      opendir ( UPLOAD, $upl_dir ) or die "Can't open $upl_dir: $!\n";
@@ -308,19 +293,19 @@ sub upload_main
 	   if ($ascii == 1) 
 	   { 
 	      my $file_type = file_cat($upl_dir,$filen,$q);
-	      add_to_DBM($filen,$file_type,$job_dir); 
+	      add_to_DBM($filen,$file_type,$job->directory); 
            }
-	   else { unzip($upl_dir,$filen,$q,\%upldir_files,$job_dir); }
+	   else { unzip($upl_dir,$filen,$q,\%upldir_files,$job->directory); }
         }
      }	
      # save pasted sequence if exists
      if ( $paste_seq ne "" )
      {
         $paste_seq =~ s/[\r\n\s]+//g;
-	save_paste($job_dir,$paste_seq,$upld_pseqs);
+	save_paste($job->directory,$paste_seq,$upld_pseqs);
 	$upld_pseqs++;
      }
-     home($q,$job_name,$upld_pseqs,$email,$pdb_id);
+     return $self->home($q,$job_name,$upld_pseqs,$email,$pdb_id);
   }
 }
 
