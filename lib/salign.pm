@@ -197,12 +197,12 @@ sub home {
   {
      if ($upld_pseqs == 1)
      {
-        $page .= $q->hr,
+        $page .= $q->hr.
                  $q->p("$upld_pseqs pasted sequence uploaded");
      }
      else
      {
-        $page .= $q->hr,
+        $page .= $q->hr.
                  $q->p("$upld_pseqs pasted sequences uploaded");
      }
   }
