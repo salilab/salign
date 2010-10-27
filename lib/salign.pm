@@ -235,7 +235,23 @@ sub home {
 }
 
 sub get_submit_page {
-    # TODO
+    my $self = shift;
+    my $q = $self->cgi;
+    my $job_name = $q->param('job_name');
+    my $page = thank_user($q, $job_name);
+    return $page;
+}
+
+sub thank_user {
+  my $q = shift;
+  my $job_name = shift;
+  return  "Thank you for using SALIGN! Your request is being processed.".
+          $q->br.
+          "The job has been assigned job id: $job_name".
+          $q->br.
+          "You will receive an email with the access information, once the job is finished.".
+          $q->br.
+          "Please save job id for reference.".$q->br.$q->hr;
 }
 
 sub get_results_page {
