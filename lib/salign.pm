@@ -1398,7 +1398,7 @@ sub str_str
 	$q->end_form();
   
   # form for call to advanced view
-  $page .= $q->start_form( -method => "get" ).
+  $page .= $q->start_form( -method => "post" ).
         $q->hidden( -name => "caller", -default => "str-str",
 	  -override => 1 ).
 	$q->hidden( -name => "job_name", -default => $job_name,
@@ -1686,7 +1686,7 @@ sub str_seq
 	$q->end_form();
 	
   # create form to call advanced view
-  $page .= $q->start_form( -method => "get" ).
+  $page .= $q->start_form( -method => "post" ).
         $q->hidden( -name => "caller", -default => "str-seq",
 	  -override => 1 ).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs,
@@ -1855,7 +1855,7 @@ sub twostep_sese
 	$q->end_form();
 	
   # create form to call advanced view
-  $page .= $q->start_form( -method => "get" ).
+  $page .= $q->start_form( -method => "post" ).
 	$q->hidden( -name => "caller", -default => "2s_sese",
 	  -override => 1 ).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs,
@@ -1984,7 +1984,7 @@ sub onestep_sese
 	$q->br.
 	$q->end_form();
 	
-  $page .= $q->start_form( -method => "get" ).
+  $page .= $q->start_form( -method => "post" ).
 	$q->hidden( -name => "caller", -default => "1s_sese",
 	  -override => 1 ).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs,
