@@ -1256,7 +1256,7 @@ sub str_str
         $q->b("&nbsp Structure-structure alignment").
         $q->p("Specified structure segments will be multiply aligned").
 	$q->hr.
-        $q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+        $q->start_form( -method => "post", -action =>$self->submit_url).
 	$q->hidden( -name => "tool", -default => "str_str", 
 	  -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name,
@@ -1489,7 +1489,7 @@ sub str_seq
         $q->p("Step 1: Structures and sequences will be multiply aligned independently").
 	$q->p("Step 2: The resulting alignments from step 1 will be aligned to each other").
 	$q->hr.
-        $q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+        $q->start_form( -method => "post", -action =>$self->submit_url).
 	$q->hidden( -name => "tool", -default => "str_seq", 
 	  -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name,
@@ -1794,7 +1794,7 @@ sub twostep_sese
         $q->p("Step 1: The two sets of sequences will be multiply aligned independently").
 	$q->p("Step 2: The resulting alignments from step 1 will be aligned to each other").
 	$q->hr.
-        $q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+        $q->start_form( -method => "post", -action =>$self->submit_url).
 	$q->hidden( -name => "tool", -default => "2s_sese", 
 	  -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name,
@@ -1935,7 +1935,7 @@ sub onestep_sese
         $q->b("&nbsp Sequence-sequence alignment").
         $q->p("All uploaded sequences will be multiply aligned").
 	$q->hr.
-        $q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+        $q->start_form( -method => "post", -action =>$self->submit_url).
 	$q->hidden( -name => "tool", -default => "1s_sese", 
 	  -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name,
@@ -2030,7 +2030,7 @@ sub adv_stst
   my $page =$q->a({-href=>'/salign/manual.html'}, "SALIGN Advanced Options").
         $q->p("Depending on the choice of alignment category, some options may have no effect").
 	$q->hr.
-        $q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+        $q->start_multipart_form( -method => "post", -action =>$self->submit_url).
 	$q->hidden( -name => "tool", -default => "str_str_adv", 
 	  -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name,
@@ -2260,7 +2260,7 @@ sub adv_stse
   my $page =$q->a({-href=>'/salign/manual.html'}, "SALIGN Advanced Options").
         $q->p("Depending on the choice of alignment category, some options may have no effect").
 	$q->hr.
-        $q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+        $q->start_multipart_form( -method => "post", -action =>$self->submit_url).
 	$q->hidden( -name => "tool", -default => "str_seq_adv", 
 	  -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs,
@@ -2545,7 +2545,7 @@ sub adv_sese
      $page .= $q->p("Depending on the choice of alignment category, some options may have no effect");
   }
   $page .=$q->hr.
-        $q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+        $q->start_multipart_form( -method => "post", -action =>$self->submit_url).
 	$q->hidden( -name => "tool", -default => "sese_adv", 
 	  -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs,
