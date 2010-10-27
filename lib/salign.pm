@@ -76,7 +76,7 @@ sub get_index_page {
     } elsif ($cur_state eq "Upload") {
         return $self->upload_main($q,$job_name,$upld_pseqs,$email,$pdb_id);
     } elsif ($cur_state eq "Continue") {
-        return customizer($q,$job_name,$upld_pseqs,$email,$pdb_id);
+        return $self->customizer($q,$job_name,$upld_pseqs,$email,$pdb_id);
     } elsif ($cur_state eq "Advanced") {
         my $caller = $q->param('caller');
         if ($caller eq 'str-str') {
@@ -234,6 +234,20 @@ sub get_results_page {
     # TODO
 }
 
+sub get_job_object {
+  my ($self, $job_name) = @_;
+  my $job;
+  if ($job_name) {
+    $job = $self->resume_job($job_name);
+  } else {
+    $job = $self->make_job("job");
+    $job_name = $job->name;
+    mkdir $job->directory . "/upload"
+      or die "Can't create sub directory " . $job->directory . "/upload: $!\n";
+  }
+  return $job;
+}
+
 # Main sub routine for upload option
 # customizer creates upl_dir in a different way than upload_main. if you want
 # conformity, i suggest to use the customizer method in both places.
@@ -249,15 +263,8 @@ sub upload_main
   my $max_dir_size = 1073741824; # TODO
   my $buffer_size = 1024; # TODO
 
-  my $job;
-  if ($job_name) {
-    $job = $self->resume_job($job_name);
-  } else {
-    $job = $self->make_job("job");
-    $job_name = $job->name;
-    mkdir $job->directory . "/upload"
-      or die "Can't create sub directory " . $job->directory . "/upload: $!\n";
-  }
+  my $job = $self->get_job_object($job_name);
+
   # Run sub check_dir_size to see that there is space for the request
   check_dir_size($q,$job->directory,$max_dir_size);
   
@@ -314,6 +321,7 @@ sub upload_main
 # and display appropriate page.
 sub customizer
 {
+  my $self = shift;
   my $q = shift;
   my $job_name = shift;
   my $upld_pseqs = shift;
@@ -322,54 +330,24 @@ sub customizer
   my $upl_file = $q->param('upl_file'); 
   my $paste_seq = $q->param('paste_seq');
   # Read configuration file
-  my $conf_file = '/modbase5/home/salign/conf/salign.conf';
-  my $conf_ref = read_conf($conf_file);
-  my $todo_dir = $conf_ref->{'TODO_DIR'};
-  my $block_dir = $conf_ref->{'BLOCK_DIR'};
-  my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
-  my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
-  my $max_open_tries = $conf_ref->{'MAX_OPEN_TRIES'};
-  my $static_dir = $conf_ref->{'STATIC_DIR'};
+# my $conf_file = '/modbase5/home/salign/conf/salign.conf';
+# my $conf_ref = read_conf($conf_file);
+# my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
+# my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
+# my $max_open_tries = $conf_ref->{'MAX_OPEN_TRIES'};
+# my $static_dir = $conf_ref->{'STATIC_DIR'};
+  my $max_dir_size = 1073741824; # TODO
+  my $buffer_size = 1024; # TODO
+  my $static_dir = "/modbase5/home/salign/static"; # TODO
 
-  # untaint todo directory 
-  if ($todo_dir =~ /(.+)/) {$todo_dir = $1;}
-  else {error($q,"Can't untaint todo directory");}
-  # untaint block directory
-  if ($block_dir =~ /(.+)/) {$block_dir = $1;}
-  else {error($q,"Can't untaint block directory");}
+  my $job = $self->get_job_object($job_name);
 
-  unless ( $email =~ /\@/ )
-  {
-     error($q,"No e-mail address entered");
-  }  
-  if ( $job_name eq 'no_name' )
-  {
-     # might want to do nicer check here
-     if ( $upl_file eq "" && $paste_seq eq "" && $pdb_id eq "" )
-     {
-        error($q,"Nothing submitted to align");
-     }
-     $job_name = create_jobn($q,$block_dir,$max_open_tries);
-     # Create unique sub directory for current job
-     mkdir $todo_dir . "/$job_name" 
-       or die "Can't create sub directory $job_name: $!\n";
-     chmod(oct(777),$todo_dir . "/$job_name") 
-       or die "Can't change dir mode: $!\n";
-  }     
-  my $job_dir = $todo_dir . "/" . $job_name;
-  my $upl_dir = $job_dir . "/upload";
+  my $upl_dir = $job->directory . "/upload";
  
   # upload file if exists
   if ( $upl_file ne "" )
   {
-     check_dir_size($q,$todo_dir,$max_dir_size);
-     unless ( -d $upl_dir )
-     {
-        mkdir $upl_dir 
-          or die "Can't create sub directory $job_name/upload: $!\n";
-        chmod(oct(777),$upl_dir) 
-          or die "Can't change dir mode: $!\n";
-     }	  
+     check_dir_size($q,$job->directory,$max_dir_size);
      #save all filenames present in $upl_dir in hash
      my %upldir_files;
      opendir ( UPLOAD, $upl_dir ) or die "Can't open $upl_dir: $!\n";
@@ -388,18 +366,18 @@ sub customizer
   	if ($ascii == 1) 
 	{ 
 	   my $file_type = file_cat($upl_dir,$filen,$q);
-	   add_to_DBM($filen,$file_type,$job_dir); 
+	   add_to_DBM($filen,$file_type,$job->directory); 
 	}
-	else { unzip($upl_dir,$filen,$q,\%upldir_files,$job_dir); }
+	else { unzip($upl_dir,$filen,$q,\%upldir_files,$job->directory); }
      }   
   }
   
   # save pasted sequence if exists
   if ( $paste_seq ne "" )
   {
-     if ( $upl_file eq "" ) { check_dir_size($q,$todo_dir,$max_dir_size); }
+     if ( $upl_file eq "" ) { check_dir_size($q,$job->directory,$max_dir_size); }
      $paste_seq =~ s/[\r\n\s]+//g;
-     save_paste($job_dir,$paste_seq,$upld_pseqs);
+     save_paste($job->directory,$paste_seq,$upld_pseqs);
      $upld_pseqs++;
   }
   
@@ -411,10 +389,10 @@ sub customizer
   $upl_count{'ali_stse'} = 0;
   $upl_count{'ali_seq'} = 0;
   $upl_count{'used_str'} = 0;    # can only be incremented in sub chk_alistrs
-  if ( -e "$job_dir/upl_files.db" )
+  if ( -e $job->directory . "/upl_files.db" )
   {
      #Get uploaded files
-     tie my %tie_hash, "DB_File", "$job_dir/upl_files.db", O_RDONLY 
+     tie my %tie_hash, "DB_File", $job->directory . "/upl_files.db", O_RDONLY 
        or die "Cannot open tie to filetype DBM: $!";
      while ( my ($filen,$type) = each %tie_hash )
      {
@@ -466,7 +444,7 @@ sub customizer
   {
      # check if structures in ali files exist and change whats needed if not
      my ($upl_files_ref,$upl_count_ref,$lib_PDBs_ref) = 
-     chk_alistrs(\%upl_files,$static_dir,\%upl_count,$job_dir,\%lib_PDBs,$upl_dir);
+     chk_alistrs(\%upl_files,$static_dir,\%upl_count,$job->directory,\%lib_PDBs,$upl_dir);
      %upl_files = %$upl_files_ref;
      %upl_count = %$upl_count_ref;
      %lib_PDBs  = %$lib_PDBs_ref;
@@ -476,19 +454,19 @@ sub customizer
 
   if ( $choice eq 'str-str' )
   {
-     str_str($q,$email,\%upl_files,\%lib_PDBs,$job_name);
+     return $self->str_str($q,$email,\%upl_files,\%lib_PDBs,$job_name);
   }
   elsif ( $choice eq 'str-seq' )
   {
-     str_seq($q,$email,\%upl_files,\%lib_PDBs,$upld_pseqs,$job_name);
+     return $self->str_seq($q,$email,\%upl_files,\%lib_PDBs,$upld_pseqs,$job_name);
   }
   elsif ( $choice eq '2s_seq-seq' )
   {
-     twostep_sese($q,$email,\%upl_files,$upld_pseqs,$job_name,\%lib_PDBs);
+     return $self->twostep_sese($q,$email,\%upl_files,$upld_pseqs,$job_name,\%lib_PDBs);
   }
   elsif ( $choice eq '1s_seq-seq' )
   {
-     onestep_sese($q,$email,\%upl_files,$upld_pseqs,$job_name);
+     return $self->onestep_sese($q,$email,\%upl_files,$upld_pseqs,$job_name);
   }
 }
 
@@ -1269,6 +1247,7 @@ sub chk_alistrs
 # 2-30 segments => tree, >30 segments => progressive
 sub str_str
 {
+  my $self = shift;
   my $q = shift;
   my $email = shift;
   my $upl_files_ref = shift;
@@ -1278,37 +1257,36 @@ sub str_str
   my %lib_PDBs = %$lib_PDBs_ref;
   
 # Start html
-  start($q);
-  print	$q->a({-href=>'/salign/salign_help.html#ali_cat_choice'},"Choice of alignment category:"), 
-        $q->b("&nbsp Structure-structure alignment"),
-        $q->p("Specified structure segments will be multiply aligned"),
-	$q->hr,
-        $q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ),
+  my $page = $q->a({-href=>'/salign/salign_help.html#ali_cat_choice'},"Choice of alignment category:").
+        $q->b("&nbsp Structure-structure alignment").
+        $q->p("Specified structure segments will be multiply aligned").
+	$q->hr.
+        $q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
 	$q->hidden( -name => "tool", -default => "str_str", 
-	  -override => 1),
+	  -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "email", -default => $email,
-          -override => 1),
+          -override => 1).
   	$q->a({-href=>'/salign/salign_help.html#segments'}, "Specify PDB segments");
 # Have user specify segments to use from uploaded files	and library PDBs
 # Defaults are taken from ali file if corresponding entry exists.
 # If not, default is FIRST:@:LAST:@  @ is wild card char and matches any chain
   if ( exists $upl_files{'str'} || exists $upl_files{'used_str'} )
   {
-     print $q->p("Uploaded structure files");
+     $page .= $q->p("Uploaded structure files");
      if ( exists $upl_files{'str'} )
      {
         foreach my $filen ( keys %{ $upl_files{'str'} } )
         {
-           print $q->i("$filen&nbsp"),
+           $page .= $q->i("$filen&nbsp").
                  $q->textarea( 
 	           -name => "uplsegm_$filen", 
 	           -cols => "15", 
 	           -rows => "2", 
 		   -default => 'FIRST:@:LAST:@',
 		   -override => 1
-	         ),
+	         ).
 	         $q->br;
         }
      }
@@ -1318,21 +1296,21 @@ sub str_str
         {
 	   # Get default segments
            my $default = join "\n", @{ $upl_files{'used_str'}{$filen} };
-           print $q->i("$filen&nbsp"),
+           $page .= $q->i("$filen&nbsp").
                  $q->textarea( 
 	           -name => "uplsegm_$filen", 
 	           -cols => "15", 
 	           -rows => "2", 
 		   -default => $default,
 		   -override => 1
-	         ),
+	         ).
 	         $q->br;
         }
      }
   }   
   if ( exists $lib_PDBs{'man'} || exists $lib_PDBs{'ali'} )
   { 
-     print $q->p("Structures from SALIGN PDB library");
+     $page .= $q->p("Structures from SALIGN PDB library");
      if ( exists $lib_PDBs{'man'} )
      {
         foreach my $pdb ( keys %{ $lib_PDBs{'man'} } )
@@ -1342,14 +1320,14 @@ sub str_str
 	   {
 	      if ( exists $lib_PDBs{'ali'}{$pdb} ) { next; }
            }
-	   print $q->i("$pdb&nbsp"),
+	   $page .= $q->i("$pdb&nbsp").
                  $q->textarea( 
                    -name => "libsegm_$pdb", 
                    -cols => "15", 
                    -rows => "2", 
 		   -default => 'FIRST:@:LAST:@',
 		   -override => 1
-                 ),
+                 ).
                  $q->br;
         }
      }
@@ -1359,14 +1337,14 @@ sub str_str
         {
 	   # Get default segments
            my $default = join "\n", @{ $lib_PDBs{'ali'}{$pdb} };
-           print $q->i("$pdb&nbsp"),
+           $page .= $q->i("$pdb&nbsp").
                  $q->textarea( 
 	           -name => "libsegm_$pdb",
 	           -cols => "15", 
 	           -rows => "2", 
 		   -default => $default,
 		   -override => 1
-	         ),
+	         ).
 	         $q->br;
         }
      }
@@ -1380,63 +1358,63 @@ sub str_str
 #        print $q->p( $filen );
 #     }   
 #  }
-  print $q->hidden( -name => "align_type", -default => "automatic",
-          -override => 1 ),
+  $page .= $q->hidden( -name => "align_type", -default => "automatic",
+          -override => 1 ).
         $q->hidden( -name => "1D_open_stst", -default => "-150",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "1D_elong_stst", -default => "-50",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "3D_open", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "3D_elong", -default => "2",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_1", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_2", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_3", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_4", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_5", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_6", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "max_gap", -default => "20",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "RMS_cutoff", -default => "3.5",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "overhangs", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fit", -default => "True",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "improve", -default => "True",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "write_whole", -default => "False",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "gap-gap_score", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "gap-res_score", -default => "0",
-	  -override => 1 ),
-	$q->br,  
-	$q->submit( -value => "Submit" ),
-	$q->reset(),
-	$q->br,
+	  -override => 1 ).
+	$q->br.
+	$q->submit( -value => "Submit" ).
+	$q->reset().
+	$q->br.
 	$q->end_form();
   
   # form for call to advanced view
-  print $q->start_form( -method => "get" ),
+  $page .= $q->start_form( -method => "get" ).
         $q->hidden( -name => "caller", -default => "str-str",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "job_name", -default => $job_name,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "email", -default => $email,
           -override => 1);
   if ( exists $upl_files{'str'} )
   {
      foreach my $filen ( keys %{ $upl_files{'str'} } )
      {
-        print $q->hidden( 
+        $page .= $q->hidden( 
 	        -name => "uplsegm_$filen", 
 		-default => 'FIRST:@:LAST:@',
 		-override => 1
@@ -1449,7 +1427,7 @@ sub str_str
      {
         # Get default segments
         my $default = join "\n", @{ $upl_files{'used_str'}{$filen} };
-        print $q->hidden( 
+        $page .= $q->hidden( 
                 -name => "uplsegm_$filen",
 	        -default => $default,
 		-override => 1
@@ -1465,7 +1443,7 @@ sub str_str
 	{
 	   if ( exists $lib_PDBs{'ali'}{$pdb} ) { next; }
         }
-        print $q->hidden(
+        $page .= $q->hidden(
                 -name => "libsegm_$pdb", 
 	        -default => 'FIRST:@:LAST:@',
          	-override => 1
@@ -1478,17 +1456,16 @@ sub str_str
      {
         # Get default segments
         my $default = join "\n", @{ $lib_PDBs{'ali'}{$pdb} };
-        print $q->hidden( 
+        $page .= $q->hidden( 
 	        -name => "libsegm_$pdb",
 	        -default => $default,
 	        -override => 1
 	      );
      }
   }
-  print $q->submit( -name => "state", -value => "Advanced" ),
-	$q->end_form();
-	
-  end($q);	
+  $page .= $q->submit( -name => "state", -value => "Advanced" ),
+           $q->end_form();
+  return $page;
 }
 
 # generate default structure-sequence alignment form page
@@ -1951,6 +1928,7 @@ sub twostep_sese
 # no of seqs: 2-30 => tree, >30 => progressive
 sub onestep_sese
 {
+  my $self = shift;
   my $q = shift;
   my $email = shift;
   my $upl_files_ref = shift;
@@ -1958,69 +1936,68 @@ sub onestep_sese
   my $job_name = shift;
   my %upl_files = %$upl_files_ref;
   
-  start($q);
-  print	$q->a({-href=>'/salign/salign_help.html#ali_cat_choice'},"Choice of alignment category:"), 
-        $q->b("&nbsp Sequence-sequence alignment"),
-        $q->p("All uploaded sequences will be multiply aligned"),
-	$q->hr,
-        $q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ),
+  my $page = $q->a({-href=>'/salign/salign_help.html#ali_cat_choice'},"Choice of alignment category:").
+        $q->b("&nbsp Sequence-sequence alignment").
+        $q->p("All uploaded sequences will be multiply aligned").
+	$q->hr.
+        $q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
 	$q->hidden( -name => "tool", -default => "1s_sese", 
-	  -override => 1),
+	  -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "email", -default => $email,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs,
           -override => 1);
   # Show uploaded ali files and no of pasted seqs
   if ( exists $upl_files{'ali_seq'} )
   {
-     print $q->p("Uploaded alignment files");
+     $page .= $q->p("Uploaded alignment files");
      foreach my $filen ( keys %{ $upl_files{'ali_seq'} } )
      {
-	print $q->p( $filen );
+	$page .= $q->p( $filen );
      }   
   }
   if ($upld_pseqs > 0)
   {
      if ($upld_pseqs == 1)
      {
-	print $q->p("$upld_pseqs pasted sequence uploaded");
+	$page .= $q->p("$upld_pseqs pasted sequence uploaded");
      }
      else
      {
-	print $q->p("$upld_pseqs pasted sequences uploaded");
+	$page .= $q->p("$upld_pseqs pasted sequences uploaded");
      }
   }
-  print	$q->hidden( -name => "align_type", -default => "automatic",
-          -override => 1 ),
+  $page .=$q->hidden( -name => "align_type", -default => "automatic",
+          -override => 1 ).
         $q->hidden( -name => "1D_open_sese", -default => "-450",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "1D_elong_sese", -default => "-50",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "overhangs", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "improve", -default => "True",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "gap-gap_score", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "gap-res_score", -default => "0",
-	  -override => 1 ),
-	$q->br,
-	$q->submit( -value => "Submit" ),
-	$q->reset(),
-	$q->br,
+	  -override => 1 ).
+	$q->br.
+	$q->submit( -value => "Submit" ).
+	$q->reset().
+	$q->br.
 	$q->end_form();
 	
-  print $q->start_form( -method => "get" ),
+  $page .= $q->start_form( -method => "get" ).
 	$q->hidden( -name => "caller", -default => "1s_sese",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "structures", -default => 0,
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "job_name", -default => $job_name,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "email", -default => $email,
           -override => 1);
   # pass uploaded ali files 
@@ -2034,11 +2011,11 @@ sub onestep_sese
      }   
   }
   $ali_files =~ s/\s$//;
-  print $q->hidden( -name => "ali_files", -default => $ali_files,
-          -override => 1 ),
-        $q->submit( -name => "state", -value => "Advanced" ),
+  $page .= $q->hidden( -name => "ali_files", -default => $ali_files,
+          -override => 1 ).
+        $q->submit( -name => "state", -value => "Advanced" ).
 	$q->end_form();
-  end($q);	
+  return $page;
 }
 
 # generate advanced structure-structure alignment form page
