@@ -80,11 +80,11 @@ sub get_index_page {
     } elsif ($cur_state eq "Advanced") {
         my $caller = $q->param('caller');
         if ($caller eq 'str-str') {
-            return adv_stst($q,$job_name,$email);
+            return $self->adv_stst($q,$job_name,$email);
         } elsif ($caller eq 'str-seq') {
-            return adv_stse($q,$job_name,$email);
+            return $self->adv_stse($q,$job_name,$email);
         } elsif ($caller eq '2s_sese' || $caller eq '1s_sese') {
-            return adv_sese($q,$job_name,$email);
+            return $self->adv_sese($q,$job_name,$email);
         } else {
             throw saliweb::frontend::InternalError(
                               "Invalid advanced view option");
@@ -1478,6 +1478,7 @@ sub str_str
 #         else str-seq
 sub str_seq
 {
+  my $self = shift;
   my $q = shift;
   my $email = shift;
   my $upl_files_ref = shift;
@@ -1488,40 +1489,39 @@ sub str_seq
   my %lib_PDBs = %$lib_PDBs_ref;
   
 # Start html
-  start($q);
-  print	$q->a({-href=>'/salign/salign_help.html#ali_cat_choice'},"Choice of alignment category:"), 
-        $q->b("&nbsp Structure-sequence alignment"),
-        $q->p("Step 1: Structures and sequences will be multiply aligned independently"),
-	$q->p("Step 2: The resulting alignments from step 1 will be aligned to each other"),
-	$q->hr,
-        $q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ),
+  my $page =$q->a({-href=>'/salign/salign_help.html#ali_cat_choice'},"Choice of alignment category:").
+        $q->b("&nbsp Structure-sequence alignment").
+        $q->p("Step 1: Structures and sequences will be multiply aligned independently").
+	$q->p("Step 2: The resulting alignments from step 1 will be aligned to each other").
+	$q->hr.
+        $q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
 	$q->hidden( -name => "tool", -default => "str_seq", 
-	  -override => 1),
+	  -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "email", -default => $email,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs,
-          -override => 1),
+          -override => 1).
 	$q->a({-href=>'/salign/salign_help.html#segments'}, "Specify PDB segments");
 # Have user specify segments to use from uploaded files	and library PDBs
 # Defaults are taken from ali file if corresponding entry exists.
 # If not, default is FIRST:@:LAST:@  @ is wild card char and matches any chain
   if ( exists $upl_files{'str'} || exists $upl_files{'used_str'} )
   {
-     print $q->p("Uploaded structure files");
+     $page .= $q->p("Uploaded structure files");
      if ( exists $upl_files{'str'} )
      {
         foreach my $filen ( keys %{ $upl_files{'str'} } )
         {
-           print $q->i("$filen&nbsp"),
+           $page .= $q->i("$filen&nbsp").
                  $q->textarea( 
 	           -name => "uplsegm_$filen", 
 	           -cols => "15", 
 	           -rows => "2", 
 		   -default => 'FIRST:@:LAST:@',
 		   -override => 1
-	         ),
+	         ).
 	         $q->br;
         }
      }
@@ -1531,21 +1531,21 @@ sub str_seq
         {
 	   # Get default segments
            my $default = join "\n", @{ $upl_files{'used_str'}{$filen} };
-           print $q->i("$filen&nbsp"),
+           $page .= $q->i("$filen&nbsp").
                  $q->textarea( 
 	           -name => "uplsegm_$filen", 
 	           -cols => "15", 
 	           -rows => "2", 
 		   -default => $default,
 		   -override => 1
-	         ),
+	         ).
 	         $q->br;
         }
      }
   }   
   if ( exists $lib_PDBs{'man'} || exists $lib_PDBs{'ali'} )
   { 
-     print $q->p("Structures from SALIGN PDB library");
+     $page .= $q->p("Structures from SALIGN PDB library");
      if ( exists $lib_PDBs{'man'} )
      {
         foreach my $pdb ( keys %{ $lib_PDBs{'man'} } )
@@ -1555,14 +1555,14 @@ sub str_seq
 	   {
 	      if ( exists $lib_PDBs{'ali'}{$pdb} ) { next; }
            }
-	   print $q->i("$pdb&nbsp"),
+	   $page .= $q->i("$pdb&nbsp").
                  $q->textarea( 
                    -name => "libsegm_$pdb", 
                    -cols => "15", 
                    -rows => "2", 
 		   -default => 'FIRST:@:LAST:@',
 		   -override => 1
-                 ),
+                 ).
                  $q->br;
         }
      }
@@ -1572,14 +1572,14 @@ sub str_seq
         {
 	   # Get default segments
            my $default = join "\n", @{ $lib_PDBs{'ali'}{$pdb} };
-           print $q->i("$pdb&nbsp"),
+           $page .= $q->i("$pdb&nbsp").
                  $q->textarea( 
 	           -name => "libsegm_$pdb",
 	           -cols => "15", 
 	           -rows => "2", 
 		   -default => $default,
 		   -override => 1
-	         ),
+	         ).
 	         $q->br;
         }
      }
@@ -1588,7 +1588,7 @@ sub str_seq
   if ( exists $upl_files{'ali_st'} || exists $upl_files{'ali_stse'} ||
        exists $upl_files{'ali_seq'} )
   {
-     print $q->p("Uploaded alignment files");
+     $page .= $q->p("Uploaded alignment files");
      my @ali_cats = qw( ali_st ali_stse ali_seq );
      foreach my $ali_cat ( @ali_cats )
      {
@@ -1596,7 +1596,7 @@ sub str_seq
         {
            foreach my $filen ( keys %{ $upl_files{$ali_cat} } )
            {
-	      print $q->p( $filen );
+	      $page .= $q->p( $filen );
            }   
         }
      }   
@@ -1605,99 +1605,99 @@ sub str_seq
   {
      if ($upld_pseqs == 1)
      {
-	print $q->p("$upld_pseqs pasted sequence uploaded");
+	$page .= $q->p("$upld_pseqs pasted sequence uploaded");
      }
      else
      {
-	print $q->p("$upld_pseqs pasted sequences uploaded");
+	$page .= $q->p("$upld_pseqs pasted sequences uploaded");
      }
   }
 # alignment type, ie progressive or tree, should be set in form_proc.pl
 # once it is clear how many segments there are
 # In advanced the user should only be able to do one 1Dchange and it will
 # set all 1D gap pens to that value
-  print	$q->hidden( -name => "align_type", -default => "automatic",
-          -override => 1 ),
+  $page .=$q->hidden( -name => "align_type", -default => "automatic",
+          -override => 1 ).
         $q->hidden( -name => "1D_open_stst", -default => "-150",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "1D_elong_stst", -default => "-50",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "1D_open_stse", -default => "-100",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "1D_elong_stse", -default => "0",
-	  -override => 1),
+	  -override => 1).
         $q->hidden( -name => "1D_open_sese", -default => "-450",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "1D_elong_sese", -default => "-50",
-	  -override => 1),
+	  -override => 1).
         $q->hidden( -name => "1D_open_prof", -default => "-300",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "1D_elong_prof", -default => "0",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "2D_1", -default => "3.5",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "2D_2", -default => "3.5",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "2D_3", -default => "3.5",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "2D_4", -default => "0.2",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "2D_5", -default => "4.0",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "2D_6", -default => "6.5",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "2D_7", -default => "2.0",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "2D_8", -default => "0.0",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "2D_9", -default => "0",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "3D_open", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "3D_elong", -default => "2",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_1", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_2", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_3", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_4", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_5", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_6", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "max_gap", -default => "20",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "RMS_cutoff", -default => "3.5",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "overhangs", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fit", -default => "True",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "improve", -default => "True",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "write_whole", -default => "False",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "gap-gap_score", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "gap-res_score", -default => "0",
-	  -override => 1 ),
-	$q->br,
-	$q->submit( -value => "Submit" ),
-	$q->reset(),
-	$q->br,
+	  -override => 1 ).
+	$q->br.
+	$q->submit( -value => "Submit" ).
+	$q->reset().
+	$q->br.
 	$q->end_form();
 	
   # create form to call advanced view
-  print $q->start_form( -method => "get" ),
+  $page .= $q->start_form( -method => "get" ).
         $q->hidden( -name => "caller", -default => "str-seq",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "job_name", -default => $job_name,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "email", -default => $email,
           -override => 1);
   # pass default structure segments
@@ -1705,7 +1705,7 @@ sub str_seq
   {
      foreach my $filen ( keys %{ $upl_files{'str'} } )
      {
-        print $q->hidden( 
+        $page .= $q->hidden( 
 	        -name => "uplsegm_$filen", 
 		-default => 'FIRST:@:LAST:@',
 		-override => 1
@@ -1718,7 +1718,7 @@ sub str_seq
      {
         # Get default segments
         my $default = join "\n", @{ $upl_files{'used_str'}{$filen} };
-        print $q->hidden( 
+        $page .= $q->hidden( 
                 -name => "uplsegm_$filen",
 	        -default => $default,
 		-override => 1
@@ -1734,7 +1734,7 @@ sub str_seq
 	{
 	   if ( exists $lib_PDBs{'ali'}{$pdb} ) { next; }
         }
-        print $q->hidden(
+        $page .= $q->hidden(
                 -name => "libsegm_$pdb", 
 	        -default => 'FIRST:@:LAST:@',
          	-override => 1
@@ -1747,7 +1747,7 @@ sub str_seq
      {
         # Get default segments
         my $default = join "\n", @{ $lib_PDBs{'ali'}{$pdb} };
-        print $q->hidden( 
+        $page .= $q->hidden( 
 	        -name => "libsegm_$pdb",
 	        -default => $default,
 	        -override => 1
@@ -1768,11 +1768,11 @@ sub str_seq
      }
   }   
   $ali_files =~ s/\s$//;
-  print $q->hidden( -name => "ali_files", -default => $ali_files,
-          -override => 1 ),
-        $q->submit( -name => "state", -value => "Advanced" ),
+  $page .= $q->hidden( -name => "ali_files", -default => $ali_files,
+          -override => 1 ).
+        $q->submit( -name => "state", -value => "Advanced" ).
 	$q->end_form();
-  end($q);	
+  return $page;
 }
 
 
@@ -1784,6 +1784,7 @@ sub str_seq
 # no of seqs: 2-30 => tree, 31-500 => progressive, >500 => no realignment
 sub twostep_sese
 {
+  my $self = shift;
   my $q = shift;
   my $email = shift;
   my $upl_files_ref = shift;
@@ -1793,80 +1794,79 @@ sub twostep_sese
   my %upl_files = %$upl_files_ref;
   my %lib_PDBs = %$lib_PDBs_ref;
   
-  start($q);
-  print	$q->a({-href=>'/salign/salign_help.html#ali_cat_choice'},"Choice of alignment category:"), 
-        $q->b("&nbsp Sequence-sequence alignment"),
-        $q->p("Step 1: The two sets of sequences will be multiply aligned independently"),
-	$q->p("Step 2: The resulting alignments from step 1 will be aligned to each other"),
-	$q->hr,
-        $q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ),
+  my $page =$q->a({-href=>'/salign/salign_help.html#ali_cat_choice'},"Choice of alignment category:").
+        $q->b("&nbsp Sequence-sequence alignment").
+        $q->p("Step 1: The two sets of sequences will be multiply aligned independently").
+	$q->p("Step 2: The resulting alignments from step 1 will be aligned to each other").
+	$q->hr.
+        $q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
 	$q->hidden( -name => "tool", -default => "2s_sese", 
-	  -override => 1),
+	  -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "email", -default => $email,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs,
           -override => 1);
   # Show uploaded ali files and no of pasted seqs
-  print $q->p("Uploaded alignment files");
+  $page .= $q->p("Uploaded alignment files");
   if ( exists $upl_files{'ali_stse'} )
   {
      foreach my $filen ( keys %{ $upl_files{'ali_stse'} } )
      {
-        print $q->p( $filen );
+        $page .= $q->p( $filen );
      }   
   }
   if ( exists $upl_files{'ali_seq'} )
   {
      foreach my $filen ( keys %{ $upl_files{'ali_seq'} } )
      {
-	print $q->p( $filen );
+	$page .= $q->p( $filen );
      }   
   }
   if ($upld_pseqs > 0)
   {
      if ($upld_pseqs == 1)
      {
-	print $q->p("$upld_pseqs pasted sequence uploaded");
+	$page .= $q->p("$upld_pseqs pasted sequence uploaded");
      }
      else
      {
-	print $q->p("$upld_pseqs pasted sequences uploaded");
+	$page .= $q->p("$upld_pseqs pasted sequences uploaded");
      }
   }
-  print	$q->hidden( -name => "align_type", -default => "automatic",
-          -override => 1 ),
+  $page .=$q->hidden( -name => "align_type", -default => "automatic",
+          -override => 1 ).
         $q->hidden( -name => "1D_open_sese", -default => "-450",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "1D_elong_sese", -default => "-50",
-	  -override => 1 ),
+	  -override => 1 ).
         $q->hidden( -name => "1D_open_prof", -default => "-300",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "1D_elong_prof", -default => "0",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "overhangs", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "improve", -default => "True",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "gap-gap_score", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "gap-res_score", -default => "0",
-	  -override => 1 ),
-	$q->br,
-	$q->submit( -value => "Submit" ),
-	$q->reset(),
-	$q->br,
+	  -override => 1 ).
+	$q->br.
+	$q->submit( -value => "Submit" ).
+	$q->reset().
+	$q->br.
 	$q->end_form();
 	
   # create form to call advanced view
-  print $q->start_form( -method => "get" ),
+  $page .= $q->start_form( -method => "get" ).
 	$q->hidden( -name => "caller", -default => "2s_sese",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "job_name", -default => $job_name,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "email", -default => $email,
           -override => 1);
   my $structures = 0;	  
@@ -1877,7 +1877,7 @@ sub twostep_sese
      {
         # Get default segments
         my $default = join "\n", @{ $upl_files{'used_str'}{$filen} };
-        print $q->hidden( 
+        $page .= $q->hidden( 
                 -name => "uplsegm_$filen",
 	        -default => $default,
 		-override => 1
@@ -1891,7 +1891,7 @@ sub twostep_sese
      {
         # Get default segments
         my $default = join "\n", @{ $lib_PDBs{'ali'}{$pdb} };
-        print $q->hidden( 
+        $page .= $q->hidden( 
 	        -name => "libsegm_$pdb",
 	        -default => $default,
 	        -override => 1
@@ -1913,13 +1913,13 @@ sub twostep_sese
      }
   }   
   $ali_files =~ s/\s$//;
-  print $q->hidden( -name => "ali_files", -default => $ali_files,
-          -override => 1 ),
+  $page .= $q->hidden( -name => "ali_files", -default => $ali_files,
+          -override => 1 ).
 	$q->hidden( -name => "structures", -default => $structures,
-	  -override => 1 ),
+	  -override => 1 ).
         $q->submit( -name => "state", -value => "Advanced" ),
 	$q->end_form();
-  end($q);	
+  return $page;
 }
 
 # generate default 1-step sequence-sequence alignment form page
@@ -2021,6 +2021,7 @@ sub onestep_sese
 # generate advanced structure-structure alignment form page
 sub adv_stst
 {
+  my $self = shift;
   my $q = shift;
   my $job_name = shift;
   my $email = shift;
@@ -2031,27 +2032,26 @@ sub adv_stst
      $params{$param_name} = $q->param($param_name);
   }
  
-  start($q);
-  print	$q->a({-href=>'/salign/manual.html'}, "SALIGN Advanced Options"),
-        $q->p("Depending on the choice of alignment category, some options may have no effect"),
-	$q->hr,
-        $q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ),
+  my $page =$q->a({-href=>'/salign/manual.html'}, "SALIGN Advanced Options").
+        $q->p("Depending on the choice of alignment category, some options may have no effect").
+	$q->hr.
+        $q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
 	$q->hidden( -name => "tool", -default => "str_str_adv", 
-	  -override => 1),
+	  -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "email", -default => $email,
-          -override => 1),
-  	$q->a({-href=>'/salign/salign_help.html#ali_cat'}, "Alignment category"),
-	$q->br,$q->br,
+          -override => 1).
+  	$q->a({-href=>'/salign/salign_help.html#ali_cat'}, "Alignment category").
+	$q->br.$q->br.
 	$q->popup_menu(
 	  -name    => "sa_feature",
 	  -values  => [ "str_str", "1s_sese" ],
 	  -default => "str_str",
 	  -labels  => { "str_str" => "Structure-structure alignment",
 			"1s_sese" => "Sequence-sequence alignment"    }
-	),
-	$q->br,$q->br,
+	).
+	$q->br.$q->br.
   	$q->a({-href=>'/salign/salign_help.html#segments'}, "Specify PDB segments");
   # Retrieve structures and their default segments sent from simple view
   my %segments;
@@ -2071,40 +2071,40 @@ sub adv_stst
   }
   if ( exists $segments{'upl'} )
   {
-     print $q->p("Uploaded structure files");
+     $page .= $q->p("Uploaded structure files");
      foreach my $str_name ( keys %{ $segments{'upl'} } )
      {
-        print $q->i("$str_name&nbsp"),
+        $page .= $q->i("$str_name&nbsp").
               $q->textarea( 
 	        -name => "uplsegm_$str_name", 
 	        -cols => "15", 
 	        -rows => "2", 
 	        -default => $segments{'upl'}{$str_name},
 		-override => 1
-	      ),
+	      ).
 	      $q->br;
      }
   }
   if ( exists $segments{'lib'} )
   {
-     print $q->p("Structures from SALIGN PDB library");
+     $page .= $q->p("Structures from SALIGN PDB library");
      foreach my $str_name ( keys %{ $segments{'lib'} } )
      {
-        print $q->i("$str_name&nbsp"),
+        $page .= $q->i("$str_name&nbsp").
               $q->textarea( 
 	        -name => "libsegm_$str_name", 
 	        -cols => "15", 
 	        -rows => "2", 
 	        -default => $segments{'lib'}{$str_name},
 		-override => 1
-	      ),
+	      ).
 	      $q->br;
      }
   }
 
-  print	$q->br,
-	$q->a({-href=>'/salign/manual.html#ali_type'}, "Alignment type"),
-	$q->b("&nbsp"),
+  $page .= $q->br.
+	$q->a({-href=>'/salign/manual.html#ali_type'}, "Alignment type").
+	$q->b("&nbsp").
 	$q->radio_group(
 	  -name    => "align_type",
 	  -values  => [ "progressive","tree","automatic" ],
@@ -2112,50 +2112,50 @@ sub adv_stst
 	  -labels  => { "automatic"   => "",
 	                "progressive" => "Progressive ",
 			"tree"        => "Tree "          }
-	),  
-	$q->a({-href=>'/salign/salign_help.html#ali_type'}, "Optimal"),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/salign_help.html#1D_gap_pen'}, "1D gap penalties"),
-	$q->br, $q->br,
-	$q->i("Opening: "),
+	).
+	$q->a({-href=>'/salign/salign_help.html#ali_type'}, "Optimal").
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/salign_help.html#1D_gap_pen'}, "1D gap penalties").
+	$q->br. $q->br.
+	$q->i("Opening: ").
 	$q->textfield( -name => "1D_open_usr", -default => "Default",
-	  -size => "7" ),
-	$q->i("&nbsp Extension: "),
+	  -size => "7" ).
+	$q->i("&nbsp Extension: ").
 	$q->textfield( -name => "1D_elong_usr", -default => "Default",
-	  -size => "7" ),
+	  -size => "7" ).
   	$q->hidden( -name => "1D_open_stst", -default => "-150",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "1D_elong_stst", -default => "-50",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "1D_open_sese", -default => "-450",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "1D_elong_sese", -default => "-50",
-	  -override => 1),
-	$q->br, $q->br,
+	  -override => 1).
+	$q->br. $q->br.
 #	$q->hidden( -name => "3D_open", -default => "0",
 #	  -override => 1 ),
 #	$q->hidden( -name => "3D_elong", -default => "3",
 #	  -override => 1 ),
-	$q->a({-href=>'/salign/manual.html#3D_gap_pen'}, "3D gap penalties"),
-	$q->br, $q->br,
-	$q->i("Opening: "),
+	$q->a({-href=>'/salign/manual.html#3D_gap_pen'}, "3D gap penalties").
+	$q->br. $q->br.
+	$q->i("Opening: ").
 	$q->textfield( -name => "3D_open", -default => "0",
-	  -size => "10" ),
-	$q->i("&nbsp Extension: "),
+	  -size => "10" ).
+	$q->i("&nbsp Extension: ").
 	$q->textfield( -name => "3D_elong", -default => "2",
-	  -size => "10" ),
+	  -size => "10" ).
 	$q->hidden( -name => "fw_1", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_2", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_3", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_4", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_5", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_6", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 #        $q->br, $q->br,
 #	$q->a({-href=>'/salign/manual.html#feat_wts'}, "Feature weights"),
 #	$q->br, $q->br,
@@ -2178,78 +2178,79 @@ sub adv_stst
 #	$q->i("&nbsp Feature 6: "),
 #	$q->textfield( -name => "fw_6", -default => "0",
 #	  -size => "5" ),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#wt_mtx'}, "External weight matrix"),
-	$q->br, $q->br,
-        $q->filefield( -name => "weight_mtx" ),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#rms_cutoff'}, "RMS cut-off for average number of equivalent positions determination"),
-	$q->br, $q->br,
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#wt_mtx'}, "External weight matrix").
+	$q->br. $q->br.
+        $q->filefield( -name => "weight_mtx" ).
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#rms_cutoff'}, "RMS cut-off for average number of equivalent positions determination").
+	$q->br. $q->br.
 	$q->textfield( -name => "RMS_cutoff", -default => "3.5",
-	  -size => "5"),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#max_gap'}, "Max gap length"),
-	$q->br, $q->br,
+	  -size => "5").
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#max_gap'}, "Max gap length").
+	$q->br. $q->br.
 	$q->textfield( -name => "max_gap", -default => "20",
-	  -size => "5"),
-	$q->br, $q->br,
+	  -size => "5").
+	$q->br. $q->br.
 #	$q->hidden( -name => "overhangs", -default => "0",
 #	  -override => 1 ),
-	$q->a({-href=>'/salign/manual.html#overhang'}, "Overhangs"),
-	$q->br, $q->br,
+	$q->a({-href=>'/salign/manual.html#overhang'}, "Overhangs").
+	$q->br. $q->br.
 	$q->textfield( -name => "overhangs", -default => "0",
-	  -size => "5"),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#gap_gap_score'}, "Gap-gap score"),
-	$q->br, $q->br,
+	  -size => "5").
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#gap_gap_score'}, "Gap-gap score").
+	$q->br. $q->br.
 	$q->textfield( -name => "gap-gap_score", -default => "0",
-	  -size => "5"),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#gap_res_score'}, "Gap-residue score"),
-	$q->br, $q->br,
+	  -size => "5").
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#gap_res_score'}, "Gap-residue score").
+	$q->br. $q->br.
 	$q->textfield( -name => "gap-res_score", -default => "0",
-	  -size => "5"),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#fit'}, "Fit"),
-	$q->b("&nbsp"),
+	  -size => "5").
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#fit'}, "Fit").
+	$q->b("&nbsp").
 	$q->radio_group(
 	  -name    => "fit",
 	  -values  => [ "True", "False" ],
 	  -default => "True",
 	  -labels  => { "True" => "True ",
 			"False" => "False" }
-	),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#improve'}, "Improve Alignment"),
-	$q->b("&nbsp"),
+	).
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#improve'}, "Improve Alignment").
+	$q->b("&nbsp").
 	$q->radio_group(
 	  -name    => "improve",
 	  -values  => [ "True", "False" ],
 	  -default => "True",
 	  -labels  => { "True" => "True ",
 	                "False" => "False" }
-	), 
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#write_whole'}, "Write whole PDB"),
-	$q->b("&nbsp"),
+	).
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#write_whole'}, "Write whole PDB").
+	$q->b("&nbsp").
 	$q->radio_group(
 	  -name    => "write_whole",
 	  -values  => [ "True", "False" ],
 	  -default => "False",
 	  -labels  => { "True" => "True ",
 	                "False" => "False" }
-	), 
-	$q->br, $q->br,
-	$q->submit( -value => "Submit" ),
-	$q->reset(),
+	).
+	$q->br. $q->br.
+	$q->submit( -value => "Submit" ).
+	$q->reset().
 	$q->end_form();
-  end($q);	
+  return $page;
 }
 
 
 # generate advanced structure-sequence alignment form page
 sub adv_stse
 {
+  my $self = shift;
   my $q = shift;
   my $job_name = shift;
   my $email = shift;
@@ -2261,29 +2262,28 @@ sub adv_stse
   }
   my $upld_pseqs = $params{'upld_pseqs'};
   
-  start($q);
-  print	$q->a({-href=>'/salign/manual.html'}, "SALIGN Advanced Options"),
-        $q->p("Depending on the choice of alignment category, some options may have no effect"),
-	$q->hr,
-        $q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ),
+  my $page =$q->a({-href=>'/salign/manual.html'}, "SALIGN Advanced Options").
+        $q->p("Depending on the choice of alignment category, some options may have no effect").
+	$q->hr.
+        $q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
 	$q->hidden( -name => "tool", -default => "str_seq_adv", 
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs,
-          -override => 1),
+          -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "email", -default => $email,
-          -override => 1),
-  	$q->a({-href=>'/salign/salign_help.html#ali_cat'}, "Alignment category"),
-	$q->br,$q->br,
+          -override => 1).
+  	$q->a({-href=>'/salign/salign_help.html#ali_cat'}, "Alignment category").
+	$q->br.$q->br.
 	$q->popup_menu(
 	  -name    => "sa_feature",
 	  -values  => [ "str_seq", "1s_sese" ],
 	  -default => "str_seq",
 	  -labels  => { "str_seq" => "Structure-sequence alignment",
 			"1s_sese" => "Sequence-sequence alignment"    }
-	),
-	$q->br,$q->br,
+	).
+	$q->br.$q->br.
   	$q->a({-href=>'/salign/salign_help.html#segments'}, "Specify PDB segments");
   # Retrieve structures and their default segments sent from simple view
   my %segments;
@@ -2303,60 +2303,60 @@ sub adv_stse
   }
   if ( exists $segments{'upl'} )
   {
-     print $q->p("Uploaded structure files");
+     $page .= $q->p("Uploaded structure files");
      foreach my $str_name ( keys %{ $segments{'upl'} } )
      {
-        print $q->i("$str_name&nbsp"),
+        $page .= $q->i("$str_name&nbsp").
               $q->textarea( 
 	        -name => "uplsegm_$str_name", 
 	        -cols => "15", 
 	        -rows => "2", 
 	        -default => $segments{'upl'}{$str_name},
 		-override => 1
-	      ),
+	      ).
 	      $q->br;
      }
   }
   if ( exists $segments{'lib'} )
   {
-     print $q->p("Structures from SALIGN PDB library");
+     $page .= $q->p("Structures from SALIGN PDB library");
      foreach my $str_name ( keys %{ $segments{'lib'} } )
      {
-        print $q->i("$str_name&nbsp"),
+        $page .= $q->i("$str_name&nbsp").
               $q->textarea( 
 	        -name => "libsegm_$str_name", 
 	        -cols => "15", 
 	        -rows => "2", 
 	        -default => $segments{'lib'}{$str_name},
 		-override => 1
-	      ),
+	      ).
 	      $q->br;
      }
   }
   # Present uploaded ali files and no of pasted seqs
   unless ( $params{'ali_files'} eq '' )
   {
-     print $q->p("Uploaded alignment files");
+     $page .= $q->p("Uploaded alignment files");
      my @ali_files = split ( " ",$params{'ali_files'} );
      foreach my $filen ( @ali_files )
      {
-        print $q->p( $filen );
+        $page .= $q->p( $filen );
      }
   }
   if ($upld_pseqs > 0)
   {
      if ($upld_pseqs == 1)
      {
-	print $q->p("$upld_pseqs pasted sequence uploaded");
+	$page .= $q->p("$upld_pseqs pasted sequence uploaded");
      }
      else
      {
-	print $q->p("$upld_pseqs pasted sequences uploaded");
+	$page .= $q->p("$upld_pseqs pasted sequences uploaded");
      }
   }
-  print	$q->br,
-	$q->a({-href=>'/salign/manual.html#ali_type'}, "Alignment type"),
-	$q->b("&nbsp"),
+  $page .=$q->br.
+	$q->a({-href=>'/salign/manual.html#ali_type'}, "Alignment type").
+	$q->b("&nbsp").
 	$q->radio_group(
 	  -name    => "align_type",
 	  -values  => [ "progressive","tree","automatic" ],
@@ -2364,88 +2364,88 @@ sub adv_stse
 	  -labels  => { "automatic"   => "",
 	                "progressive" => "Progressive ",
 			"tree"        => "Tree "          }
-	),  
-	$q->a({-href=>'/salign/salign_help.html#ali_type'}, "Optimal"),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/salign_help.html#1D_gap_pen'}, "1D gap penalties"),
-	$q->br, $q->br,
-	$q->i("Opening: "),
+	). 
+	$q->a({-href=>'/salign/salign_help.html#ali_type'}, "Optimal").
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/salign_help.html#1D_gap_pen'}, "1D gap penalties").
+	$q->br. $q->br.
+	$q->i("Opening: ").
 	$q->textfield( -name => "1D_open_usr", -default => "Default",
-	  -size => "7" ),
-	$q->i("&nbsp Extension: "),
+	  -size => "7" ).
+	$q->i("&nbsp Extension: ").
 	$q->textfield( -name => "1D_elong_usr", -default => "Default",
-	  -size => "7" ),
+	  -size => "7" ).
   	$q->hidden( -name => "1D_open_stst", -default => "-150",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "1D_elong_stst", -default => "-50",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "1D_open_stse", -default => "-100",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "1D_elong_stse", -default => "0",
-	  -override => 1),
+	  -override => 1).
         $q->hidden( -name => "1D_open_sese", -default => "-450",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "1D_elong_sese", -default => "-50",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "1D_open_prof", -default => "-300",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "1D_elong_prof", -default => "0",
-	  -override => 1),
-        $q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#2D_gap_pen'}, "2D gap penalties"),
-	$q->br, $q->br,
-	$q->i("Helicity: "),
+	  -override => 1).
+        $q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#2D_gap_pen'}, "2D gap penalties").
+	$q->br. $q->br.
+	$q->i("Helicity: ").
 	$q->textfield( -name => "2D_1", -default => "3.5",
-	  -size => "5" ),
-	$q->i("Strandedness: "),
+	  -size => "5" ).
+	$q->i("Strandedness: ").
 	$q->textfield( -name => "2D_2", -default => "3.5",
-	  -size => "5" ),
-	$q->i("Burial:"),
+	  -size => "5" ).
+	$q->i("Burial:").
 	$q->textfield( -name => "2D_3", -default => "3.5",
-	  -size => "5" ),
-	$q->i("Local straightness: "),
+	  -size => "5" ).
+	$q->i("Local straightness: ").
 	$q->textfield( -name => "2D_4", -default => "0.2",
-	  -size => "5" ),
-	$q->i("Gap spanning distance: "),
+	  -size => "5" ).
+	$q->i("Gap spanning distance: ").
 	$q->textfield( -name => "2D_5", -default => "4.0",
-	  -size => "5" ),
-	$q->br,  
-  	$q->i("Optimal gap distance: "),
+	  -size => "5" ).
+	$q->br.
+  	$q->i("Optimal gap distance: ").
 	$q->textfield( -name => "2D_6", -default => "6.5",
-	  -size => "5" ),
-	$q->i("Exponent of gap spanning distance: "),
+	  -size => "5" ).
+	$q->i("Exponent of gap spanning distance: ").
 	$q->textfield( -name => "2D_7", -default => "2.0",
-	  -size => "5" ),
-	$q->i("Diagonal gap penalty: "),
+	  -size => "5" ).
+	$q->i("Diagonal gap penalty: ").
 	$q->textfield( -name => "2D_8", -default => "0.0",
-	  -size => "5" ),
+	  -size => "5" ).
 	$q->hidden( -name => "2D_9", -default => "0",
-	  -override => 1 ),
-	$q->br, $q->br,
+	  -override => 1 ).
+	$q->br. $q->br.
 #	$q->hidden( -name => "3D_open", -default => "0",
 #	  -override => 1 ),
 #	$q->hidden( -name => "3D_elong", -default => "3",
 #	  -override => 1 ),
-	$q->a({-href=>'/salign/manual.html#3D_gap_pen'}, "3D gap penalties"),
-	$q->br, $q->br,
-	$q->i("Opening: "),
+	$q->a({-href=>'/salign/manual.html#3D_gap_pen'}, "3D gap penalties").
+	$q->br. $q->br.
+	$q->i("Opening: ").
 	$q->textfield( -name => "3D_open", -default => "0",
-	  -size => "10" ),
-	$q->i("&nbsp Extension: "),
+	  -size => "10" ).
+	$q->i("&nbsp Extension: ").
 	$q->textfield( -name => "3D_elong", -default => "2",
-	  -size => "10" ),
+	  -size => "10" ).
 	$q->hidden( -name => "fw_1", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_2", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_3", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_4", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_5", -default => "1",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "fw_6", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 #        $q->br, $q->br,
 #	$q->a({-href=>'/salign/manual.html#feat_wts'}, "Feature weights"),
 #	$q->br, $q->br,
@@ -2468,68 +2468,69 @@ sub adv_stse
 #	$q->i("&nbsp Feature 6: "),
 #	$q->textfield( -name => "fw_6", -default => "0",
 #	  -size => "5" ),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#wt_mtx'}, "External weight matrix"),
-	$q->br, $q->br,
-        $q->filefield( -name => "weight_mtx" ),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#rms_cutoff'}, "RMS cut-off for average number of equivalent positions determination"),
-	$q->br, $q->br,
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#wt_mtx'}, "External weight matrix").
+	$q->br. $q->br.
+        $q->filefield( -name => "weight_mtx" ).
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#rms_cutoff'}, "RMS cut-off for average number of equivalent positions determination").
+	$q->br. $q->br.
 	$q->textfield( -name => "RMS_cutoff", -default => "3.5",
-	  -size => "5"),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#max_gap'}, "Max gap length"),
-	$q->br, $q->br,
+	  -size => "5").
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#max_gap'}, "Max gap length").
+	$q->br. $q->br.
 	$q->textfield( -name => "max_gap", -default => "20",
-	  -size => "5"),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#overhang'}, "Overhangs"),
-	$q->br, $q->br,
+	  -size => "5").
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#overhang'}, "Overhangs").
+	$q->br. $q->br.
 	$q->textfield( -name => "overhangs", -default => "0",
-	  -size => "5"),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#gap_gap_score'}, "Gap-gap score"),
-	$q->br, $q->br,
+	  -size => "5").
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#gap_gap_score'}, "Gap-gap score").
+	$q->br. $q->br.
 	$q->textfield( -name => "gap-gap_score", -default => "0",
-	  -size => "5"),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#gap_res_score'}, "Gap-residue score"),
-	$q->br, $q->br,
+	  -size => "5").
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#gap_res_score'}, "Gap-residue score").
+	$q->br. $q->br.
 	$q->textfield( -name => "gap-res_score", -default => "0",
-	  -size => "5"),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#fit'}, "Fit"),
-	$q->b("&nbsp"),
+	  -size => "5").
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#fit'}, "Fit").
+	$q->b("&nbsp").
 	$q->radio_group(
 	  -name    => "fit",
 	  -values  => [ "True", "False" ],
 	  -default => "True",
 	  -labels  => { "True" => "True ",
 			"False" => "False" }
-	),
-	$q->br, $q->br,
-	$q->a({-href=>'/salign/manual.html#improve'}, "Improve Alignment"),
-	$q->b("&nbsp"),
+	).
+	$q->br. $q->br.
+	$q->a({-href=>'/salign/manual.html#improve'}, "Improve Alignment").
+	$q->b("&nbsp").
 	$q->radio_group(
 	  -name    => "improve",
 	  -values  => [ "True", "False" ],
 	  -default => "True",
 	  -labels  => { "True" => "True ",
 	                "False" => "False" }
-	), 
-	$q->br, $q->br,
+	). 
+	$q->br. $q->br.
 	$q->hidden( -name => "write_whole", -default => "False",
-	  -override => 1 ),
-	$q->submit( -value => "Submit" ),
-	$q->reset(),
+	  -override => 1 ).
+	$q->submit( -value => "Submit" ).
+	$q->reset().
 	$q->end_form();
-  end($q);	
+  return $page;
 }
   
 
 # generate advanced sequence-sequence alignment form page
 sub adv_sese
 {
+  my $self = shift;
   my $q = shift;
   my $job_name = shift;
   my $email = shift;
@@ -2543,39 +2544,38 @@ sub adv_sese
   my $upld_pseqs = $params{'upld_pseqs'};
   my $structures = $params{'structures'};
   
-  start($q);
-  print	$q->a({-href=>'/salign/manual.html'}, "SALIGN Advanced Options");
+  my $page =$q->a({-href=>'/salign/manual.html'}, "SALIGN Advanced Options");
   if ( $params{'caller'} eq '2s_sese' )
   {
-     print $q->p("Depending on the choice of alignment category, some options may have no effect");
+     $page .= $q->p("Depending on the choice of alignment category, some options may have no effect");
   }
-  print	$q->hr,
-        $q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ),
+  $page .=$q->hr.
+        $q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
 	$q->hidden( -name => "tool", -default => "sese_adv", 
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "structures", -default => $structures,
-          -override => 1),
+          -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "email", -default => $email,
           -override => 1);
   if ( $params{'caller'} eq '2s_sese' )
   {
-     print $q->a({-href=>'/salign/salign_help.html#ali_cat'}, "Alignment category"),
-     $q->br,$q->br;
+     $page .= $q->a({-href=>'/salign/salign_help.html#ali_cat'}, "Alignment category").
+     $q->br.$q->br;
      if ( $structures == 1 )
      {
-        print $q->popup_menu(
+        $page .= $q->popup_menu(
                 -name    => "sa_feature",
                 -values  => [ "2s_sese","str_seq","1s_sese" ],
                 -default => "2s_sese",
                 -labels  => { "2s_sese" => "Two step sequence-sequence alignment",
                               "str_seq" => "Structure-sequence alignment",
 		              "1s_sese" => "One step sequence-sequence alignment"  }
-              ),
-	      $q->br,$q->br,
+              ).
+	      $q->br.$q->br.
   	      $q->a({-href=>'/salign/salign_help.html#segments'}, "Specify PDB segments");
         # Retrieve structures and their default segments sent from simple view
         my %segments;
@@ -2595,40 +2595,40 @@ sub adv_sese
         }
         if ( exists $segments{'upl'} )
         {
-           print $q->p("Uploaded structure files");
+           $page .= $q->p("Uploaded structure files");
            foreach my $str_name ( keys %{ $segments{'upl'} } )
            {
-              print $q->i("$str_name&nbsp"),
+              $page .= $q->i("$str_name&nbsp").
                     $q->textarea( 
 	              -name => "uplsegm_$str_name", 
 	              -cols => "15", 
 	              -rows => "2", 
 	              -default => $segments{'upl'}{$str_name},
 		      -override => 1
-	            ),
+	            ).
 	            $q->br;
            }
         }
         if ( exists $segments{'lib'} )
         {
-           print $q->p("Structures from SALIGN PDB library");
+           $page .= $q->p("Structures from SALIGN PDB library");
            foreach my $str_name ( keys %{ $segments{'lib'} } )
            {
-              print $q->i("$str_name&nbsp"),
+              $page .= $q->i("$str_name&nbsp").
                     $q->textarea( 
 	              -name => "libsegm_$str_name", 
 	              -cols => "15", 
 	              -rows => "2", 
 	              -default => $segments{'lib'}{$str_name},
 	   	      -override => 1
-	            ),
+	            ).
 	            $q->br;
            }
         }
      }
      else
      {
-        print $q->popup_menu(
+        $page .= $q->popup_menu(
                 -name    => "sa_feature",
                 -values  => [ "2s_sese","1s_sese" ],
                 -default => "2s_sese",
@@ -2639,33 +2639,33 @@ sub adv_sese
   }  
   else #called from 1step seq seq
   {
-     print $q->hidden( -name => "sa_feature", -default => "1s_sese",
+     $page .= $q->hidden( -name => "sa_feature", -default => "1s_sese",
              -override => 1 );
   }
   # Present uploaded ali files and no of pasted seqs
   unless ( $params{'ali_files'} eq '' )
   {
-     print $q->p("Uploaded alignment files");
+     $page .= $q->p("Uploaded alignment files");
      my @ali_files = split ( " ",$params{'ali_files'} );
      foreach my $filen ( @ali_files )
      {
-        print $q->p( $filen );
+        $page .= $q->p( $filen );
      }
   }
   if ($upld_pseqs > 0)
   {
      if ($upld_pseqs == 1)
      {
-	print $q->p("$upld_pseqs pasted sequence uploaded");
+	$page .= $q->p("$upld_pseqs pasted sequence uploaded");
      }
      else
      {
-	print $q->p("$upld_pseqs pasted sequences uploaded");
+	$page .= $q->p("$upld_pseqs pasted sequences uploaded");
      }
   }
-  print	$q->br,
-	$q->a({-href=>'/salign/manual.html#ali_type'}, "Alignment type"),
-	$q->b("&nbsp"),
+  $page .=$q->br.
+	$q->a({-href=>'/salign/manual.html#ali_type'}, "Alignment type").
+	$q->b("&nbsp").
 	$q->radio_group(
 	  -name    => "align_type",
 	  -values  => [ "progressive","tree","automatic" ],
@@ -2673,90 +2673,90 @@ sub adv_sese
 	  -labels  => { "automatic"   => "",
 	                "progressive" => "Progressive ",
 			"tree"        => "Tree "          }
-	),  
-	$q->a({-href=>'/salign/salign_help.html#ali_type'}, "Optimal"),
-	$q->br, $q->br;
+	).  
+	$q->a({-href=>'/salign/salign_help.html#ali_type'}, "Optimal").
+	$q->br. $q->br;
   if ( $structures == 1 )
   {
-     print $q->a({-href=>'/salign/salign_help.html#1D_gap_pen'}, "1D gap penalties"),
-	   $q->br, $q->br,
-   	   $q->i("Opening: "),
+     $page .= $q->a({-href=>'/salign/salign_help.html#1D_gap_pen'}, "1D gap penalties").
+	   $q->br. $q->br.
+   	   $q->i("Opening: ").
 	   $q->textfield( -name => "1D_open_usr", -default => "Default",
-	     -size => "7" ),
-	   $q->i("&nbsp Extension: "),
+	     -size => "7" ).
+	   $q->i("&nbsp Extension: ").
 	   $q->textfield( -name => "1D_elong_usr", -default => "Default",
-	     -size => "7" ),
+	     -size => "7" ).
   	   $q->hidden( -name => "1D_open_stst", -default => "-150",
-	     -override => 1 ),
+	     -override => 1 ).
 	   $q->hidden( -name => "1D_elong_stst", -default => "-50",
-	     -override => 1 ),
+	     -override => 1 ).
 	   $q->hidden( -name => "1D_open_stse", -default => "-100",
-	     -override => 1),
+	     -override => 1).
 	   $q->hidden( -name => "1D_elong_stse", -default => "0",
-	     -override => 1),
+	     -override => 1).
            $q->hidden( -name => "1D_open_sese", -default => "-450",
-	     -override => 1),
+	     -override => 1).
 	   $q->hidden( -name => "1D_elong_sese", -default => "-50",
-	     -override => 1),
+	     -override => 1).
            $q->hidden( -name => "1D_open_prof", -default => "-300",
-	     -override => 1),
+	     -override => 1).
 	   $q->hidden( -name => "1D_elong_prof", -default => "0",
-	     -override => 1),
-           $q->br, $q->br,
-	   $q->a({-href=>'/salign/manual.html#2D_gap_pen'}, "2D gap penalties"),
-	   $q->br, $q->br,
-	   $q->i("Helicity: "),
+	     -override => 1).
+           $q->br. $q->br.
+	   $q->a({-href=>'/salign/manual.html#2D_gap_pen'}, "2D gap penalties").
+	   $q->br. $q->br.
+	   $q->i("Helicity: ").
 	   $q->textfield( -name => "2D_1", -default => "3.5",
-	     -size => "5" ),
-	   $q->i("Strandedness: "),
+	     -size => "5" ).
+	   $q->i("Strandedness: ").
 	   $q->textfield( -name => "2D_2", -default => "3.5",
-	     -size => "5" ),
-	   $q->i("Burial: "),
+	     -size => "5" ).
+	   $q->i("Burial: ").
 	   $q->textfield( -name => "2D_3", -default => "3.5",
-	     -size => "5" ),
-	   $q->i("Local straightness: "),
+	     -size => "5" ).
+	   $q->i("Local straightness: ").
 	   $q->textfield( -name => "2D_4", -default => "0.2",
-	     -size => "5" ),
-	   $q->i("Gap spanning distance: "),
+	     -size => "5" ).
+	   $q->i("Gap spanning distance: ").
 	   $q->textfield( -name => "2D_5", -default => "4.0",
-	     -size => "5" ),
-	   $q->br,  
-  	   $q->i("Optimal gap distance: "),
+	     -size => "5" ).
+	   $q->br.
+  	   $q->i("Optimal gap distance: ").
 	   $q->textfield( -name => "2D_6", -default => "6.5",
-	     -size => "5" ),
-	   $q->i("Exponent of gap spanning distance: "),
+	     -size => "5" ).
+	   $q->i("Exponent of gap spanning distance: ").
 	   $q->textfield( -name => "2D_7", -default => "2.0",
-	     -size => "5" ),
-	   $q->i("Diagonal gap penalty: "),
+	     -size => "5" ).
+	   $q->i("Diagonal gap penalty: ").
 	   $q->textfield( -name => "2D_8", -default => "0.0",
-	     -size => "5" ),
+	     -size => "5" ).
 	   $q->hidden( -name => "2D_9", -default => "0",
-	     -override => 1 ),
-	   $q->br, $q->br,
+	     -override => 1 ).
+	   $q->br. $q->br.
 #	   $q->hidden( -name => "3D_open", -default => "0",
 #	     -override => 1 ),
 #	   $q->hidden( -name => "3D_elong", -default => "3",
 #	     -override => 1 ),
-	   $q->a({-href=>'/salign/manual.html#3D_gap_pen'}, "3D gap penalties"),
-	   $q->br, $q->br,
-	   $q->i("Opening: "),
+	   $q->a({-href=>'/salign/manual.html#3D_gap_pen'}, "3D gap penalties").
+	   $q->br. $q->br.
+	   $q->i("Opening: ").
 	   $q->textfield( -name => "3D_open", -default => "0",
-	     -size => "10" ),
-	   $q->i("&nbsp Extension: "),
+	     -size => "10" ).
+	   $q->i("&nbsp Extension: ").
 	   $q->textfield( -name => "3D_elong", -default => "2",
-	     -size => "10" ),
+	     -size => "10" ).
 	   $q->hidden( -name => "fw_1", -default => "0",
-	     -override => 1 ),
+	     -override => 1 ).
 	   $q->hidden( -name => "fw_2", -default => "1",
-	     -override => 1 ),
+	     -override => 1 ).
  	   $q->hidden( -name => "fw_3", -default => "0",
-	     -override => 1 ),
+	     -override => 1 ).
 	   $q->hidden( -name => "fw_4", -default => "0",
-	     -override => 1 ),
+	     -override => 1 ).
 	   $q->hidden( -name => "fw_5", -default => "0",
-	     -override => 1 ),
+	     -override => 1 ).
 	   $q->hidden( -name => "fw_6", -default => "0",
-	     -override => 1 ),
+	     -override => 1 ).
 #           $q->br, $q->br,
 #	   $q->a({-href=>'/salign/manual.html#feat_wts'}, "Feature weights"),
 #	   $q->br, $q->br,
@@ -2779,108 +2779,108 @@ sub adv_sese
 #	   $q->i("&nbsp Feature 6: "),
 #	   $q->textfield( -name => "fw_6", -default => "0",
 #	     -size => "5" ),
-	   $q->br, $q->br,
-	   $q->a({-href=>'/salign/manual.html#wt_mtx'}, "External weight matrix"),
-	   $q->br, $q->br,
-           $q->filefield( -name => "weight_mtx" ),
-	   $q->br, $q->br,
-	   $q->a({-href=>'/salign/manual.html#rms_cutoff'}, "RMS cut-off for average number of equivalent positions determination"),
-	   $q->br, $q->br,
+	   $q->br. $q->br.
+	   $q->a({-href=>'/salign/manual.html#wt_mtx'}, "External weight matrix").
+	   $q->br. $q->br.
+           $q->filefield( -name => "weight_mtx" ).
+	   $q->br. $q->br.
+	   $q->a({-href=>'/salign/manual.html#rms_cutoff'}, "RMS cut-off for average number of equivalent positions determination").
+	   $q->br. $q->br.
 	   $q->textfield( -name => "RMS_cutoff", -default => "3.5",
-	     -size => "5"),
-	   $q->br, $q->br,
-	   $q->a({-href=>'/salign/manual.html#max_gap'}, "Max gap length"),
-	   $q->br, $q->br,
+	     -size => "5").
+	   $q->br. $q->br.
+	   $q->a({-href=>'/salign/manual.html#max_gap'}, "Max gap length").
+	   $q->br. $q->br.
 	   $q->textfield( -name => "max_gap", -default => "20",
-	     -size => "5"),
-  	   $q->br, $q->br,
-	   $q->a({-href=>'/salign/manual.html#overhang'}, "Overhangs"),
-	   $q->br, $q->br,
+	     -size => "5").
+  	   $q->br. $q->br.
+	   $q->a({-href=>'/salign/manual.html#overhang'}, "Overhangs").
+	   $q->br. $q->br.
 	   $q->textfield( -name => "overhangs", -default => "0",
-	     -size => "5"),
-	   $q->br, $q->br,
-	   $q->a({-href=>'/salign/manual.html#gap_gap_score'}, "Gap-gap score"),
-	   $q->br, $q->br,
+	     -size => "5").
+	   $q->br. $q->br.
+	   $q->a({-href=>'/salign/manual.html#gap_gap_score'}, "Gap-gap score").
+	   $q->br. $q->br.
 	   $q->textfield( -name => "gap-gap_score", -default => "0",
-	     -size => "5"),
-	   $q->br, $q->br,
-	   $q->a({-href=>'/salign/manual.html#gap_res_score'}, "Gap-residue score"),
-	   $q->br, $q->br,
+	     -size => "5").
+	   $q->br. $q->br.
+	   $q->a({-href=>'/salign/manual.html#gap_res_score'}, "Gap-residue score").
+	   $q->br. $q->br.
 	   $q->textfield( -name => "gap-res_score", -default => "0",
-	     -size => "5"),
-	   $q->br, $q->br,
-	   $q->a({-href=>'/salign/manual.html#fit'}, "Fit"),
-	   $q->b("&nbsp"),
+	     -size => "5").
+	   $q->br. $q->br.
+	   $q->a({-href=>'/salign/manual.html#fit'}, "Fit").
+	   $q->b("&nbsp").
 	   $q->radio_group(
              -name    => "fit",
 	     -values  => [ "True", "False" ],
 	     -default => "True",
 	     -labels  => { "True" => "True ",
 		           "False" => "False" }
-	   ),
-	   $q->br, $q->br,
-	   $q->a({-href=>'/salign/manual.html#improve'}, "Improve Alignment"),
-	   $q->b("&nbsp"),
+	   ).
+	   $q->br. $q->br.
+	   $q->a({-href=>'/salign/manual.html#improve'}, "Improve Alignment").
+	   $q->b("&nbsp").
 	   $q->radio_group(
 	     -name    => "improve",
 	     -values  => [ "True", "False" ],
 	     -default => "True",
 	     -labels  => { "True" => "True ",
 	                   "False" => "False" }
-	   ), 
+	   ).
 	   $q->hidden( -name => "write_whole", -default => "False",
-	     -override => 1 ),
-	   $q->br, $q->br;
+	     -override => 1 ).
+	   $q->br. $q->br;
   }
   else
   {
-     print $q->a({-href=>'/salign/salign_help.html#1D_gap_pen'}, "1D gap penalties"),
-	   $q->br, $q->br,
-   	   $q->i("Opening: "),
+     $page .= $q->a({-href=>'/salign/salign_help.html#1D_gap_pen'}, "1D gap penalties").
+	   $q->br. $q->br.
+   	   $q->i("Opening: ").
 	   $q->textfield( -name => "1D_open_usr", -default => "Default",
-	     -size => "7" ),
-	   $q->i("&nbsp Extension: "),
+	     -size => "7" ).
+	   $q->i("&nbsp Extension: ").
 	   $q->textfield( -name => "1D_elong_usr", -default => "Default",
-	     -size => "7" ),
+	     -size => "7" ).
            $q->hidden( -name => "1D_open_sese", -default => "-450",
-	     -override => 1 ),
+	     -override => 1 ).
 	   $q->hidden( -name => "1D_elong_sese", -default => "-50",
-	     -override => 1 ),
+	     -override => 1 ).
            $q->hidden( -name => "1D_open_prof", -default => "-300",
-	     -override => 1),
+	     -override => 1).
 	   $q->hidden( -name => "1D_elong_prof", -default => "0",
-	     -override => 1),
-	   $q->br, $q->br,
-	   $q->a({-href=>'/salign/manual.html#overhang'}, "Overhangs"),
-	   $q->br, $q->br,
+	     -override => 1).
+	   $q->br. $q->br.
+	   $q->a({-href=>'/salign/manual.html#overhang'}, "Overhangs").
+	   $q->br. $q->br.
 	   $q->textfield( -name => "overhangs", -default => "0",
-	     -size => "5"),
-	   $q->br, $q->br,
-	   $q->a({-href=>'/salign/manual.html#gap_gap_score'}, "Gap-gap score"),
-	   $q->br, $q->br,
+	     -size => "5").
+	   $q->br. $q->br.
+	   $q->a({-href=>'/salign/manual.html#gap_gap_score'}, "Gap-gap score").
+	   $q->br. $q->br.
 	   $q->textfield( -name => "gap-gap_score", -default => "0",
-	     -size => "5"),
-	   $q->br, $q->br,
-	   $q->a({-href=>'/salign/manual.html#gap_res_score'}, "Gap-residue score"),
-	   $q->br, $q->br,
+	     -size => "5").
+	   $q->br. $q->br.
+	   $q->a({-href=>'/salign/manual.html#gap_res_score'}, "Gap-residue score").
+	   $q->br. $q->br.
 	   $q->textfield( -name => "gap-res_score", -default => "0",
-	     -size => "5"),
-	   $q->br, $q->br,
-	   $q->a({-href=>'/salign/manual.html#improve'}, "Improve Alignment"),
-	   $q->b("&nbsp"),
+	     -size => "5").
+	   $q->br. $q->br.
+	   $q->a({-href=>'/salign/manual.html#improve'}, "Improve Alignment").
+	   $q->b("&nbsp").
 	   $q->radio_group(
 	     -name    => "improve",
 	     -values  => [ "True", "False" ],
 	     -default => "True",
 	     -labels  => { "True" => "True ",
 	                   "False" => "False" }
-	   ), 
-	   $q->br, $q->br;
+	   ).
+	   $q->br. $q->br;
   }
-  print	$q->submit( -value => "Submit" ),
-	$q->reset(),
+  $page .=$q->submit( -value => "Submit" ).
+	$q->reset().
 	$q->end_form();
-  end($q);	
+  return $page;
 }
   
 sub make_size_nice
