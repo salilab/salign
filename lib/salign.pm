@@ -3,6 +3,14 @@ use base qw(saliweb::frontend);
 use strict;
 
 use constant MAX_POST_SIZE => 1073741824; # 1GB maximum upload size
+use constant BUFFER_SIZE => 16384; # Buffer size 16Kb
+
+# Never let write directory grow larger than 1 GB
+use constant MAX_DIR_SIZE => 1073741824;
+
+# Path for static directory
+use constant STATIC_DIR => "/modbase5/home/salign/static";
+
 use salign::Utils;
 use salign::CGI_Utils;
 use Cwd;
@@ -259,14 +267,11 @@ sub upload_main
   my $upld_pseqs = shift;
   my $email = shift;
   my $pdb_id = shift;
-# my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
-  my $max_dir_size = 1073741824; # TODO
-  my $buffer_size = 1024; # TODO
 
   my $job = $self->get_job_object($job_name);
 
   # Run sub check_dir_size to see that there is space for the request
-  check_dir_size($q,$job->directory,$max_dir_size);
+  check_dir_size($q,$job->directory,MAX_DIR_SIZE);
   
   # Check what is being uploaded
   my $upl_file = $q->param('upl_file'); 
@@ -293,7 +298,7 @@ sub upload_main
      # upload file if exists
      if ( $upl_file ne "" )
      {
-        my $filen = file_upload($q,$upl_dir,$buffer_size,\%upldir_files,$upl_file);
+        my $filen = file_upload($q,$upl_dir,BUFFER_SIZE,\%upldir_files,$upl_file);
 	unless ($filen eq "")
 	{
            my $ascii = ascii_chk($upl_dir,$filen);
@@ -329,16 +334,6 @@ sub customizer
   my $pdb_id = shift;
   my $upl_file = $q->param('upl_file'); 
   my $paste_seq = $q->param('paste_seq');
-  # Read configuration file
-# my $conf_file = '/modbase5/home/salign/conf/salign.conf';
-# my $conf_ref = read_conf($conf_file);
-# my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
-# my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
-# my $max_open_tries = $conf_ref->{'MAX_OPEN_TRIES'};
-# my $static_dir = $conf_ref->{'STATIC_DIR'};
-  my $max_dir_size = 1073741824; # TODO
-  my $buffer_size = 1024; # TODO
-  my $static_dir = "/modbase5/home/salign/static"; # TODO
 
   my $job = $self->get_job_object($job_name);
 
@@ -347,7 +342,7 @@ sub customizer
   # upload file if exists
   if ( $upl_file ne "" )
   {
-     check_dir_size($q,$job->directory,$max_dir_size);
+     check_dir_size($q,$job->directory,MAX_DIR_SIZE);
      #save all filenames present in $upl_dir in hash
      my %upldir_files;
      opendir ( UPLOAD, $upl_dir ) or die "Can't open $upl_dir: $!\n";
@@ -359,7 +354,7 @@ sub customizer
         $upldir_files{$file} = 1;
      }
      closedir (UPLOAD);
-     my $filen = file_upload($q,$upl_dir,$buffer_size,\%upldir_files,$upl_file);
+     my $filen = file_upload($q,$upl_dir,BUFFER_SIZE,\%upldir_files,$upl_file);
      unless ($filen eq "")
      {
         my $ascii = ascii_chk($upl_dir,$filen);
@@ -375,7 +370,7 @@ sub customizer
   # save pasted sequence if exists
   if ( $paste_seq ne "" )
   {
-     if ( $upl_file eq "" ) { check_dir_size($q,$job->directory,$max_dir_size); }
+     if ( $upl_file eq "" ) { check_dir_size($q,$job->directory,MAX_DIR_SIZE); }
      $paste_seq =~ s/[\r\n\s]+//g;
      save_paste($job->directory,$paste_seq,$upld_pseqs);
      $upld_pseqs++;
@@ -444,7 +439,7 @@ sub customizer
   {
      # check if structures in ali files exist and change whats needed if not
      my ($upl_files_ref,$upl_count_ref,$lib_PDBs_ref) = 
-     chk_alistrs(\%upl_files,$static_dir,\%upl_count,$job->directory,\%lib_PDBs,$upl_dir);
+     chk_alistrs(\%upl_files,STATIC_DIR,\%upl_count,$job->directory,\%lib_PDBs,$upl_dir);
      %upl_files = %$upl_files_ref;
      %upl_count = %$upl_count_ref;
      %lib_PDBs  = %$lib_PDBs_ref;
