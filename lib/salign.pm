@@ -17,6 +17,11 @@ use Cwd;
 use Fcntl qw( :DEFAULT :flock);
 use DB_File;
 
+use YAML::Syck;
+
+# Enable interoperability with other YAML/Syck bindings
+$YAML::Syck::ImplicitTyping = 1;
+
 # Enable users to upload files to our server
 $CGI::DISABLE_UPLOADS = 0;
 
@@ -237,7 +242,20 @@ sub home {
 sub get_submit_page {
     my $self = shift;
     my $q = $self->cgi;
+
     my $job_name = $q->param('job_name');
+    my $email = $q->param('email');
+    my $job = $self->resume_job($job_name);
+
+    # Dump parameters in YAML format for the backend
+    my @names = $q->param;
+    my $parameters;
+    for my $name (@names) {
+      $parameters->{$name} = $q->param($name);
+    }
+    DumpFile($job->directory . "/parameters.yaml", $parameters);
+    $job->submit($email);
+
     my $page = thank_user($q, $job_name);
     return $page;
 }
