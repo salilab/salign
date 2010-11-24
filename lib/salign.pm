@@ -283,7 +283,6 @@ sub get_job_object {
     $job = $self->resume_job($job_name);
   } else {
     $job = $self->make_job("job");
-    $job_name = $job->name;
     mkdir $job->directory . "/upload"
       or die "Can't create sub directory " . $job->directory . "/upload: $!\n";
   }
@@ -303,6 +302,7 @@ sub upload_main
   my $pdb_id = shift;
 
   my $job = $self->get_job_object($job_name);
+  $job_name = $job->name;
 
   # Run sub check_dir_size to see that there is space for the request
   check_dir_size($q,$job->directory,MAX_DIR_SIZE);
@@ -370,6 +370,7 @@ sub customizer
   my $paste_seq = $q->param('paste_seq');
 
   my $job = $self->get_job_object($job_name);
+  $job_name = $job->name;
 
   my $upl_dir = $job->directory . "/upload";
  
