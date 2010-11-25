@@ -1,6 +1,11 @@
 import saliweb.backend
+import yaml
 
-def sese_stse_topf(inputs, fin_alipath, seq_count, top_type):
+def read_parameters_file(fh):
+    parameters = yaml.safe_load(fh)
+    return parameters
+
+def sese_stse_topf(inputs, fin_alipath, fin_aliformat, seq_count, top_type):
     """Create script for seq-seq and str-seq"""
     script = """
 # align2d/align using salign
@@ -9,6 +14,8 @@ from modeller import *
 log.verbose()
 env = environ()
 """
+    tf_str_segm = ''
+
     # set vars specific for st-se or se-se
     if top_type == 'stse':
         ali_type = "progressive"
@@ -48,9 +55,9 @@ env = environ()
     output_ali = "'output.ali'"
     read_ali_line = ''
     if fin_alipath != '':
-        read_ali_line = "aln = alignment(env, file= '%s', " % fin_alipath
+        read_ali_line = "aln = alignment(env, file='%s', " % fin_alipath
         read_ali_line += "align_codes='all', "
-        read_ali_line += "alignment_format= '%s'" % fin_aliformat
+        read_ali_line += "alignment_format= '%s')" % fin_aliformat
     else:
         read_ali_line = "aln = alignment(env)"
 
@@ -108,10 +115,11 @@ def onestep_sese(inputs, entries, adv):
             ali_count += 1
             seq_count += inputs['upld_pseqs']
             fin_alipath = file_path
+            fin_aliformat = 'pir'
          # TODO if more than one ali file
 
     # Create script file
-    return sese_stse_topf(inputs, fin_alipath, seq_count, 'sese')
+    return sese_stse_topf(inputs, fin_alipath, fin_aliformat, seq_count, 'sese')
 
 
 class Job(saliweb.backend.Job):
