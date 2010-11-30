@@ -122,6 +122,19 @@ def onestep_sese(inputs, entries, adv):
     return sese_stse_topf(inputs, fin_alipath, fin_aliformat, seq_count, 'sese')
 
 
+def make_sge_script(runnercls, pyscript):
+    script = """
+date
+hostname
+/salilab/diva1/home/modeller/mod9v8 %(pyscript)s
+date
+""" % locals()
+    r = runnercls(script)
+    r.set_sge_options("-o output.error -j y -l netappsali=1G -p -4 "
+                      "-l h_rt=24:00:00 -r y -N salign")
+    return r
+
+
 class Job(saliweb.backend.Job):
     runnercls = saliweb.backend.SaliSGERunner
 
@@ -130,9 +143,11 @@ class Job(saliweb.backend.Job):
         tool = parameters['tool']
         if tool == '1s_sese':
             p = onestep_sese(parameters, 'seqs', False)
+            pyscript = 'seq-seq.py'
+            open(pyscript, 'w').write(p)
+            return make_sge_script(self.runnercls, pyscript)
         else:
             raise NotImplementedError("Unsupported tool type")
-        open('salign.py', 'w').write(p)
 
 
 def get_web_service(config_file):
