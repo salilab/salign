@@ -6,6 +6,7 @@ import os
 import re
 import StringIO
 import py_compile
+import bsddb.db
 
 class PreProcessTests(saliweb.test.TestCase):
     """Check preprocessing functions"""
@@ -22,8 +23,8 @@ class PreProcessTests(saliweb.test.TestCase):
         p = salign.read_parameters_file(StringIO.StringIO(yaml))
         self.assertEqual(p, {'tool': '1s_sese'})
 
-    def test_onestep_sese_(self):
-        """Test onestep_sese function"""
+    def test_onestep_sese_pasted(self):
+        """Test onestep_sese function with pasted sequences"""
         inp = {'1D_open_sese': -200, '1D_elong_sese': -300,
                'upld_pseqs': 2, 'align_type': 'tree', 'overhangs': 2,
                'improve': 'True', 'gap-gap_score': 100, 'gap-res_score': 200}
@@ -52,6 +53,36 @@ class PreProcessTests(saliweb.test.TestCase):
         p = salign.onestep_sese(inp, 'seqs', True)
         self.assertEqual(inp['1D_open'], 100.0)
         self.assertEqual(inp['1D_elong'], 300.0)
+
+    def test_onestep_sese_uploaded(self):
+        """Test onestep_sese function with uploaded seq-seq alignments"""
+        def make_uploads(d):
+            b = bsddb.db.DB()
+            b.open('upl_files.db', dbtype=bsddb.db.DB_HASH,
+                   flags=bsddb.db.DB_CREATE | bsddb.db.DB_TRUNCATE)
+            for key, value in d.items():
+                b[key] = value
+
+        inp = {'1D_open_sese': -200, '1D_elong_sese': -300,
+               'upld_pseqs': 0, 'align_type': 'tree', 'overhangs': 2,
+               'improve': 'True', 'gap-gap_score': 100, 'gap-res_score': 200}
+        t = saliweb.test.RunInTempDir()
+
+        make_uploads({'test.ali': 'pir-2-se'})
+        p = salign.onestep_sese(inp, 'seqs', False)
+        self.assertScriptCompiles(p)
+        self.assert_(re.search("aln = alignment\(env, file='upload/test.ali', "
+                               "align_codes='all', alignment_format= 'pir'", p,
+                               re.DOTALL | re.MULTILINE),
+                     "Python script does not match regex: " + p)
+
+        make_uploads({'t.ali': 'fasta-2-se'})
+        p = salign.onestep_sese(inp, 'seqs', False)
+        self.assertScriptCompiles(p)
+        self.assert_(re.search("aln = alignment\(env, file='upload/t.ali', "
+                               "align_codes='all', alignment_format= 'fasta'",
+                               p, re.DOTALL | re.MULTILINE),
+                     "Python script does not match regex: " + p)
 
     def test_sese_stse_topf_sese(self):
         """Test sese_stse_topf function in seq-seq mode"""

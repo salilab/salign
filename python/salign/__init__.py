@@ -1,5 +1,7 @@
 import saliweb.backend
 import yaml
+import os
+import bsddb.db
 
 def read_parameters_file(fh):
     parameters = yaml.safe_load(fh)
@@ -103,10 +105,28 @@ def onestep_sese(inputs, entries, adv):
         inputs['1D_elong'] = inputs['1D_elong_sese']
 
     # get str segments if not only seqs: TODO
-    # Arrange all uploaded files in hashes: TODO
-    ali_files = {'pir':{}}
-    ali_count = 0
-    seq_count = 0
+
+    # Arrange all uploaded files in hashes
+    ali_files = {'pir':{}, 'fasta':{}}
+    upl_strs = {}
+    ali_count = 0 # no of ali files
+    seq_count = 0 # total no of seqs
+    # Any uploaded files?
+    if os.path.exists('upl_files.db'):
+        # Get uploaded files
+        b = bsddb.db.DB()
+        b.open('upl_files.db')
+        for filen, type in b.items():
+            filen = 'upload/' + filen
+            if type == 'str': #save for use in sub cp_PBDs if needed
+                upl_strs[filen] = 1
+            elif not type.endswith('st'): # skip str files
+                type_split = type.split('-')
+                seq_count += int(type_split[1])
+                ali_files[type_split[0]][filen] = 1
+                ali_count += 1
+                # remove structure entries if any: TODO
+
     # perform multiple tasks on ali files if not only strs
     if entries != 'strs':
         if inputs['upld_pseqs'] > 0:
@@ -114,9 +134,14 @@ def onestep_sese(inputs, entries, adv):
             ali_files['pir'][file_path] = 1
             ali_count += 1
             seq_count += inputs['upld_pseqs']
-            fin_alipath = file_path
+        if ali_count > 1: # TODO if more than one ali file
+            pass # concatenate ali files: TODO
+        elif ali_files['pir']:
             fin_aliformat = 'pir'
-         # TODO if more than one ali file
+            fin_alipath = ali_files['pir'].keys()[0]
+        else:
+            fin_aliformat = 'fasta'
+            fin_alipath = ali_files['fasta'].keys()[0]
 
     # Create script file
     return sese_stse_topf(inputs, fin_alipath, fin_aliformat, seq_count,
