@@ -43,7 +43,7 @@ env = environ()
              ali_type = inputs['align_type']
         if ali_type == "tree" and seq_count > 2:
             dnd_name = "salign.tree"
-            dnd_file = "dendrogram_file='%s'" % dnd_name
+            dnd_file = "dendrogram_file='%s'," % dnd_name
         else:
             dnd_file = ""
         gap_fctn   = ''
