@@ -273,7 +273,38 @@ sub thank_user {
 }
 
 sub get_results_page {
-    # TODO
+  my ($self, $job) = @_;
+  my $q = $self->cgi;
+  my $return = $q->p("Results for SALIGN run '<b>" . $job->name . "</b>'") .
+               "<div class=\"results\">\n";
+  my @filetypes = ("_fit.pdb",".tree",".py",".log",".ali");
+  foreach my $filetype (@filetypes) {
+    $return .= $self->show_results_files($q, $job, $filetype);
+  }
+  $return .= "</div>\n\n" . $job->get_results_available_time();
+  return $return;
+}
+
+sub show_results_files {
+  my ($self, $q, $job, $filetype) = @_;
+  my %title;
+  $title{"_fit.pdb"}="Fitted Coordinate Files";
+  $title{'.tree'}="Dendrogram";
+  $title{'.py'}="Modeller Input Files";
+  $title{'.ali'}="Alignment Files";
+  $title{'.log'}="Log Files";
+
+  my @uploadinfo = glob("*$filetype");
+  my $return = "";
+  foreach my $uploadinfo (@uploadinfo) {
+    $return .= $q->p("<a href=\"" . $job->get_results_file_url($uploadinfo) .
+                    "\">$uploadinfo</a>");
+    # TODO: add 'launch Chimera' button for fitted PDB files
+  }
+  if ($return ne "") {
+    $return = $q->h3($title{$filetype}) . $return;
+  }
+  return $return;
 }
 
 sub get_job_object {
