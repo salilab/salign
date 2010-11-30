@@ -558,7 +558,6 @@ sub file_upload
   while( read($fh,$buffer,$buffer_size) ) {print UPLOAD_OUT "$buffer";}
 
   close UPLOAD_OUT;
-  chmod(oct(666),"$upl_dir/$filen") or die "Can't change input_file mode: $!\n";
   return($filen);
 }
 					  
@@ -570,9 +569,6 @@ sub save_paste
   my $upld_pseqs = shift;
   my $filen = "pasted_seqs.pir";
   my $seq_no = $upld_pseqs + 1;
-  my $new;
-  if ( -e "$job_dir/$filen" ) { $new = 0; }
-  else                        { $new = 1; }
   
   open(PIR_FILE, ">>$job_dir/$filen") or die "Cannot open $filen: $!";
 #  print PIR_FILE ">P1;PASTED_SEQ_$seq_no\n";
@@ -580,12 +576,6 @@ sub save_paste
   print PIR_FILE "SALIGN pasted seq $seq_no:seq: :: :::::\n";
   print PIR_FILE "$seq*\n\n";
   close PIR_FILE;
-
-  if ( $new == 1 )
-  {
-     chmod(oct(666),"$job_dir/$filen") 
-       or die "Can't change pasted_seqs mode: $!\n";
-  }
 }  
   
 
@@ -634,7 +624,6 @@ sub unzip
   unless ( -d $unzip_dir )
   {
      mkdir $unzip_dir or die "Can't create sub directory $unzip_dir: $!\n";
-     chmod(oct(777),$unzip_dir) or die "Can't change $unzip_dir mode: $!\n";
   }
   chdir "$unzip_dir" or die "Can't change working directory to $unzip_dir: $!\n";
 #  system ("mv","$upl_dir/$cmp_file","$unzip_dir/$cmp_file");
@@ -740,7 +729,6 @@ sub unzip
         push @redundant,$filen;
 	next; 
      }
-     chmod(oct(666),"$unzip_dir/$filen") or die "Can't change $filen mode: $!\n";
 #     system ("mv","$unzip_dir/$filen","$upl_dir/$filen");
      move ("$unzip_dir/$filen","$upl_dir/$filen")
        or die "move failed: $filen $!";
@@ -763,17 +751,10 @@ sub add_to_DBM
   my $file_type = shift;
   my $job_dir = shift;
   
-  my $pre_made = 0;
-  if ( -e "$job_dir/upl_files.db") { $pre_made = 1; }
-  
   tie my %file_types, "DB_File", "$job_dir/upl_files.db" , O_WRONLY | O_CREAT
     or die "Cannot open tie to filetype DBM: $!";
   $file_types{$filen} = $file_type;
   untie %file_types;
-  if ( $pre_made == 0 )
-  {
-     chmod(oct(666),"$job_dir/upl_files.db") or die "Can't change filetype DBM mode: $!\n";
-  }
 }
 
 
