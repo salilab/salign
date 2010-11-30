@@ -25,7 +25,7 @@ env = environ()
                      % (inputs['2D_1'], inputs['2D_2'], inputs['2D_3'],
                         inputs['2D_4'], inputs['2D_5'], inputs['2D_6'],
                         inputs['2D_7'], inputs['2D_8'], inputs['2D_9'])
-        align_block = "align_block=%d" % seq_count
+        align_block = "align_block=%d," % seq_count
         dnd_file = ''
         max_gap = "max_gap_length=%d," % inputs['max_gap']
     else: # seq-seq
@@ -68,7 +68,7 @@ env = environ()
 
     script += str_dir + "\n" + read_ali_line + "\n" + tf_str_segm + """
 aln.salign(rr_file='$(LIB)/as1.sim.mat',  # Substitution matrix used
-           %(align_block)s,
+           %(align_block)s
            alignment_type = '%(ali_type)s',
            %(max_gap)s
            %(gap_fctn)s
