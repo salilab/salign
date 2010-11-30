@@ -5,7 +5,8 @@ def read_parameters_file(fh):
     parameters = yaml.safe_load(fh)
     return parameters
 
-def sese_stse_topf(inputs, fin_alipath, fin_aliformat, seq_count, top_type):
+def sese_stse_topf(inputs, fin_alipath, fin_aliformat, seq_count, top_type,
+                   output_ali):
     """Create script for seq-seq and str-seq"""
     script = """
 # align2d/align using salign
@@ -52,7 +53,6 @@ env = environ()
 
     # common vars for str-seq and seq-seq
     gap_pen_1D = "%f, %f" % (inputs['1D_open'], inputs['1D_elong'])
-    output_ali = "'output.ali'"
     read_ali_line = ''
     if fin_alipath != '':
         read_ali_line = "aln = alignment(env, file='%s', " % fin_alipath
@@ -81,7 +81,7 @@ aln.salign(rr_file='$(LIB)/as1.sim.mat',  # Substitution matrix used
            overhang = %(overhangs)d,
            improve_alignment = %(improve)s,
            output='')
-aln.write(file=%(output_ali)s, alignment_format='PIR')
+aln.write(file='%(output_ali)s', alignment_format='PIR')
 """ % locals()
     return script
 
@@ -119,7 +119,8 @@ def onestep_sese(inputs, entries, adv):
          # TODO if more than one ali file
 
     # Create script file
-    return sese_stse_topf(inputs, fin_alipath, fin_aliformat, seq_count, 'sese')
+    return sese_stse_topf(inputs, fin_alipath, fin_aliformat, seq_count,
+                          'sese', 'seq-seq_out.ali')
 
 
 def make_sge_script(runnercls, pyscript):
