@@ -7,8 +7,7 @@ def read_parameters_file(fh):
     parameters = yaml.safe_load(fh)
     return parameters
 
-def sese_stse_topf(inputs, fin_alipath, fin_aliformat, seq_count, top_type,
-                   output_ali):
+def sese_stse_topf(inputs, ali_files, seq_count, top_type, output_ali):
     """Create script for seq-seq and str-seq"""
     script = """
 # align2d/align using salign
@@ -56,12 +55,10 @@ env = environ()
     # common vars for str-seq and seq-seq
     gap_pen_1D = "%f, %f" % (inputs['1D_open'], inputs['1D_elong'])
     read_ali_line = ''
-    if fin_alipath != '':
-        read_ali_line = "aln = alignment(env, file='%s', " % fin_alipath
-        read_ali_line += "align_codes='all', "
-        read_ali_line += "alignment_format= '%s')" % fin_aliformat
-    else:
-        read_ali_line = "aln = alignment(env)"
+    read_ali_line = "aln = alignment(env)"
+    for filen, alifmt in ali_files:
+        read_ali_line += "\naln.append(file='%s', align_codes='all', " \
+                         "alignment_format='%s')" % (filen, alifmt)
 
     overhangs = inputs['overhangs']
     improve = inputs['improve']
@@ -107,9 +104,8 @@ def onestep_sese(inputs, entries, adv):
     # get str segments if not only seqs: TODO
 
     # Arrange all uploaded files in hashes
-    ali_files = {'pir':{}, 'fasta':{}}
+    ali_files = []
     upl_strs = {}
-    ali_count = 0 # no of ali files
     seq_count = 0 # total no of seqs
     # Any uploaded files?
     if os.path.exists('upl_files.db'):
@@ -123,28 +119,18 @@ def onestep_sese(inputs, entries, adv):
             elif not type.endswith('st'): # skip str files
                 type_split = type.split('-')
                 seq_count += int(type_split[1])
-                ali_files[type_split[0]][filen] = 1
-                ali_count += 1
+                ali_files.append((filen, type_split[0]))
                 # remove structure entries if any: TODO
 
     # perform multiple tasks on ali files if not only strs
     if entries != 'strs':
         if inputs['upld_pseqs'] > 0:
             file_path = 'pasted_seqs.pir'
-            ali_files['pir'][file_path] = 1
-            ali_count += 1
+            ali_files.append((file_path, 'pir'))
             seq_count += inputs['upld_pseqs']
-        if ali_count > 1: # TODO if more than one ali file
-            pass # concatenate ali files: TODO
-        elif ali_files['pir']:
-            fin_aliformat = 'pir'
-            fin_alipath = ali_files['pir'].keys()[0]
-        else:
-            fin_aliformat = 'fasta'
-            fin_alipath = ali_files['fasta'].keys()[0]
 
     # Create script file
-    return sese_stse_topf(inputs, fin_alipath, fin_aliformat, seq_count,
+    return sese_stse_topf(inputs, ali_files, seq_count,
                           'sese', 'seq-seq_out.ali')
 
 
@@ -172,6 +158,20 @@ class Job(saliweb.backend.Job):
             pyscript = 'seq-seq.py'
             open(pyscript, 'w').write(p)
             return make_sge_script(self.runnercls, pyscript)
+        elif tool == 'sese_adv':
+            if parameters['sa_feature'] == '2s_sese':
+                raise NotImplementedError("Unsupported tool type")
+            elif parameters['sa_feature'] == 'str_seq':
+                raise NotImplementedError("Unsupported tool type")
+            else: # 1 step seq-seq
+                if parameters['structures'] == 1:
+                    typ = 'seqs_and_strs'
+                else:
+                    typ = 'seqs'
+                p = onestep_sese(parameters, typ, True)
+                pyscript = 'seq-seq.py'
+                open(pyscript, 'w').write(p)
+                return make_sge_script(self.runnercls, pyscript)
         else:
             raise NotImplementedError("Unsupported tool type")
 

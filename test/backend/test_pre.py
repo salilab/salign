@@ -30,7 +30,8 @@ class PreProcessTests(saliweb.test.TestCase):
                'improve': 'True', 'gap-gap_score': 100, 'gap-res_score': 200}
         p = salign.onestep_sese(inp, 'seqs', False)
         self.assertScriptCompiles(p)
-        self.assert_(re.search("aln = alignment\(env, file='pasted_seqs.pir',.*"
+        self.assert_(re.search("aln = alignment\(env\)\W+"
+                               "aln\.append\(file='pasted_seqs.pir',.*"
                                "aln\.salign\(.*"
                                "alignment_type = 'tree',.+"
                                "gap_penalties_1d = \(\-200.\d+, \-300.\d+\),\W+"
@@ -71,16 +72,18 @@ class PreProcessTests(saliweb.test.TestCase):
         make_uploads({'test.ali': 'pir-2-se'})
         p = salign.onestep_sese(inp, 'seqs', False)
         self.assertScriptCompiles(p)
-        self.assert_(re.search("aln = alignment\(env, file='upload/test.ali', "
-                               "align_codes='all', alignment_format= 'pir'", p,
+        self.assert_(re.search("aln = alignment\(env\)\W+"
+                               "aln\.append\(file='upload/test.ali', "
+                               "align_codes='all', alignment_format='pir'", p,
                                re.DOTALL | re.MULTILINE),
                      "Python script does not match regex: " + p)
 
         make_uploads({'t.ali': 'fasta-2-se'})
         p = salign.onestep_sese(inp, 'seqs', False)
         self.assertScriptCompiles(p)
-        self.assert_(re.search("aln = alignment\(env, file='upload/t.ali', "
-                               "align_codes='all', alignment_format= 'fasta'",
+        self.assert_(re.search("aln = alignment\(env\)\W+"
+                               "aln\.append\(file='upload/t.ali', "
+                               "align_codes='all', alignment_format='fasta'",
                                p, re.DOTALL | re.MULTILINE),
                      "Python script does not match regex: " + p)
 
@@ -91,30 +94,31 @@ class PreProcessTests(saliweb.test.TestCase):
                'gap-res_score': 200}
 
         # Check input/output alignment files
-        p = salign.sese_stse_topf(inp, 'input.ali', 'MYFORMAT', 2, 'sese',
+        p = salign.sese_stse_topf(inp, [('input.ali', 'MYFORMAT')], 2, 'sese',
                                   'output.ali')
         self.assertScriptCompiles(p)
-        self.assert_(re.search("aln = alignment\(env, file='input.ali',.*"
-                               "alignment_format= 'MYFORMAT'\).*"
+        self.assert_(re.search("aln = alignment\(env\)\W+"
+                               "aln\.append\(file='input.ali',.*"
+                               "alignment_format='MYFORMAT'\).*"
                                "aln.write\(file='output.ali', "
                                "alignment_format='PIR'\)", p,
                                re.DOTALL | re.MULTILINE),
                      "Python script does not match regex: " + p)
 
-        p = salign.sese_stse_topf(inp, '', '', 2, 'sese', 'output.ali')
+        p = salign.sese_stse_topf(inp, [], 2, 'sese', 'output.ali')
         self.assert_(re.search("aln = alignment\(env\)", p,
                                re.DOTALL | re.MULTILINE),
                      "Python script does not match regex: " + p)
 
         # Check automatic align type
         inp['align_type'] = 'automatic'
-        p = salign.sese_stse_topf(inp, 'i.ali', 'PIR', 30, 'sese', 'o.ali')
+        p = salign.sese_stse_topf(inp, [('i.ali', 'PIR')], 30, 'sese', 'o.ali')
         self.assertScriptCompiles(p)
         self.assert_(re.search("alignment_type = 'tree'", p,
                                re.DOTALL | re.MULTILINE),
                      "Python script does not match regex: " + p)
 
-        p = salign.sese_stse_topf(inp, 'i.ali', 'PIR', 31, 'sese', 'o.ali')
+        p = salign.sese_stse_topf(inp, [('i.ali', 'PIR')], 31, 'sese', 'o.ali')
         self.assertScriptCompiles(p)
         self.assert_(re.search("alignment_type = 'progressive'", p,
                                re.DOTALL | re.MULTILINE),
@@ -122,12 +126,12 @@ class PreProcessTests(saliweb.test.TestCase):
 
         # Check dendrogram output
         inp['align_type'] = 'tree'
-        p = salign.sese_stse_topf(inp, 'i.ali', 'PIR', 3, 'sese', 'o.ali')
+        p = salign.sese_stse_topf(inp, [('i.ali', 'PIR')], 3, 'sese', 'o.ali')
         self.assert_(re.search("dendrogram_file='salign\.tree'", p,
                                re.DOTALL | re.MULTILINE),
                      "Python script does not match regex: " + p)
 
-        p = salign.sese_stse_topf(inp, 'i.ali', 'PIR', 2, 'sese', 'o.ali')
+        p = salign.sese_stse_topf(inp, [('i.ali', 'PIR')], 2, 'sese', 'o.ali')
         self.assertFalse(re.search("dendrogram_file\s.=", p,
                                    re.DOTALL | re.MULTILINE),
                          "Python script matches regex: " + p)
