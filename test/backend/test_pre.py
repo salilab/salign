@@ -87,6 +87,16 @@ class PreProcessTests(saliweb.test.TestCase):
                                p, re.DOTALL | re.MULTILINE),
                      "Python script does not match regex: " + p)
 
+        # Multiple alignment files should both be read
+        make_uploads({'test.ali': 'pir-2-se',
+                      'test2.ali': 'fasta-2-se'})
+        p = salign.onestep_sese(inp, 'seqs', False)
+        self.assertScriptCompiles(p)
+        self.assert_(re.search("aln = alignment\(env\)\W+"
+                               "aln\.append\(file=.*aln\.append\(file=", p,
+                               re.DOTALL | re.MULTILINE),
+                     "Python script does not match regex: " + p)
+
     def test_sese_stse_topf_sese(self):
         """Test sese_stse_topf function in seq-seq mode"""
         inp = {'1D_open': -200, '1D_elong': -300, 'align_type': 'tree',
