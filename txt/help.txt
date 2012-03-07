@@ -1,4 +1,8 @@
 <h1>Help</h1>
+<ul>
+  <li><a href="#example">Examples</a></li>
+  <li><a href="#citations">Citations</a></li>
+</ul>
 
 <b id="paste_seq">
     Pasting sequences:
@@ -14,7 +18,15 @@
 </p>
 <br>
 
+<b id="seq_upload_button"> Upload button for pasted sequence: </b>
+<p>	Multiple sequences can be pasted by iteratively clicking 'upload' after every pasted sequence.<br><br>
+</p>
+<b id="file_upload_button"> Upload button for file: </b>
+<p>	Multiple sequences/PDBs can be uploaded by iteratively clicking 'upload' after every uploaded file.<br><br>
+</p>
+
 <b id="file_upload">
+
     File upload:
 </b>
 <p>
@@ -36,6 +48,10 @@
 </p>
 
 <br>
+<b id="file_format"> Accepted file formats: </b>
+<p> PIR, FASTA, PDB, .zip or .tar.gz </p>
+<br>
+
 <b id="lib_PDBs">
     Choosing PDB structures:
 </b>
@@ -150,21 +166,50 @@
 </p>
 <br>
 
-<b id="citations">
-    Citations:
-</b>
+<a name="example"><h4>Examples</h4></a>
+<b>1. Multiple structure alignment</b> - <a href="file/asp.ali">asp.ali</a>
+<p>This alignment file in PIR format contains several structure entries and no sequence entries.
+The comment section at the top of the file describes how the server recognizes these as structures
+rather than sequences. Since the input consists of only structures, the server suggests a multiple
+structure alignment by default. Start and end residues/chains are extracted from the headers in the PIR file.
+</p>
+<br>
+<b> 2. Multiple sequence alignment</b> - <a href="file/asp_seqs.ali">asp_seqs.ali</a>
+<p>
+This alignment file in PIR format contains several sequence entries. The comment section at the top of the
+file explains why the server recognizes these as sequences rather than structures. Since the input consists of
+one group of sequences, the server carries out a multiple sequence alignment.
+</p>
+<br>
+<b> 3. Profile-profile sequence alignment</b> - <a href="file/asp_seqs_half1.ali">asp_seqs_half1.ali</a> + <a href="file/asp_seqs_half2.ali">asp_seqs_half2.ali</a>
+<p>
+These alignment files in PIR format contain several sequences each. The comment sections at the top of the
+files explain why the server recognizes these as sequences rather than structures. Since the input consists of
+two groups of sequences, the server first generates multiple sequence alignments of each file separately, and
+then aligns these to each other using the profile-profile alignment algorithm.
+</p>
+<br>
+<b> 4. Structure-sequence alignment</b> - <a href="file/asp_strs_seqs.ali">asp_strs_seqs.ali</a>
+<p>
+This alignment file in PIR format contains both structure entries and sequence entries. The comment sections
+in the file explain why the server recognizes some entries as sequences and some as structures. Since the
+input consists of both sequences and structures, the server first generates multiple sequence and structure
+alignments separately, and then aligns the resulting alignments to each other using the structure-sequence
+alignment algorithm.
+</p>
+<br>
+<a name="citations"><h4>Citations</h4></a>
 <p>
     In addition to the SALIGN web server, please cite the following publications:
-<br><i>
-    Profile-profile sequence aligments
-<br></i>
-    M.A. Marti-Renom, M.S. Madhusudhan, A. Sali. Alignment of protein sequences by their profiles. Protein Sci 13, 1071-1087, 2004.
-<br><i>
-    Structure-sequence aligments
-<br></i>
-    M.S. Madhusudhan, M.A. Marti-Renom, R. Sanchez, A. Sali. Variable gap penalty for protein sequence-structure alignment. Protein Eng Des Sel 19, 129-133, 2006.
-<br><i>
-    Structure-structure alignments
-<br></i>
-    M.S. Madhusudhan, B.M. Webb, M.A. Marti-Renom, N. Eswar, A. Sali. Alignment of multiple protein structures based on sequence and structure features. Protein Eng Des Sel 22, 569-574, 2009.
 </p>
+<li><b> Profile-profile sequence aligments</b>
+<p>M.A. Marti-Renom, M.S. Madhusudhan, A. Sali. Alignment of protein sequences by their profiles. Protein Sci 13, 1071-1087, 2004.
+</p>
+</li><li><b> Structure-sequence aligments</b>
+<p>M.S. Madhusudhan, M.A. Marti-Renom, R. Sanchez, A. Sali. Variable gap penalty for protein sequence-structure alignment. Protein Eng Des Sel 19, 129-133, 2006.
+</p>
+</li><li><b> Structure-structure alignments </b>
+<p> M.S. Madhusudhan, B.M. Webb, M.A. Marti-Renom, N. Eswar, A. Sali. Alignment of multiple protein structures based on sequence and structure features. Protein Eng Des Sel 22, 569-574, 2009.
+</p>
+
+
