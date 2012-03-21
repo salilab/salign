@@ -1,5 +1,6 @@
 <h1>Help</h1>
 <ul>
+  <li><a href="#chimera">Launch Chimera</a></li>
   <li><a href="#example">Examples</a></li>
   <li><a href="#citations">Citations</a></li>
 </ul>
@@ -165,6 +166,15 @@
 <a href="/salign/manual.html#1D_gap_pen">here</a>
 </p>
 <br>
+<a name="chimera"><h4>Launch Chimera</h4></a>
+<p>If structures have been aligned, the results page provides a link that
+retrieves the aligned structure files and opens them locally in the 
+molecular graphics viewer Chimera. For this function, the user must have
+Chimera installed on their computer (<a href="http://www.cgl.ucsf.edu/chimera/download.html"> http://www.cgl.ucsf.edu/chimera/download.html)</a>. On Mac, the launcher downloads a file that needs to be clicked in order to start Chimera.
+</p>
+<br>
+
+
 
 <a name="example"><h4>Examples</h4></a>
 <b>1. Multiple structure alignment</b> - <a href="file/asp.ali">asp.ali</a>
