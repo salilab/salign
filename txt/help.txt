@@ -33,7 +33,7 @@
 <p>
     The server can recognize the contents of the following file formats:
 <br>
-    Alignment files: <a href="/salign/formats.html#pir">PIR</a> or <a href="/salign/formats.html#fasta">FASTA</a>
+    Alignment files: <a href="/salign/formats.html#pir">MODELLER PIR</a> or <a href="/salign/formats.html#fasta">FASTA</a>
 <br>    
     Structure files: <a href="http://www.rcsb.org/pdb/">PDB</a> format (atomic coordinate files can have '.ent', '.pdb' or no extension at all)
 <br>    
@@ -41,7 +41,7 @@
 <br><br>
     Multiple files can be uploaded by iteratively clicking 'upload' after every upload.
 <br><br>
-    PIR structure entries are considered structures if the corresponding PDB file can be found among the uploaded files or in the Sali Lab PDB library.
+    MODELLER PIR structure entries are considered structures if the corresponding PDB file can be found among the uploaded files or in the Sali Lab PDB library.
 <br>
     If not found it is simply considered a sequence.
 <br><br>
@@ -50,7 +50,7 @@
 
 <br>
 <b id="file_format"> Accepted file formats: </b>
-<p> PIR, FASTA, PDB, .zip or .tar.gz </p>
+<p> MODELLER PIR, FASTA, PDB, .zip or .tar.gz </p>
 <br>
 
 <b id="lib_PDBs">
@@ -102,7 +102,7 @@
 <br><br>
      Default values of the structure segment always span all residues of the first chain of the given structure file.
 <br>
-     If residue ranges are specified in the input PIR files, these are taken instead of the default. 
+     If residue ranges are specified in the input MODELLER PIR files, these are taken instead of the default. 
 <br>
     Multiple segments from the same PDB should be entered on separate lines.
 <br>
@@ -178,22 +178,22 @@ Chimera installed on their computer (<a href="http://www.cgl.ucsf.edu/chimera/do
 
 <a name="example"><h4>Examples</h4></a>
 <b>1. Multiple structure alignment</b> - <a href="file/asp.ali">asp.ali</a>
-<p>This alignment file in PIR format contains several structure entries and no sequence entries.
+<p>This alignment file in MODELLER PIR format contains several structure entries and no sequence entries.
 The comment section at the top of the file describes how the server recognizes these as structures
 rather than sequences. Since the input consists of only structures, the server suggests a multiple
-structure alignment by default. Start and end residues/chains are extracted from the headers in the PIR file.
+structure alignment by default. Start and end residues/chains are extracted from the headers in the MODELLER PIR file.
 </p>
 <br>
 <b> 2. Multiple sequence alignment</b> - <a href="file/asp_seqs.ali">asp_seqs.ali</a>
 <p>
-This alignment file in PIR format contains several sequence entries. The comment section at the top of the
+This alignment file in MODELLER PIR format contains several sequence entries. The comment section at the top of the
 file explains why the server recognizes these as sequences rather than structures. Since the input consists of
 one group of sequences, the server carries out a multiple sequence alignment.
 </p>
 <br>
 <b> 3. Profile-profile sequence alignment</b> - <a href="file/asp_seqs_half1.ali">asp_seqs_half1.ali</a> + <a href="file/asp_seqs_half2.ali">asp_seqs_half2.ali</a>
 <p>
-These alignment files in PIR format contain several sequences each. The comment sections at the top of the
+These alignment files in MODELLER PIR format contain several sequences each. The comment sections at the top of the
 files explain why the server recognizes these as sequences rather than structures. Since the input consists of
 two groups of sequences, the server first generates multiple sequence alignments of each file separately, and
 then aligns these to each other using the profile-profile alignment algorithm.
@@ -201,7 +201,7 @@ then aligns these to each other using the profile-profile alignment algorithm.
 <br>
 <b> 4. Structure-sequence alignment</b> - <a href="file/asp_strs_seqs.ali">asp_strs_seqs.ali</a>
 <p>
-This alignment file in PIR format contains both structure entries and sequence entries. The comment sections
+This alignment file in MODELLER PIR format contains both structure entries and sequence entries. The comment sections
 in the file explain why the server recognizes some entries as sequences and some as structures. Since the
 input consists of both sequences and structures, the server first generates multiple sequence and structure
 alignments separately, and then aligns the resulting alignments to each other using the structure-sequence
