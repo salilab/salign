@@ -51,6 +51,9 @@
 <br>
 <b id="file_format"> Accepted file formats: </b>
 <p> MODELLER PIR, FASTA, PDB, .zip or .tar.gz </p>
+<p> Importantly, archives (.zip and .tar.gz) should contain all files in the top level, and not
+within a folder. Thus, when preparing these, the user should archive all desired files directly,
+not a folder containing the files.</p>
 <br>
 
 <b id="lib_PDBs">
@@ -183,12 +186,22 @@ The comment section at the top of the file describes how the server recognizes t
 rather than sequences. Since the input consists of only structures, the server suggests a multiple
 structure alignment by default. Start and end residues/chains are extracted from the headers in the MODELLER PIR file.
 </p>
+<p> Structures to align can also be specified by entering their PDB codes in the main interface,
+ or by uploading cutom PDB files. If no structure alignment file is uploaded, the server suggests
+aligning the entire first chain of each PDB. The user will thus often need to modify these
+alignment segments. Click <a href="#segments">here</a> for more information on specifying PDB
+segments.
+</p>
 <br>
 <b> 2. Multiple sequence alignment</b> - <a href="file/asp_seqs.ali">asp_seqs.ali</a>
 <p>
 This alignment file in MODELLER PIR format contains several sequence entries. The comment section at the top of the
 file explains why the server recognizes these as sequences rather than structures. Since the input consists of
 one group of sequences, the server carries out a multiple sequence alignment.
+</p>
+<p>As an alternative to uploading alignment files, sequences without headers can be pasted into
+the appropriate field of the interface. Click <a href="#paste_seq">here</a> for more information
+on pasting sequences.
 </p>
 <br>
 <b> 3. Profile-profile sequence alignment</b> - <a href="file/asp_seqs_half1.ali">asp_seqs_half1.ali</a> + <a href="file/asp_seqs_half2.ali">asp_seqs_half2.ali</a>
@@ -207,6 +220,13 @@ input consists of both sequences and structures, the server first generates mult
 alignments separately, and then aligns the resulting alignments to each other using the structure-sequence
 alignment algorithm.
 </p>
+<p>As an alternative to uploading sequence alignment files, sequences without headers can be pasted
+into the appropriate field of the interface. Click <a href="#paste_seq">here</a> for more information
+on pasting sequences. Structures to align can also be specified by entering their PDB codes in the
+main interface, or by uploading cutom PDB files. If no structure alignment file is uploaded,
+the server suggests aligning the entire first chain of each PDB. The user will thus often need to
+modify these alignment segments. Click <a href="#segments">here</a> for more information on
+specifying PDB segments.</p>
 <br>
 <a name="citations"><h4>Citations</h4></a>
 <p>
