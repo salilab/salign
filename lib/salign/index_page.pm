@@ -193,6 +193,8 @@ sub upload_main
   my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
   my $max_open_tries = $conf_ref->{'MAX_OPEN_TRIES'};
 
+  my $msg = '';
+
   # untaint todo directory 
   if ($todo_dir =~ /(.+)/) {$todo_dir = $1;}
   else {error($q,"Can't untaint todo directory");}
@@ -208,7 +210,7 @@ sub upload_main
   my $paste_seq = $q->param('paste_seq'); 
   if ( $upl_file eq "" && $paste_seq eq "" )
   {
-     home($q,$job_name,$upld_pseqs,$email,$pdb_id);
+     $msg .= home($q,$job_name,$upld_pseqs,$email,$pdb_id);
   }   
   else
   {
@@ -262,8 +264,9 @@ sub upload_main
 	save_paste($job_dir,$paste_seq,$upld_pseqs);
 	$upld_pseqs++;
      }
-     home($q,$job_name,$upld_pseqs,$email,$pdb_id);
+     $msg .= home($q,$job_name,$upld_pseqs,$email,$pdb_id);
   }
+  return $msg;
 }
 
 
@@ -287,6 +290,7 @@ sub customizer
   my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
   my $max_open_tries = $conf_ref->{'MAX_OPEN_TRIES'};
   my $static_dir = $conf_ref->{'STATIC_DIR'};
+  my $msg = '';
 
   # untaint todo directory 
   if ($todo_dir =~ /(.+)/) {$todo_dir = $1;}
@@ -433,20 +437,21 @@ sub customizer
 
   if ( $choice eq 'str-str' )
   {
-     str_str($q,$email,\%upl_files,\%lib_PDBs,$job_name);
+     $msg .= str_str($q,$email,\%upl_files,\%lib_PDBs,$job_name);
   }
   elsif ( $choice eq 'str-seq' )
   {
-     str_seq($q,$email,\%upl_files,\%lib_PDBs,$upld_pseqs,$job_name);
+     $msg .= str_seq($q,$email,\%upl_files,\%lib_PDBs,$upld_pseqs,$job_name);
   }
   elsif ( $choice eq '2s_seq-seq' )
   {
-     twostep_sese($q,$email,\%upl_files,$upld_pseqs,$job_name,\%lib_PDBs);
+     $msg .= twostep_sese($q,$email,\%upl_files,$upld_pseqs,$job_name,\%lib_PDBs);
   }
   elsif ( $choice eq '1s_seq-seq' )
   {
-     onestep_sese($q,$email,\%upl_files,$upld_pseqs,$job_name);
+     $msg .= onestep_sese($q,$email,\%upl_files,$upld_pseqs,$job_name);
   }
+  return $msg;
 }
 
 	
@@ -1251,19 +1256,16 @@ sub str_str
   my %upl_files = %$upl_files_ref;
   my %lib_PDBs = %$lib_PDBs_ref;
   
-# Start html
-  start($q);
-
-  print	$q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ),
- 	$q->hidden( -name => "tool", -default => "str_str", -override => 1),
-        $q->hidden( -name => "job_name", -default => $job_name, -override => 1),
+  my $msg =	$q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+ 	$q->hidden( -name => "tool", -default => "str_str", -override => 1).
+        $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1);
 
-  print_cont1_category_choice ($q, "Structure-structure alignment");
-  print "Specified structure segments will be multiply aligned.<br /><br />";
-  print "\n<table> <col width=\"100\"><col width=\"100\">\n";
-  print_pdb_segments ($q, $upl_files_ref, $lib_PDBs_ref);
-  print "<tr><td>\n";
+  $msg .= print_cont1_category_choice ($q, "Structure-structure alignment");
+  $msg .= "Specified structure segments will be multiply aligned.<br /><br />";
+  $msg .= "\n<table> <col width=\"100\"><col width=\"100\">\n";
+  $msg .= print_pdb_segments ($q, $upl_files_ref, $lib_PDBs_ref);
+  $msg .= "<tr><td>\n";
 
 #  # Show uploaded ali files - do we want this or not?
 #  if ( exists $upl_files{'ali_st'} )
@@ -1274,41 +1276,41 @@ sub str_str
 #        print $q->p( $filen );
 #     }   
 #  }
-  print $q->hidden( -name => "align_type", -default => "automatic", -override => 1 ),
-        $q->hidden( -name => "1D_open_stst", -default => "-150", -override => 1 ),
-	$q->hidden( -name => "1D_elong_stst", -default => "-50", -override => 1 ),
-	$q->hidden( -name => "3D_open", -default => "0", -override => 1 ),
-	$q->hidden( -name => "3D_elong", -default => "2", -override => 1 ),
-	$q->hidden( -name => "fw_1", -default => "1", -override => 1 ),
-	$q->hidden( -name => "fw_2", -default => "1", -override => 1 ),
-	$q->hidden( -name => "fw_3", -default => "1", -override => 1 ),
-	$q->hidden( -name => "fw_4", -default => "1", -override => 1 ),
-	$q->hidden( -name => "fw_5", -default => "1", -override => 1 ),
-	$q->hidden( -name => "fw_6", -default => "0", -override => 1 ),
-	$q->hidden( -name => "max_gap", -default => "20", -override => 1 ),
-	$q->hidden( -name => "RMS_cutoff", -default => "3.5", -override => 1 ),
-	$q->hidden( -name => "overhangs", -default => "0", -override => 1 ),
-	$q->hidden( -name => "fit", -default => "True", -override => 1 ),
-	$q->hidden( -name => "improve", -default => "True", -override => 1 ),
-	$q->hidden( -name => "write_whole", -default => "False", -override => 1 ),
-	$q->hidden( -name => "gap-gap_score", -default => "0", -override => 1 ),
-	$q->hidden( -name => "gap-res_score", -default => "0", -override => 1 ),
-	$q->br,  
-	$q->submit( -value => "Submit" ),
-	$q->reset(),
-	$q->br,
+  $msg .= $q->hidden( -name => "align_type", -default => "automatic", -override => 1 ).
+        $q->hidden( -name => "1D_open_stst", -default => "-150", -override => 1 ).
+	$q->hidden( -name => "1D_elong_stst", -default => "-50", -override => 1 ).
+	$q->hidden( -name => "3D_open", -default => "0", -override => 1 ).
+	$q->hidden( -name => "3D_elong", -default => "2", -override => 1 ).
+	$q->hidden( -name => "fw_1", -default => "1", -override => 1 ).
+	$q->hidden( -name => "fw_2", -default => "1", -override => 1 ).
+	$q->hidden( -name => "fw_3", -default => "1", -override => 1 ).
+	$q->hidden( -name => "fw_4", -default => "1", -override => 1 ).
+	$q->hidden( -name => "fw_5", -default => "1", -override => 1 ).
+	$q->hidden( -name => "fw_6", -default => "0", -override => 1 ).
+	$q->hidden( -name => "max_gap", -default => "20", -override => 1 ).
+	$q->hidden( -name => "RMS_cutoff", -default => "3.5", -override => 1 ).
+	$q->hidden( -name => "overhangs", -default => "0", -override => 1 ).
+	$q->hidden( -name => "fit", -default => "True", -override => 1 ).
+	$q->hidden( -name => "improve", -default => "True", -override => 1 ).
+	$q->hidden( -name => "write_whole", -default => "False", -override => 1 ).
+	$q->hidden( -name => "gap-gap_score", -default => "0", -override => 1 ).
+	$q->hidden( -name => "gap-res_score", -default => "0", -override => 1 ).
+	$q->br.
+	$q->submit( -value => "Submit" ).
+	$q->reset().
+	$q->br.
 	$q->end_form();
   
   # form for call to advanced view
-  print $q->start_form( -method => "get" ),
-        $q->hidden( -name => "caller", -default => "str-str", -override => 1 ),
-	$q->hidden( -name => "job_name", -default => $job_name, -override => 1),
+  $msg .= $q->start_form( -method => "get" ).
+        $q->hidden( -name => "caller", -default => "str-str", -override => 1 ).
+	$q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1);
   if ( exists $upl_files{'str'} )
   {
      foreach my $filen ( keys %{ $upl_files{'str'} } )
      {
-        print $q->hidden( 
+        $msg .= $q->hidden( 
 	        -name => "uplsegm_$filen", 
 		-default => 'FIRST:@:LAST:@',
 		-override => 1
@@ -1321,7 +1323,7 @@ sub str_str
      {
         # Get default segments
         my $default = join "\n", @{ $upl_files{'used_str'}{$filen} };
-        print $q->hidden( 
+        $msg .= $q->hidden( 
                 -name => "uplsegm_$filen",
 	        -default => $default,
 		-override => 1
@@ -1337,7 +1339,7 @@ sub str_str
 	{
 	   if ( exists $lib_PDBs{'ali'}{$pdb} ) { next; }
         }
-        print $q->hidden(
+        $msg .= $q->hidden(
                 -name => "libsegm_$pdb", 
 	        -default => 'FIRST:@:LAST:@',
          	-override => 1
@@ -1350,18 +1352,18 @@ sub str_str
      {
         # Get default segments
         my $default = join "\n", @{ $lib_PDBs{'ali'}{$pdb} };
-        print $q->hidden( 
+        $msg .= $q->hidden( 
 	        -name => "libsegm_$pdb",
 	        -default => $default,
 	        -override => 1
 	      );
      }
   }
-  print $q->submit( -name => "state", -value => "Advanced" ),
+  $msg .= $q->submit( -name => "state", -value => "Advanced" ),
 	$q->end_form();
 
-  print "</td></tr></table></div>\n";
-  print_footer($q);	
+  $msg .= "</td></tr></table></div>\n";
+  return $msg;
 
 }
 
@@ -1385,29 +1387,27 @@ sub str_seq
   my %lib_PDBs = %$lib_PDBs_ref;
   
 # Start html
-  start($q);
-
-  print	$q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ),
-	$q->hidden( -name => "tool", -default => "str_seq", -override => 1),
-        $q->hidden( -name => "job_name", -default => $job_name, -override => 1),
-	$q->hidden( -name => "email", -default => $email, -override => 1),
+  my $msg = $q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+	$q->hidden( -name => "tool", -default => "str_seq", -override => 1).
+        $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
+	$q->hidden( -name => "email", -default => $email, -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1);
 
-  print_cont1_category_choice ($q, "Structure-sequence alignment");
-  print "Step 1: Structures and sequences will be multiply aligned independently.<br />";
-  print "Step 2: The resulting alignments from step 1 will be aligned to each other.<br /><br />";
+  $msg .= print_cont1_category_choice ($q, "Structure-sequence alignment");
+  $msg .= "Step 1: Structures and sequences will be multiply aligned independently.<br />";
+  $msg .= "Step 2: The resulting alignments from step 1 will be aligned to each other.<br /><br />";
 
-  print "\n<table> <col width=\"100\"><col width=\"100\">\n";
+  $msg .= "\n<table> <col width=\"100\"><col width=\"100\">\n";
 
-  print_pdb_segments ($q, $upl_files_ref, $lib_PDBs_ref);
+  $msg .= print_pdb_segments ($q, $upl_files_ref, $lib_PDBs_ref);
 
-  print "<tr><td>&nbsp;</td><td>\n";
+  $msg .= "<tr><td>&nbsp;</td><td>\n";
 
   # Show uploaded ali files and no of pasted seqs
   if ( exists $upl_files{'ali_st'} || exists $upl_files{'ali_stse'} ||
        exists $upl_files{'ali_seq'} )
   {
-     print $q->p("Uploaded alignment files");
+     $msg .= $q->p("Uploaded alignment files");
      my @ali_cats = qw( ali_st ali_stse ali_seq );
      foreach my $ali_cat ( @ali_cats )
      {
@@ -1415,75 +1415,75 @@ sub str_seq
         {
            foreach my $filen ( keys %{ $upl_files{$ali_cat} } )
            {
-	      print $q->p( $filen );
+	      $msg .= $q->p( $filen );
            }   
         }
      }   
   }
   if ($upld_pseqs > 0) {
      if ($upld_pseqs == 1) {
-	print $q->p("$upld_pseqs pasted sequence uploaded");
+	$msg .= $q->p("$upld_pseqs pasted sequence uploaded");
      }
      else {
-	print $q->p("$upld_pseqs pasted sequences uploaded");
+	$msg .= $q->p("$upld_pseqs pasted sequences uploaded");
      }
   }
 # alignment type, ie progressive or tree, should be set in form_proc.pl
 # once it is clear how many segments there are
 # In advanced the user should only be able to do one 1Dchange and it will
 # set all 1D gap pens to that value
-  print	$q->hidden( -name => "align_type", -default => "automatic", -override => 1 ),
-        $q->hidden( -name => "1D_open_stst", -default => "-150", -override => 1 ),
-	$q->hidden( -name => "1D_elong_stst", -default => "-50", -override => 1 ),
-	$q->hidden( -name => "1D_open_stse", -default => "-100", -override => 1),
-	$q->hidden( -name => "1D_elong_stse", -default => "0", -override => 1),
-        $q->hidden( -name => "1D_open_sese", -default => "-450", -override => 1),
-	$q->hidden( -name => "1D_elong_sese", -default => "-50", -override => 1),
-        $q->hidden( -name => "1D_open_prof", -default => "-300", -override => 1),
-	$q->hidden( -name => "1D_elong_prof", -default => "0", -override => 1),
-	$q->hidden( -name => "2D_1", -default => "3.5", -override => 1),
-	$q->hidden( -name => "2D_2", -default => "3.5", -override => 1),
-	$q->hidden( -name => "2D_3", -default => "3.5", -override => 1),
-	$q->hidden( -name => "2D_4", -default => "0.2", -override => 1),
-	$q->hidden( -name => "2D_5", -default => "4.0", -override => 1),
-	$q->hidden( -name => "2D_6", -default => "6.5", -override => 1),
-	$q->hidden( -name => "2D_7", -default => "2.0", -override => 1),
-	$q->hidden( -name => "2D_8", -default => "0.0", -override => 1),
-	$q->hidden( -name => "2D_9", -default => "0", -override => 1),
-	$q->hidden( -name => "3D_open", -default => "0", -override => 1 ),
-	$q->hidden( -name => "3D_elong", -default => "2", -override => 1 ),
-	$q->hidden( -name => "fw_1", -default => "1", -override => 1 ),
-	$q->hidden( -name => "fw_2", -default => "1", -override => 1 ),
-	$q->hidden( -name => "fw_3", -default => "1", -override => 1 ),
-	$q->hidden( -name => "fw_4", -default => "1", -override => 1 ),
-	$q->hidden( -name => "fw_5", -default => "1", -override => 1 ),
-	$q->hidden( -name => "fw_6", -default => "0", -override => 1 ),
-	$q->hidden( -name => "max_gap", -default => "20", -override => 1 ),
-	$q->hidden( -name => "RMS_cutoff", -default => "3.5", -override => 1 ),
-	$q->hidden( -name => "overhangs", -default => "0", -override => 1 ),
-	$q->hidden( -name => "fit", -default => "True", -override => 1 ),
-	$q->hidden( -name => "improve", -default => "True", -override => 1 ),
-	$q->hidden( -name => "write_whole", -default => "False", -override => 1 ),
-	$q->hidden( -name => "gap-gap_score", -default => "0", -override => 1 ),
-	$q->hidden( -name => "gap-res_score", -default => "0", -override => 1 ),
-	$q->br,
-	$q->submit( -value => "Submit" ),
-	$q->reset(),
-	$q->br,
+  $msg .=	$q->hidden( -name => "align_type", -default => "automatic", -override => 1 ).
+        $q->hidden( -name => "1D_open_stst", -default => "-150", -override => 1 ).
+	$q->hidden( -name => "1D_elong_stst", -default => "-50", -override => 1 ).
+	$q->hidden( -name => "1D_open_stse", -default => "-100", -override => 1).
+	$q->hidden( -name => "1D_elong_stse", -default => "0", -override => 1).
+        $q->hidden( -name => "1D_open_sese", -default => "-450", -override => 1).
+	$q->hidden( -name => "1D_elong_sese", -default => "-50", -override => 1).
+        $q->hidden( -name => "1D_open_prof", -default => "-300", -override => 1).
+	$q->hidden( -name => "1D_elong_prof", -default => "0", -override => 1).
+	$q->hidden( -name => "2D_1", -default => "3.5", -override => 1).
+	$q->hidden( -name => "2D_2", -default => "3.5", -override => 1).
+	$q->hidden( -name => "2D_3", -default => "3.5", -override => 1).
+	$q->hidden( -name => "2D_4", -default => "0.2", -override => 1).
+	$q->hidden( -name => "2D_5", -default => "4.0", -override => 1).
+	$q->hidden( -name => "2D_6", -default => "6.5", -override => 1).
+	$q->hidden( -name => "2D_7", -default => "2.0", -override => 1).
+	$q->hidden( -name => "2D_8", -default => "0.0", -override => 1).
+	$q->hidden( -name => "2D_9", -default => "0", -override => 1).
+	$q->hidden( -name => "3D_open", -default => "0", -override => 1 ).
+	$q->hidden( -name => "3D_elong", -default => "2", -override => 1 ).
+	$q->hidden( -name => "fw_1", -default => "1", -override => 1 ).
+	$q->hidden( -name => "fw_2", -default => "1", -override => 1 ).
+	$q->hidden( -name => "fw_3", -default => "1", -override => 1 ).
+	$q->hidden( -name => "fw_4", -default => "1", -override => 1 ).
+	$q->hidden( -name => "fw_5", -default => "1", -override => 1 ).
+	$q->hidden( -name => "fw_6", -default => "0", -override => 1 ).
+	$q->hidden( -name => "max_gap", -default => "20", -override => 1 ).
+	$q->hidden( -name => "RMS_cutoff", -default => "3.5", -override => 1 ).
+	$q->hidden( -name => "overhangs", -default => "0", -override => 1 ).
+	$q->hidden( -name => "fit", -default => "True", -override => 1 ).
+	$q->hidden( -name => "improve", -default => "True", -override => 1 ).
+	$q->hidden( -name => "write_whole", -default => "False", -override => 1 ).
+	$q->hidden( -name => "gap-gap_score", -default => "0", -override => 1 ).
+	$q->hidden( -name => "gap-res_score", -default => "0", -override => 1 ).
+	$q->br.
+	$q->submit( -value => "Submit" ).
+	$q->reset().
+	$q->br.
 	$q->end_form();
 	
   # create form to call advanced view
-  print $q->start_form( -method => "get" ),
-        $q->hidden( -name => "caller", -default => "str-seq", -override => 1 ),
-	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1),
-	$q->hidden( -name => "job_name", -default => $job_name, -override => 1),
+  $msg .= $q->start_form( -method => "get" ).
+        $q->hidden( -name => "caller", -default => "str-seq", -override => 1 ).
+	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1).
+	$q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1);
   # pass default structure segments
   if ( exists $upl_files{'str'} )
   {
      foreach my $filen ( keys %{ $upl_files{'str'} } )
      {
-        print $q->hidden( 
+        $msg .= $q->hidden( 
 	        -name => "uplsegm_$filen", 
 		-default => 'FIRST:@:LAST:@',
 		-override => 1
@@ -1496,7 +1496,7 @@ sub str_seq
      {
         # Get default segments
         my $default = join "\n", @{ $upl_files{'used_str'}{$filen} };
-        print $q->hidden( 
+        $msg .= $q->hidden( 
                 -name => "uplsegm_$filen",
 	        -default => $default,
 		-override => 1
@@ -1512,7 +1512,7 @@ sub str_seq
 	{
 	   if ( exists $lib_PDBs{'ali'}{$pdb} ) { next; }
         }
-        print $q->hidden(
+        $msg .= $q->hidden(
                 -name => "libsegm_$pdb", 
 	        -default => 'FIRST:@:LAST:@',
          	-override => 1
@@ -1525,7 +1525,7 @@ sub str_seq
      {
         # Get default segments
         my $default = join "\n", @{ $lib_PDBs{'ali'}{$pdb} };
-        print $q->hidden( 
+        $msg .= $q->hidden( 
 	        -name => "libsegm_$pdb",
 	        -default => $default,
 	        -override => 1
@@ -1546,13 +1546,13 @@ sub str_seq
      }
   }   
   $ali_files =~ s/\s$//;
-  print $q->hidden( -name => "ali_files", -default => $ali_files, -override => 1 );
-  print $q->submit( -name => "state", -value => "Advanced" ),
+  $msg .= $q->hidden( -name => "ali_files", -default => $ali_files, -override => 1 );
+  $msg .= $q->submit( -name => "state", -value => "Advanced" ).
 	$q->end_form();
 
-  print "</td></tr>\n";
-  print "</table></div>\n";
-  print_footer($q);	
+  $msg .= "</td></tr>\n";
+  $msg .= "</table></div>\n";
+  return $msg;
 }
 
 
@@ -1573,76 +1573,75 @@ sub twostep_sese
   my %upl_files = %$upl_files_ref;
   my %lib_PDBs = %$lib_PDBs_ref;
   
-  start($q);
-  print	$q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ),
-	$q->hidden( -name => "tool", -default => "2s_sese", -override => 1),
-        $q->hidden( -name => "job_name", -default => $job_name, -override => 1),
-	$q->hidden( -name => "email", -default => $email, -override => 1),
+  my $msg = $q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+	$q->hidden( -name => "tool", -default => "2s_sese", -override => 1).
+        $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
+	$q->hidden( -name => "email", -default => $email, -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1);
 
-  print_cont1_category_choice ($q, "Sequence-sequence alignment");
-  print "Step 1: The two sets of sequences will be multiply aligned independently.<br />";
-  print "Step 2: The resulting alignments from step 1 will be aligned to each other.<br /><br />";
+  $msg .= print_cont1_category_choice ($q, "Sequence-sequence alignment");
+  $msg .= "Step 1: The two sets of sequences will be multiply aligned independently.<br />";
+  $msg .= "Step 2: The resulting alignments from step 1 will be aligned to each other.<br /><br />";
 
   # Show uploaded ali files and no of pasted seqs
-  print $q->p("Uploaded alignment files");
+  $msg .= $q->p("Uploaded alignment files");
   if ( exists $upl_files{'ali_stse'} )
   {
      foreach my $filen ( keys %{ $upl_files{'ali_stse'} } )
      {
-        print $q->p( $filen );
+        $msg .= $q->p( $filen );
      }   
   }
   if ( exists $upl_files{'ali_seq'} )
   {
      foreach my $filen ( keys %{ $upl_files{'ali_seq'} } )
      {
-	print $q->p( $filen );
+	$msg .= $q->p( $filen );
      }   
   }
   if ($upld_pseqs > 0)
   {
      if ($upld_pseqs == 1)
      {
-	print $q->p("$upld_pseqs pasted sequence uploaded");
+	$msg .= $q->p("$upld_pseqs pasted sequence uploaded");
      }
      else
      {
-	print $q->p("$upld_pseqs pasted sequences uploaded");
+	$msg .= $q->p("$upld_pseqs pasted sequences uploaded");
      }
   }
-  print	$q->hidden( -name => "align_type", -default => "automatic",
-          -override => 1 ),
+  $msg .=	$q->hidden( -name => "align_type", -default => "automatic",
+          -override => 1 ).
         $q->hidden( -name => "1D_open_sese", -default => "-450",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "1D_elong_sese", -default => "-50",
-	  -override => 1 ),
+	  -override => 1 ).
         $q->hidden( -name => "1D_open_prof", -default => "-300",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "1D_elong_prof", -default => "0",
-	  -override => 1),
+	  -override => 1).
 	$q->hidden( -name => "overhangs", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "improve", -default => "True",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "gap-gap_score", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "gap-res_score", -default => "0",
-	  -override => 1 ),
-	$q->br,
-	$q->submit( -value => "Submit" ),
-	$q->reset(),
-	$q->br,
+	  -override => 1 ).
+	$q->br.
+	$q->submit( -value => "Submit" ).
+	$q->reset().
+	$q->br.
 	$q->end_form();
 	
   # create form to call advanced view
-  print $q->start_form( -method => "get" ),
+  $msg .= $q->start_form( -method => "get" ).
 	$q->hidden( -name => "caller", -default => "2s_sese",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "job_name", -default => $job_name,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "email", -default => $email,
           -override => 1);
   my $structures = 0;	  
@@ -1653,7 +1652,7 @@ sub twostep_sese
      {
         # Get default segments
         my $default = join "\n", @{ $upl_files{'used_str'}{$filen} };
-        print $q->hidden( 
+        $msg .= $q->hidden( 
                 -name => "uplsegm_$filen",
 	        -default => $default,
 		-override => 1
@@ -1667,7 +1666,7 @@ sub twostep_sese
      {
         # Get default segments
         my $default = join "\n", @{ $lib_PDBs{'ali'}{$pdb} };
-        print $q->hidden( 
+        $msg .= $q->hidden( 
 	        -name => "libsegm_$pdb",
 	        -default => $default,
 	        -override => 1
@@ -1689,15 +1688,15 @@ sub twostep_sese
      }
   }   
   $ali_files =~ s/\s$//;
-  print $q->hidden( -name => "ali_files", -default => $ali_files,
-          -override => 1 ),
+  $msg .= $q->hidden( -name => "ali_files", -default => $ali_files,
+          -override => 1 ).
 	$q->hidden( -name => "structures", -default => $structures,
-	  -override => 1 ),
-        $q->submit( -name => "state", -value => "Advanced" ),
+	  -override => 1 ).
+        $q->submit( -name => "state", -value => "Advanced" ).
 	$q->end_form();
 
-  print "</div>\n";
-  print_footer($q);	
+  $msg .= "</div>\n";
+  return $msg;
 }
 
 # generate default 1-step sequence-sequence alignment form page
@@ -1713,65 +1712,64 @@ sub onestep_sese
   my $job_name = shift;
   my %upl_files = %$upl_files_ref;
 
-  start($q);
-  print	$q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ),
-	$q->hidden( -name => "tool", -default => "1s_sese", -override => 1),
-        $q->hidden( -name => "job_name", -default => $job_name, -override => 1),
-	$q->hidden( -name => "email", -default => $email, -override => 1),
+  my $msg =$q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+	$q->hidden( -name => "tool", -default => "1s_sese", -override => 1).
+        $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
+	$q->hidden( -name => "email", -default => $email, -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1);
 
-  print_cont1_category_choice ($q, "Sequence-sequence alignment");
-  print "All uploaded sequences will be multiply aligned.<br /><br />";
+  $msg .= print_cont1_category_choice ($q, "Sequence-sequence alignment");
+  $msg .= "All uploaded sequences will be multiply aligned.<br /><br />";
 
   # Show uploaded ali files and no of pasted seqs
   if ( exists $upl_files{'ali_seq'} )
   {
-     print $q->p("Uploaded alignment files");
+     $msg .= $q->p("Uploaded alignment files");
      foreach my $filen ( keys %{ $upl_files{'ali_seq'} } )
      {
-	print $q->p( $filen );
+	$msg .= $q->p( $filen );
      }   
   }
   if ($upld_pseqs > 0)
   {
      if ($upld_pseqs == 1)
      {
-	print $q->p("$upld_pseqs pasted sequence uploaded");
+	$msg .= $q->p("$upld_pseqs pasted sequence uploaded");
      }
      else
      {
-	print $q->p("$upld_pseqs pasted sequences uploaded");
+	$msg .= $q->p("$upld_pseqs pasted sequences uploaded");
      }
   }
-  print	$q->hidden( -name => "align_type", -default => "automatic",
-          -override => 1 ),
+  $msg .=	$q->hidden( -name => "align_type", -default => "automatic",
+          -override => 1 ).
         $q->hidden( -name => "1D_open_sese", -default => "-450",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "1D_elong_sese", -default => "-50",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "overhangs", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "improve", -default => "True",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "gap-gap_score", -default => "0",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "gap-res_score", -default => "0",
-	  -override => 1 ),
-	$q->br,
-	$q->submit( -value => "Submit" ),
-	$q->reset(),
-	$q->br,
+	  -override => 1 ).
+	$q->br.
+	$q->submit( -value => "Submit" ).
+	$q->reset().
+	$q->br.
 	$q->end_form();
 	
-  print $q->start_form( -method => "get" ),
+  $msg .= $q->start_form( -method => "get" ).
 	$q->hidden( -name => "caller", -default => "1s_sese",
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "structures", -default => 0,
-	  -override => 1 ),
+	  -override => 1 ).
 	$q->hidden( -name => "job_name", -default => $job_name,
-          -override => 1),
+          -override => 1).
 	$q->hidden( -name => "email", -default => $email,
           -override => 1);
   # pass uploaded ali files 
@@ -1785,13 +1783,13 @@ sub onestep_sese
      }   
   }
   $ali_files =~ s/\s$//;
-  print $q->hidden( -name => "ali_files", -default => $ali_files,
+  $msg .= $q->hidden( -name => "ali_files", -default => $ali_files,
           -override => 1 ),
         $q->submit( -name => "state", -value => "Advanced" ),
 	$q->end_form();
 
-  print "</div>\n";
-  print_footer($q);	
+  $msg .= "</div>\n";
+  return $msg;
 }
 
 # generate advanced structure-structure alignment form page
@@ -1806,30 +1804,28 @@ sub adv_stst
      $params{$param_name} = $q->param($param_name);
   }
  
-  start($q);
-
-  print	$q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ),
- 	$q->hidden( -name => "tool", -default => "str_str_adv", -override => 1),
-        $q->hidden( -name => "job_name", -default => $job_name, -override => 1),
+  my $msg =	$q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+ 	$q->hidden( -name => "tool", -default => "str_str_adv", -override => 1).
+        $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1);
 
-  print_cont1_advance_option ($q);
-  print "Depending on the choice of the alignment category, some options may have no effect.\n";
+  $msg .= print_cont1_advance_option ($q);
+  $msg .= "Depending on the choice of the alignment category, some options may have no effect.\n";
 
-  print "<table>\n";
-  print_advance_alignment_category ($q); 
-  print_alignment_type ($q);
-  print_advance_pdb_segments ($q, \%params); 
-  print_advance_penalties ($q);
-  print_advance_weight ($q);
-  print_advance_rms ($q);
-  print_advance_gap ($q, 1);
-  print_advance_fit ($q);
-  print_advance_improve ($q);
-  print_advance_write_pdb ($q, 1);
-  print_advance_submit ($q);
-  print "</table></div>\n";
-  print_footer($q);	
+  $msg .= "<table>\n"
+  . print_advance_alignment_category ($q)
+  . print_alignment_type ($q)
+  . print_advance_pdb_segments ($q, \%params)
+  . print_advance_penalties ($q)
+  . print_advance_weight ($q)
+  . print_advance_rms ($q)
+  . print_advance_gap ($q, 1)
+  . print_advance_fit ($q)
+  . print_advance_improve ($q)
+  . print_advance_write_pdb ($q, 1)
+  . print_advance_submit ($q);
+  $msg .= "</table></div>\n";
+  return $msg;
 }
 
 
@@ -1845,32 +1841,30 @@ sub adv_stse
   }
   my $upld_pseqs = $params{'upld_pseqs'};
   
-  start($q);
-
-  print	$q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ),
- 	$q->hidden( -name => "tool", -default => "str_seq_adv", -override => 1),
-        $q->hidden( -name => "job_name", -default => $job_name, -override => 1),
-	$q->hidden( -name => "email", -default => $email, -override => 1),
+  my $msg = $q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+ 	$q->hidden( -name => "tool", -default => "str_seq_adv", -override => 1).
+        $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
+	$q->hidden( -name => "email", -default => $email, -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1);
 
-  print_cont1_advance_option ($q);
-  print "Depending on the choice of the alignment category, some options may have no effect.\n";
+  $msg .= print_cont1_advance_option ($q);
+  $msg .= "Depending on the choice of the alignment category, some options may have no effect.\n";
 
-  print "<table>\n";
-  print_advance_alignment_category_2 ($q); 
-  print_alignment_type ($q);
-  print_advance_pdb_segments ($q, \%params); 
-  print_advance_uploaded_ali ($q, \%params); 
-  print_advance_penalties_2a ($q);
-  print_advance_weight ($q);
-  print_advance_rms ($q);
-  print_advance_gap ($q, 1);
-  print_advance_fit ($q);
-  print_advance_improve ($q);
-  print_advance_write_pdb ($q, 0);
-  print_advance_submit ($q);
-  print "</table></div>\n";
-  print_footer($q);	
+  $msg .= "<table>\n"
+  . print_advance_alignment_category_2 ($q)
+  . print_alignment_type ($q)
+  . print_advance_pdb_segments ($q, \%params)
+  . print_advance_uploaded_ali ($q, \%params)
+  . print_advance_penalties_2a ($q)
+  . print_advance_weight ($q)
+  . print_advance_rms ($q)
+  . print_advance_gap ($q, 1)
+  . print_advance_fit ($q)
+  . print_advance_improve ($q)
+  . print_advance_write_pdb ($q, 0)
+  . print_advance_submit ($q)
+  . "</table></div>\n";
+  return $msg;
 }
   
 
@@ -1889,53 +1883,50 @@ sub adv_sese
   my $upld_pseqs = $params{'upld_pseqs'};
   my $structures = $params{'structures'};
 
-  start($q);
-
-  print	$q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ),
- 	$q->hidden( -name => "tool", -default => "sese_adv", -override => 1),
-        $q->hidden( -name => "job_name", -default => $job_name, -override => 1),
-	$q->hidden( -name => "email", -default => $email, -override => 1),
-	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1),
+  my $msg = $q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+ 	$q->hidden( -name => "tool", -default => "sese_adv", -override => 1).
+        $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
+	$q->hidden( -name => "email", -default => $email, -override => 1).
+	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1).
 	$q->hidden( -name => "structures", -default => $structures, -override => 1);
 
-  print_cont1_advance_option ($q);
+  $msg .= print_cont1_advance_option ($q);
   if ( $params{'caller'} eq '2s_sese' ) {
-     print "Depending on the choice of the alignment category, some options may have no effect.\n";
+     $msg .= "Depending on the choice of the alignment category, some options may have no effect.\n";
   }
 
-  print "<table>\n";
+  $msg .= "<table>\n";
   if ( $params{'caller'} eq '2s_sese' ) {
-     print_advance_alignment_category_3 ($q, $structures); 
+     $msg .= print_advance_alignment_category_3 ($q, $structures); 
 
      if ( $structures == 1 ) {
-  	print_advance_pdb_segments ($q, \%params); 
+  	$msg .= print_advance_pdb_segments ($q, \%params); 
      }
   }  
   else #called from 1step seq seq
   {
-     print $q->hidden( -name => "sa_feature", -default => "1s_sese", -override => 1 );
+     $msg .= $q->hidden( -name => "sa_feature", -default => "1s_sese", -override => 1 );
   }
 
   # Present uploaded ali files and no of pasted seqs
-  print_advance_uploaded_ali ($q, \%params); 
-  print_alignment_type ($q);
+  $msg .= print_advance_uploaded_ali ($q, \%params)
+          . print_alignment_type ($q);
 
   if ( $structures == 1 ) {
-     print_advance_penalties_2b ($q);
-     print_advance_weight ($q);
-     print_advance_rms ($q);
-     print_advance_gap ($q, 1);
-     print_advance_fit ($q);
-     print_advance_write_pdb ($q, 1);
+     $msg .= print_advance_penalties_2b ($q)
+     . print_advance_weight ($q)
+     . print_advance_rms ($q)
+     . print_advance_gap ($q, 1)
+     . print_advance_fit ($q)
+     . print_advance_write_pdb ($q, 1);
   }
   else {
-     print_advance_penalties_3 ($q);
-     print_advance_gap ($q, 0);
+     $msg .= print_advance_penalties_3 ($q)
+             . print_advance_gap ($q, 0);
   }
-  print_advance_improve ($q);
-  print_advance_submit ($q);
-  print "</table></div>\n";
-  print_footer($q);	
+  $msg .= print_advance_improve ($q) . print_advance_submit ($q)
+          . "</table></div>\n";
+  return $msg;
 }
   
 sub make_size_nice
@@ -2205,7 +2196,7 @@ sub print_advance_gap {
 		$q->td($q->textfield( -name => "overhangs", -default => "0", -size => "5"),
 		$q->br, $q->br));
 
-  print	$q->Tr($q->td("Gap-gap score", help_link_2($q, "gap_gap_score"), $q->br),
+  $msg .=	$q->Tr($q->td("Gap-gap score", help_link_2($q, "gap_gap_score"), $q->br),
 		$q->td($q->textfield( -name => "gap-gap_score", -default => "0", -size => "5"),
 		$q->br, $q->br));
 
