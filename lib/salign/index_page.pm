@@ -2461,10 +2461,11 @@ sub print_pdb_segments {
 
 sub print_body1a_intro {
     my ($self, $q) = @_;
+    my $ind = $self->index_url;
 	return <<BODY1a;
         <div id="resulttable">
 		<h2 align="left">SALIGN: A multiple protein sequence/structure alignment server.</h2>
-		<form method="post" action="$self->index_url" enctype="multipart/form-data">
+		<form method="post" action="$ind" enctype="multipart/form-data">
 	<table>
 		<tr><td colspan="2"><p>
 				SALIGN is a general alignment module of the modeling program 
