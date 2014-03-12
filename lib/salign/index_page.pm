@@ -59,22 +59,22 @@ sub main
   }
   elsif ( $cur_state eq "Continue" )
   {
-     return customizer($q,$job_name,$upld_pseqs,$email,$pdb_id);
+     return customizer($self, $q,$job_name,$upld_pseqs,$email,$pdb_id);
   }
   elsif ( $cur_state eq "Advanced" )
   {
      my $caller = $q->param('caller');
      if ( $caller eq 'str-str' )
      {
-        return adv_stst($q,$job_name,$email);
+        return adv_stst($self, $q,$job_name,$email);
      }
      elsif ( $caller eq 'str-seq' )
      {
-        return adv_stse($q,$job_name,$email);
+        return adv_stse($self, $q,$job_name,$email);
      }
      elsif ( $caller eq '2s_sese' || $caller eq '1s_sese' )
      {
-        return adv_sese($q,$job_name,$email);
+        return adv_sese($self, $q,$job_name,$email);
      }
      else { error($q,"Caller $caller for advanced view does not exist"); }
   }
@@ -274,6 +274,7 @@ sub upload_main
 # and display appropriate page.
 sub customizer
 {
+  my $self = shift;
   my $q = shift;
   my $job_name = shift;
   my $upld_pseqs = shift;
@@ -437,19 +438,19 @@ sub customizer
 
   if ( $choice eq 'str-str' )
   {
-     $msg .= str_str($q,$email,\%upl_files,\%lib_PDBs,$job_name);
+     $msg .= str_str($self, $q,$email,\%upl_files,\%lib_PDBs,$job_name);
   }
   elsif ( $choice eq 'str-seq' )
   {
-     $msg .= str_seq($q,$email,\%upl_files,\%lib_PDBs,$upld_pseqs,$job_name);
+     $msg .= str_seq($self, $q,$email,\%upl_files,\%lib_PDBs,$upld_pseqs,$job_name);
   }
   elsif ( $choice eq '2s_seq-seq' )
   {
-     $msg .= twostep_sese($q,$email,\%upl_files,$upld_pseqs,$job_name,\%lib_PDBs);
+     $msg .= twostep_sese($self, $q,$email,\%upl_files,$upld_pseqs,$job_name,\%lib_PDBs);
   }
   elsif ( $choice eq '1s_seq-seq' )
   {
-     $msg .= onestep_sese($q,$email,\%upl_files,$upld_pseqs,$job_name);
+     $msg .= onestep_sese($self,$q,$email,\%upl_files,$upld_pseqs,$job_name);
   }
   return $msg;
 }
@@ -1248,6 +1249,7 @@ sub chk_alistrs
 # 2-30 segments => tree, >30 segments => progressive
 sub str_str
 {
+  my $self = shift;
   my $q = shift;
   my $email = shift;
   my $upl_files_ref = shift;
@@ -1256,7 +1258,7 @@ sub str_str
   my %upl_files = %$upl_files_ref;
   my %lib_PDBs = %$lib_PDBs_ref;
   
-  my $msg =	$q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+  my $msg =	$q->start_form( -method => "post", -action => $self->submit_url ).
  	$q->hidden( -name => "tool", -default => "str_str", -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1);
@@ -1377,6 +1379,7 @@ sub str_str
 #         else str-seq
 sub str_seq
 {
+  my $self = shift;
   my $q = shift;
   my $email = shift;
   my $upl_files_ref = shift;
@@ -1387,7 +1390,7 @@ sub str_seq
   my %lib_PDBs = %$lib_PDBs_ref;
   
 # Start html
-  my $msg = $q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+  my $msg = $q->start_form( -method => "post", -action => $self->submit_url ).
 	$q->hidden( -name => "tool", -default => "str_seq", -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1).
@@ -1564,6 +1567,7 @@ sub str_seq
 # no of seqs: 2-30 => tree, 31-500 => progressive, >500 => no realignment
 sub twostep_sese
 {
+  my $self = shift;
   my $q = shift;
   my $email = shift;
   my $upl_files_ref = shift;
@@ -1573,7 +1577,7 @@ sub twostep_sese
   my %upl_files = %$upl_files_ref;
   my %lib_PDBs = %$lib_PDBs_ref;
   
-  my $msg = $q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+  my $msg = $q->start_form( -method => "post", -action => $self->submit_url ).
 	$q->hidden( -name => "tool", -default => "2s_sese", -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1).
@@ -1705,6 +1709,7 @@ sub twostep_sese
 # no of seqs: 2-30 => tree, >30 => progressive
 sub onestep_sese
 {
+  my $self = shift;
   my $q = shift;
   my $email = shift;
   my $upl_files_ref = shift;
@@ -1712,7 +1717,7 @@ sub onestep_sese
   my $job_name = shift;
   my %upl_files = %$upl_files_ref;
 
-  my $msg =$q->start_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+  my $msg =$q->start_form( -method => "post", -action => $self->submit_url ).
 	$q->hidden( -name => "tool", -default => "1s_sese", -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1).
@@ -1795,6 +1800,7 @@ sub onestep_sese
 # generate advanced structure-structure alignment form page
 sub adv_stst
 {
+  my $self = shift;
   my $q = shift;
   my $job_name = shift;
   my $email = shift;
@@ -1804,7 +1810,7 @@ sub adv_stst
      $params{$param_name} = $q->param($param_name);
   }
  
-  my $msg =	$q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+  my $msg =	$q->start_multipart_form( -method => "post", -action => $self->submit_url ).
  	$q->hidden( -name => "tool", -default => "str_str_adv", -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1);
@@ -1832,6 +1838,7 @@ sub adv_stst
 # generate advanced structure-sequence alignment form page
 sub adv_stse
 {
+  my $self = shift;
   my $q = shift;
   my $job_name = shift;
   my $email = shift;
@@ -1841,7 +1848,7 @@ sub adv_stse
   }
   my $upld_pseqs = $params{'upld_pseqs'};
   
-  my $msg = $q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+  my $msg = $q->start_multipart_form( -method => "post", -action => $self->submit_url ).
  	$q->hidden( -name => "tool", -default => "str_seq_adv", -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1).
@@ -1871,6 +1878,7 @@ sub adv_stse
 # generate advanced sequence-sequence alignment form page
 sub adv_sese
 {
+  my $self = shift;
   my $q = shift;
   my $job_name = shift;
   my $email = shift;
@@ -1883,7 +1891,7 @@ sub adv_sese
   my $upld_pseqs = $params{'upld_pseqs'};
   my $structures = $params{'structures'};
 
-  my $msg = $q->start_multipart_form( -method => "post", -action => "/salign-cgi/form_proc.cgi" ).
+  my $msg = $q->start_multipart_form( -method => "post", -action => $self->submit_url ).
  	$q->hidden( -name => "tool", -default => "sese_adv", -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1).
