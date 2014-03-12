@@ -51,11 +51,11 @@ sub main
   # start requested option
   if ( $cur_state eq "home" ) 
   { 
-     return home($q,$job_name,$upld_pseqs,$email,$pdb_id);
+     return home($self, $q,$job_name,$upld_pseqs,$email,$pdb_id);
   }
   elsif ( $cur_state eq "Upload" )
   {
-     return upload_main($q,$job_name,$upld_pseqs,$email,$pdb_id);
+     return upload_main($self, $q,$job_name,$upld_pseqs,$email,$pdb_id);
   }
   elsif ( $cur_state eq "Continue" )
   {
@@ -85,6 +85,7 @@ sub main
 # Note that reset will only work first time since defaults change
 sub home
 {
+  my $self = shift; 
   my $q = shift; 
   my $job_name = shift;
   my $upld_pseqs = shift;
@@ -100,7 +101,7 @@ sub home
   else {error($q,"Can't untaint todo directory");}
 
   # Start html
-  my $msg = print_body1a_intro($q)
+  my $msg = print_body1a_intro($self, $q)
          .  print_body2_general_information($q, $email, $job_name)
          .  print_body3_input_alignment($q)
          .  print_body3a_sequence($q)
@@ -179,6 +180,7 @@ sub home
 # conformity, i suggest to use the customizer method in both places.
 sub upload_main
 {
+  my $self = shift;
   my $q = shift;
   my $job_name = shift;
   my $upld_pseqs = shift;
@@ -210,7 +212,7 @@ sub upload_main
   my $paste_seq = $q->param('paste_seq'); 
   if ( $upl_file eq "" && $paste_seq eq "" )
   {
-     $msg .= home($q,$job_name,$upld_pseqs,$email,$pdb_id);
+     $msg .= home($self, $q,$job_name,$upld_pseqs,$email,$pdb_id);
   }   
   else
   {
@@ -264,7 +266,7 @@ sub upload_main
 	save_paste($job_dir,$paste_seq,$upld_pseqs);
 	$upld_pseqs++;
      }
-     $msg .= home($q,$job_name,$upld_pseqs,$email,$pdb_id);
+     $msg .= home($self, $q,$job_name,$upld_pseqs,$email,$pdb_id);
   }
   return $msg;
 }
@@ -2458,10 +2460,11 @@ sub print_pdb_segments {
 }
 
 sub print_body1a_intro {
+    my ($self, $q) = @_;
 	return <<BODY1a;
         <div id="resulttable">
 		<h2 align="left">SALIGN: A multiple protein sequence/structure alignment server.</h2>
-		<form method="post" action="./index.cgi" enctype="multipart/form-data">
+		<form method="post" action="$self->index_url" enctype="multipart/form-data">
 	<table>
 		<tr><td colspan="2"><p>
 				SALIGN is a general alignment module of the modeling program 
