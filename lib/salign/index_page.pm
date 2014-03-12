@@ -51,30 +51,30 @@ sub main
   # start requested option
   if ( $cur_state eq "home" ) 
   { 
-     home($q,$job_name,$upld_pseqs,$email,$pdb_id);
+     return home($q,$job_name,$upld_pseqs,$email,$pdb_id);
   }
   elsif ( $cur_state eq "Upload" )
   {
-     upload_main($q,$job_name,$upld_pseqs,$email,$pdb_id);
+     return upload_main($q,$job_name,$upld_pseqs,$email,$pdb_id);
   }
   elsif ( $cur_state eq "Continue" )
   {
-     customizer($q,$job_name,$upld_pseqs,$email,$pdb_id);
+     return customizer($q,$job_name,$upld_pseqs,$email,$pdb_id);
   }
   elsif ( $cur_state eq "Advanced" )
   {
      my $caller = $q->param('caller');
      if ( $caller eq 'str-str' )
      {
-        adv_stst($q,$job_name,$email);
+        return adv_stst($q,$job_name,$email);
      }
      elsif ( $caller eq 'str-seq' )
      {
-        adv_stse($q,$job_name,$email);
+        return adv_stse($q,$job_name,$email);
      }
      elsif ( $caller eq '2s_sese' || $caller eq '1s_sese' )
      {
-        adv_sese($q,$job_name,$email);
+        return adv_sese($q,$job_name,$email);
      }
      else { error($q,"Caller $caller for advanced view does not exist"); }
   }
@@ -100,19 +100,18 @@ sub home
   else {error($q,"Can't untaint todo directory");}
 
   # Start html
-  start($q);
-  print_body1a_intro($q);
-  print_body2_general_information($q, $email, $job_name);
-  print_body3_input_alignment($q);
-  print_body3a_sequence($q);
-  print_body3b_file($q);
-  print_body3c_PDB_code($q);
+  my $msg = print_body1a_intro($q)
+         .  print_body2_general_information($q, $email, $job_name)
+         .  print_body3_input_alignment($q)
+         .  print_body3a_sequence($q)
+         .  print_body3b_file($q)
+         .  print_body3c_PDB_code($q);
 
-  print "<hr />Uploaded files: <br />";
+  $msg .=  "<hr />Uploaded files: <br />";
 
   if ($job_name eq "no_name")
   {
-     print $q->p("No files uploaded");
+     $msg .= $q->p("No files uploaded");
   }
   else
   {
@@ -143,14 +142,14 @@ sub home
      
      if ( $#file_names == -1 )
      {
-        print $q->p("No files uploaded");
+        $msg .= $q->p("No files uploaded");
      }
      else
      {
         foreach my $i ( 0 .. $#file_names )
 	{
 	   my $nice_size = make_size_nice($file_sizes[$i]);
-	   print $q->p("$file_names[$i],  $nice_size,  $file_times[$i]");
+	   $msg .= $q->p("$file_names[$i],  $nice_size,  $file_times[$i]");
 	}
      }
   } 
@@ -158,21 +157,21 @@ sub home
   {
      if ($upld_pseqs == 1)
      {
-        print $q->hr,
+        $msg .= $q->hr.
 	      $q->p("$upld_pseqs pasted sequence uploaded");
      }
      else
      {
-        print $q->hr,
+        $msg .= $q->hr.
 	      $q->p("$upld_pseqs pasted sequences uploaded");
      }
   }
 
 
-  print "<hr />";
+  $msg .= "<hr />";
 
-  print_body3d_continue($q, $job_name, $upld_pseqs);
-  print_footer($q);
+  $msg .= print_body3d_continue($q, $job_name, $upld_pseqs);
+  return $msg;
 }	
 
 # Main sub routine for upload option
@@ -1961,22 +1960,22 @@ sub make_size_nice
 sub print_cont1_category_choice {
 	my ($q, $cat_choice) = @_;
 
-print "<div id=\"left\"></div><div id=\"fullpart\">\n"; 
-print $q->h2("<br />Choice of alignment category",  help_link($q, "ali_cat_choice"),
+return "<div id=\"left\"></div><div id=\"fullpart\">\n"
+       . $q->h2("<br />Choice of alignment category",  help_link($q, "ali_cat_choice"),
 	     ": &nbsp;$cat_choice", $q->br, $q->hr);
 }
 
 sub print_cont1_advance_option {
 	my ($q) = @_;
 
-print "<div id=\"left\"></div><div id=\"fullpart\">\n"; 
-print $q->h2("<br />SALIGN Advanced Options",  help_link_2($q, ""), $q->br, $q->hr);
+return "<div id=\"left\"></div><div id=\"fullpart\">\n"
+      . $q->h2("<br />SALIGN Advanced Options",  help_link_2($q, ""), $q->br, $q->hr);
 }
 
 sub print_alignment_type {
   my $q = shift;
 
-  print	$q->Tr($q->td("Alignment type", help_link_2($q, "ali_type"), $q->br),
+  return	$q->Tr($q->td("Alignment type", help_link_2($q, "ali_type"), $q->br),
 		$q->td($q->radio_group(
 	  			-name    => "align_type",
 				-values  => [ "progressive","tree","automatic" ],
@@ -1990,7 +1989,7 @@ sub print_alignment_type {
 sub print_advance_alignment_category {
   my $q = shift;
 
-  print	$q->Tr($q->td("Alignment category", help_link($q, "ali_cat"), $q->br, $q->br),
+  return	$q->Tr($q->td("Alignment category", help_link($q, "ali_cat"), $q->br, $q->br),
 	$q->td($q->popup_menu(
 	  -name    => "sa_feature",
 	  -values  => [ "str_str", "1s_sese" ],
@@ -2002,7 +2001,7 @@ sub print_advance_alignment_category {
 sub print_advance_alignment_category_2 {
   my $q = shift;
 
-  print	$q->Tr($q->td("Alignment category", help_link($q, "ali_cat"), $q->br, $q->br),
+  return	$q->Tr($q->td("Alignment category", help_link($q, "ali_cat"), $q->br, $q->br),
 	$q->td($q->popup_menu(
 	  -name    => "sa_feature",
 	  -values  => [ "str_seq", "1s_sese" ],
@@ -2016,7 +2015,7 @@ sub print_advance_alignment_category_3 {
   my ($q, $structures) = @_;
 
   if ($structures == 1){
-    print $q->Tr($q->td("Alignment category", help_link($q, "ali_cat"), $q->br, $q->br),
+    return $q->Tr($q->td("Alignment category", help_link($q, "ali_cat"), $q->br, $q->br),
 		$q->td($q->popup_menu(
 		-name    => "sa_feature",
                 -values  => [ "2s_sese","str_seq","1s_sese" ],
@@ -2026,7 +2025,7 @@ sub print_advance_alignment_category_3 {
 		              "1s_sese" => "One step sequence-sequence alignment"  }
 		)));
   } else{
-    print $q->Tr($q->td("Alignment category", help_link($q, "ali_cat"), $q->br, $q->br),
+    return $q->Tr($q->td("Alignment category", help_link($q, "ali_cat"), $q->br, $q->br),
 		$q->td($q->popup_menu(
 		-name    => "sa_feature",
                 -values  => [ "2s_sese","1s_sese" ],
@@ -2040,7 +2039,7 @@ sub print_advance_alignment_category_3 {
 sub print_advance_penalties {
   my $q = shift;
 
-  print	$q->Tr($q->td("1D gap penalties", help_link($q, "1D_gap_pen"), $q->br),
+  return $q->Tr($q->td("1D gap penalties", help_link($q, "1D_gap_pen"), $q->br),
 		$q->td($q->i("Opening: "),
 		$q->textfield( -name => "1D_open_usr", -default => "Default", -size => "10" ),
 		$q->i("&nbsp Extension: "),
@@ -2049,9 +2048,9 @@ sub print_advance_penalties {
 		$q->hidden( -name => "1D_elong_stst", -default => "-50", -override => 1 ),
 		$q->hidden( -name => "1D_open_sese", -default => "-450", -override => 1),
 		$q->hidden( -name => "1D_elong_sese", -default => "-50", -override => 1),
-		$q->br));
+		$q->br)).
 
-  print	$q->Tr($q->td("3D gap penalties", help_link_2($q, "3D_gap_pen"), $q->br),
+        $q->Tr($q->td("3D gap penalties", help_link_2($q, "3D_gap_pen"), $q->br),
 		$q->td($q->i("Opening: "),
 		$q->textfield( -name => "3D_open", -default => "0", -size => "10" ),
 		$q->i("&nbsp Extension: "),
@@ -2062,16 +2061,15 @@ sub print_advance_penalties {
 		$q->hidden( -name => "fw_4", -default => "1", -override => 1 ),
 		$q->hidden( -name => "fw_5", -default => "1", -override => 1 ),
 		$q->hidden( -name => "fw_6", -default => "0", -override => 1 ),
-		$q->br, $q->br);
-
-  print $q->Tr($q->td("&nbsp;"));
+		$q->br, $q->br).
+        $q->Tr($q->td("&nbsp;"));
 }
 
 
 sub print_advance_penalties_3 {
   my $q = shift;
 
-  print	$q->Tr($q->td("1D gap penalties", help_link($q, "1D_gap_pen"), $q->br),
+  return	$q->Tr($q->td("1D gap penalties", help_link($q, "1D_gap_pen"), $q->br),
 		$q->td($q->i("Opening: "),
 		$q->textfield( -name => "1D_open_usr", -default => "Default", -size => "10" ),
 		$q->i("&nbsp Extension: "),
@@ -2086,9 +2084,8 @@ sub print_advance_penalties_3 {
 sub print_advance_penalties_2a {
   my $q = shift;
 
-  print_advance_penalties_2 ($q);
-
-  print	$q->Tr($q->td("3D gap penalties", help_link_2($q, "3D_gap_pen"), $q->br),
+  return print_advance_penalties_2 ($q) .
+        $q->Tr($q->td("3D gap penalties", help_link_2($q, "3D_gap_pen"), $q->br),
 		$q->td($q->i("Opening: "),
 		$q->textfield( -name => "3D_open", -default => "0", -size => "10" ),
 		$q->i("&nbsp Extension: "),
@@ -2099,17 +2096,15 @@ sub print_advance_penalties_2a {
 		$q->hidden( -name => "fw_4", -default => "1", -override => 1 ),
 		$q->hidden( -name => "fw_5", -default => "1", -override => 1 ),
 		$q->hidden( -name => "fw_6", -default => "0", -override => 1 ),
-		$q->br, $q->br);
-
-  print $q->Tr($q->td("&nbsp;"));
+		$q->br, $q->br) .
+        $q->Tr($q->td("&nbsp;"));
 }
 
 sub print_advance_penalties_2b {
   my $q = shift;
 
-  print_advance_penalties_2 ($q);
-
-  print	$q->Tr($q->td("3D gap penalties", help_link_2($q, "3D_gap_pen"), $q->br),
+  return print_advance_penalties_2 ($q).
+        $q->Tr($q->td("3D gap penalties", help_link_2($q, "3D_gap_pen"), $q->br),
 		$q->td($q->i("Opening: "),
 		$q->textfield( -name => "3D_open", -default => "0", -size => "10" ),
 		$q->i("&nbsp Extension: "),
@@ -2120,15 +2115,14 @@ sub print_advance_penalties_2b {
 		$q->hidden( -name => "fw_4", -default => "0", -override => 1 ),
 		$q->hidden( -name => "fw_5", -default => "0", -override => 1 ),
 		$q->hidden( -name => "fw_6", -default => "0", -override => 1 ),
-		$q->br, $q->br);
-
-  print $q->Tr($q->td("&nbsp;"));
+		$q->br, $q->br).
+         $q->Tr($q->td("&nbsp;"));
 }
 
 sub print_advance_penalties_2 {
   my $q = shift;
 
-  print	$q->Tr($q->td("1D gap penalties", help_link($q, "1D_gap_pen"), $q->br),
+  return	$q->Tr($q->td("1D gap penalties", help_link($q, "1D_gap_pen"), $q->br),
 		$q->td($q->i("Opening: "),
 		$q->textfield( -name => "1D_open_usr", -default => "Default", -size => "10" ),
 		$q->i("&nbsp Extension: "),
@@ -2141,9 +2135,8 @@ sub print_advance_penalties_2 {
 		$q->hidden( -name => "1D_elong_sese", -default => "-50", -override => 1),
 		$q->hidden( -name => "1D_open_prof", -default => "-300", -override => 1),
 		$q->hidden( -name => "1D_elong_prof", -default => "0", -override => 1),
-		$q->br, $q->br));
-
-  print	$q->Tr($q->td("<br />2D gap penalties", help_link_2($q, "2D_gap_pen"), $q->br),
+		$q->br, $q->br)).
+  	$q->Tr($q->td("<br />2D gap penalties", help_link_2($q, "2D_gap_pen"), $q->br),
 		$q->td(
 		$q->table($q->Tr(
 		$q->td($q->i("Helicity: "),
@@ -2177,7 +2170,7 @@ sub print_advance_penalties_2 {
 sub print_advance_weight {
   my $q = shift;
 
-  print	$q->Tr($q->td("External weight matrix", help_link_2($q, "wt_mtx"), $q->br),
+  return	$q->Tr($q->td("External weight matrix", help_link_2($q, "wt_mtx"), $q->br),
 		$q->td($q->filefield( -name => "weight_mtx" ), $q->br, $q->br));
 
 #	$q->a({-href=>'/salign/manual.html#feat_wts'}, "Feature weights"), $q->br, $q->br,
@@ -2192,7 +2185,7 @@ sub print_advance_weight {
 sub print_advance_rms {
   my $q = shift;
 
-  print	$q->Tr($q->td("RMS cut-off for average number<br /> of equivalent positions determination",
+  return	$q->Tr($q->td("RMS cut-off for average number<br /> of equivalent positions determination",
 		help_link_2($q, "rms_cutoff"), $q->br),
 		$q->td($q->textfield( -name => "RMS_cutoff", -default => "3.5", -size => "5"),
 		$q->br, $q->br));
@@ -2201,13 +2194,14 @@ sub print_advance_rms {
 sub print_advance_gap {
   my ($q, $max_gap) = @_;
 
+  my $msg = '';
   if ($max_gap == 1){
-  print	$q->Tr($q->td("Max gap length", help_link_2($q, "max_gap"), $q->br),
+      $msg .=	$q->Tr($q->td("Max gap length", help_link_2($q, "max_gap"), $q->br),
 		$q->td($q->textfield( -name => "max_gap", -default => "20", -size => "5"),
 		$q->br, $q->br));
   }
 
-  print	$q->Tr($q->td("Overhangs", help_link_2($q, "overhang"), $q->br),
+  $msg .=	$q->Tr($q->td("Overhangs", help_link_2($q, "overhang"), $q->br),
 		$q->td($q->textfield( -name => "overhangs", -default => "0", -size => "5"),
 		$q->br, $q->br));
 
@@ -2215,15 +2209,16 @@ sub print_advance_gap {
 		$q->td($q->textfield( -name => "gap-gap_score", -default => "0", -size => "5"),
 		$q->br, $q->br));
 
-  print	$q->Tr($q->td("Gap-gap residue", help_link_2($q, "gap_res_score"), $q->br),
+  $msg .=	$q->Tr($q->td("Gap-gap residue", help_link_2($q, "gap_res_score"), $q->br),
 		$q->td($q->textfield( -name => "gap-res_score", -default => "0", -size => "5"),
 		$q->br, $q->br));
+  return $msg;
 }
 
 sub print_advance_fit {
   my $q = shift;
 
-  print	$q->Tr($q->td("Fit", help_link_2($q, "fit"), $q->br),
+  return	$q->Tr($q->td("Fit", help_link_2($q, "fit"), $q->br),
 		$q->td($q->radio_group(
 		  		-name    => "fit",
 		 		-values  => [ "True", "False" ],
@@ -2236,7 +2231,7 @@ sub print_advance_fit {
 sub print_advance_improve {
   my $q = shift;
 
-  print	$q->Tr($q->td("Improve alignment", help_link_2($q, "improve"), $q->br),
+  return	$q->Tr($q->td("Improve alignment", help_link_2($q, "improve"), $q->br),
 		$q->td($q->radio_group(
 				  -name    => "improve",
 				  -values  => [ "True", "False" ],
@@ -2250,7 +2245,7 @@ sub print_advance_write_pdb {
   my ($q, $show) = @_;
 
   if ($show == 1) {
-      print	$q->Tr($q->td("Write whole PDB", help_link_2($q, "write_whole"), $q->br),
+      return	$q->Tr($q->td("Write whole PDB", help_link_2($q, "write_whole"), $q->br),
 		$q->td($q->radio_group(
 				  -name    => "write_whole",
 				  -values  => [ "True", "False" ],
@@ -2260,14 +2255,14 @@ sub print_advance_write_pdb {
 			), $q->br, $q->br));
   }
   else {
-      print $q->hidden( -name => "write_whole", -default => "False", -override => 1 ),
+      return $q->hidden( -name => "write_whole", -default => "False", -override => 1 ),
   }
 }
 
 sub print_advance_submit {
   my $q = shift;
 
-  print	$q->Tr($q->td({-colspan=>"2"},
+  return	$q->Tr($q->td({-colspan=>"2"},
                       $q->input({-type=>"submit", -value=>"Submit"}) .
                       $q->input({-type=>"reset", -value=>"Reset"}) .
                              "<p>&nbsp;</p>") .
@@ -2281,9 +2276,10 @@ sub print_advance_pdb_segments {
    my ($q, $params_ref) = @_;
    my %params = %$params_ref;
 
-   print "<tr>";
-   print  $q->td("Specify PDB segments", help_link($q, "segments"), $q->br);
-   print "<td>";
+   my $msg = '';
+   $msg .= "<tr>";
+   $msg .= $q->td("Specify PDB segments", help_link($q, "segments"), $q->br);
+   $msg .= "<td>";
 
   # Retrieve structures and their default segments sent from simple view
   my %segments;
@@ -2303,37 +2299,38 @@ sub print_advance_pdb_segments {
   }
   if ( exists $segments{'upl'} )
   {
-     print $q->p("Uploaded structure files");
+     $msg .= $q->p("Uploaded structure files");
      foreach my $str_name ( keys %{ $segments{'upl'} } )
      {
-        print $q->i("$str_name&nbsp"),
+        $msg .= $q->i("$str_name&nbsp").
               $q->textarea( 
 	        -name => "uplsegm_$str_name", 
 	        -cols => "15", 
 	        -rows => "2", 
 	        -default => $segments{'upl'}{$str_name},
 		-override => 1
-	      ),
+	      ).
 	      $q->br;
      }
   }
   if ( exists $segments{'lib'} )
   {
-     print $q->p("Structures from SALIGN PDB library");
+     $msg .= $q->p("Structures from SALIGN PDB library");
      foreach my $str_name ( keys %{ $segments{'lib'} } )
      {
-        print $q->i("$str_name&nbsp"),
+        $msg .= $q->i("$str_name&nbsp").
               $q->textarea( 
 	        -name => "libsegm_$str_name", 
 	        -cols => "15", 
 	        -rows => "2", 
 	        -default => $segments{'lib'}{$str_name},
 		-override => 1
-	      ),
+	      ).
 	      $q->br;
      }
   }
-  print "<br /></td></tr>";
+  $msg .= "<br /></td></tr>";
+  return $msg;
 }
 
 sub print_advance_uploaded_ali {
@@ -2341,25 +2338,26 @@ sub print_advance_uploaded_ali {
 
   my %params = %$params_ref; 
   my $upld_pseqs = $params{'upld_pseqs'};
-  print "<tr><td>&nbsp;</td><td>";
+  my $msg = "<tr><td>&nbsp;</td><td>";
 
   # Present uploaded ali files and no of pasted seqs
   unless ( $params{'ali_files'} eq '' ) {
-     print $q->p("Uploaded alignment files");
+     $msg .= $q->p("Uploaded alignment files");
      my @ali_files = split ( " ",$params{'ali_files'} );
      foreach my $filen ( @ali_files ) {
-        print $q->p( $filen );
+        $msg .= $q->p( $filen );
      }
   }
   if ($upld_pseqs > 0) {
      if ($upld_pseqs == 1) {
-	print $q->p("$upld_pseqs pasted sequence uploaded");
+	$msg .= $q->p("$upld_pseqs pasted sequence uploaded");
      }
      else {
-	print $q->p("$upld_pseqs pasted sequences uploaded");
+	$msg .= $q->p("$upld_pseqs pasted sequences uploaded");
      }
   }
-  print "<br /></td></tr>";
+  $msg .= "<br /></td></tr>";
+  return $msg;
 }
 
 sub print_pdb_segments {
@@ -2367,9 +2365,9 @@ sub print_pdb_segments {
    my %upl_files = %$upl_files_ref;
    my %lib_PDBs = %$lib_PDBs_ref;
 
-   print "<tr>";
-   print  $q->td("Specify PDB segments\n", help_link($q, "segments"), $q->br);
-   print "<td>\n";
+   my $msg = "<tr>";
+   $msg .=  $q->td("Specify PDB segments\n", help_link($q, "segments"), $q->br);
+   $msg .= "<td>\n";
 
 
 # Have user specify segments to use from uploaded files	and library PDBs
@@ -2377,13 +2375,13 @@ sub print_pdb_segments {
 # If not, default is FIRST:@:LAST:@  @ is wild card char and matches any chain
   if ( exists $upl_files{'str'} || exists $upl_files{'used_str'} )
   {
-     print $q->p("Uploaded structure files");
-     print "<table>\n";
+     $msg .= $q->p("Uploaded structure files");
+     $msg .= "<table>\n";
      if ( exists $upl_files{'str'} )
      {	
         foreach my $filen ( keys %{ $upl_files{'str'} } )
         {
-           print $q->Tr($q->td({-align=>"right"},$q->br,$q->i("$filen&nbsp")),
+           $msg .= $q->Tr($q->td({-align=>"right"},$q->br,$q->i("$filen&nbsp")),
                  $q->td($q->textarea( 
 	           -name => "uplsegm_$filen", 
 	           -cols => "15", 
@@ -2400,7 +2398,7 @@ sub print_pdb_segments {
         {
 	   # Get default segments
            my $default = join "\n", @{ $upl_files{'used_str'}{$filen} };
-           print $q->Tr($q->td({-align=>"right"},$q->br,$q->i("$filen&nbsp"),
+           $msg .= $q->Tr($q->td({-align=>"right"},$q->br,$q->i("$filen&nbsp"),
                  $q->td($q->textarea( 
 	           -name => "uplsegm_$filen", 
 	           -cols => "15", 
@@ -2411,12 +2409,12 @@ sub print_pdb_segments {
 	         $q->br)));
         }
      }
-     print "</table>\n";
+     $msg .= "</table>\n";
   }   
   if ( exists $lib_PDBs{'man'} || exists $lib_PDBs{'ali'} )
   { 
-     print $q->p("Structures from SALIGN PDB library");
-     print "<table>\n";
+     $msg .= $q->p("Structures from SALIGN PDB library");
+     $msg .= "<table>\n";
      if ( exists $lib_PDBs{'man'} )
      {
         foreach my $pdb ( keys %{ $lib_PDBs{'man'} } )
@@ -2426,7 +2424,7 @@ sub print_pdb_segments {
 	   {
 	      if ( exists $lib_PDBs{'ali'}{$pdb} ) { next; }
            }
-	   print $q->Tr($q->td({-align=>"right"},$q->br, $q->i("$pdb&nbsp"),
+	   $msg .= $q->Tr($q->td({-align=>"right"},$q->br, $q->i("$pdb&nbsp"),
                  $q->td($q->textarea( 
                    -name => "libsegm_$pdb", 
                    -cols => "15", 
@@ -2443,7 +2441,7 @@ sub print_pdb_segments {
         {
 	   # Get default segments
            my $default = join "\n", @{ $lib_PDBs{'ali'}{$pdb} };
-           print $q->Tr($q->td({-align=>"right"},$q->br,$q->i("$pdb&nbsp"),
+           $msg .= $q->Tr($q->td({-align=>"right"},$q->br,$q->i("$pdb&nbsp"),
                  $q->td($q->textarea( 
 	           -name => "libsegm_$pdb",
 	           -cols => "15", 
@@ -2454,28 +2452,14 @@ sub print_pdb_segments {
 	         $q->br)));
         }
      }
-     print "</table>\n";
+     $msg .= "</table>\n";
   }
-print "</td></tr>\n";
+  $msg .= "</td></tr>\n";
+  return $msg;
 }
 
 sub print_body1a_intro {
-	print <<BODY1a;
-	<div id="left"><br /><br /><br /><br /><br />
-		<h4><small>Developers:</small></h4>
-		<p>
-			Hannes Braberg<br />
-			M.S. Madhusudhan<br />
-			Ursula Pieper<br />
-			Ben Webb<br />
-			Elina Tjioe<br />
-			Andrej Sali
-		</p>
-	</div>
-	<div id="right">
-	<div id="fullpart">
-	<div id="resulttable">
-		<br />
+	return <<BODY1a;
 		<h2 align="left">SALIGN: A multiple protein sequence/structure alignment server.</h2>
 		<form method="post" action="./index.cgi" enctype="multipart/form-data">
 	<table>
@@ -2492,7 +2476,7 @@ BODY1a
 
 sub print_body2_general_information {
 	my ($q, $email, $job_name) = @_;
-    print <<BODY2;
+    return <<BODY2;
 		<tr><td><h4>General information</h4></td></tr>
 		<tr>
 			<td>Email address <a class="helplink" onclick="launchHelp('http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#email'); return false;" href="http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#email"><img class="helplink" src="/saliweb/img/help.jpg" alt="help" /></a> <br /></td>
@@ -2502,7 +2486,7 @@ BODY2
 }
 
 sub print_body3_input_alignment {
-	print <<BODY3;
+	return <<BODY3;
 		<tr>
 			<td colspan="2"><h4>Input alignment information</h4>
 			Users can either upload their own sequences/structures to align or choose structures from the PDB.<br /><br />
@@ -2512,7 +2496,7 @@ BODY3
 
 sub print_body3a_sequence {
 	my $upld_pseqs = shift;
-	print <<BODY3a;
+	return <<BODY3a;
 		<tr>
 			<td>Paste one sequence at a time, without header 
 				<a class="helplink" onclick="launchHelp('http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#paste_seq'); return false;" href="http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#paste_seq"><img class="helplink" src="/saliweb/img/help.jpg" alt="help" /></a> <br /></td>
@@ -2527,7 +2511,7 @@ BODY3a
 
 sub print_body3b_file {
 	my ($q) = @_;
-	print <<BODY3b;
+	return <<BODY3b;
 		<tr>
 			<td>Upload sequence/PDB file(s) 
 				<a class="helplink" onclick="launchHelp('http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#file_upload'); return false;" href="http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#file_upload"><img class="helplink" src="/saliweb/img/help.jpg" alt="help" /></a> <br />
@@ -2545,7 +2529,7 @@ BODY3b
 }
 
 sub print_body3c_PDB_code {
-	print <<BODY3c;
+	return <<BODY3c;
 		<tr>
 			<td>Enter 4-letter code(s) to choose PDB structures 
 				<a class="helplink" onclick="launchHelp('http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#lib_PDBs'); return false;" href="http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#lib_PDBs"><img class="helplink" src="/saliweb/img/help.jpg" alt="help" /></a> <br /></td>
@@ -2556,7 +2540,7 @@ BODY3c
 }
 sub print_body3d_continue {
 	my ($q, $job_name, $upld_pseqs) = @_;
-	print <<BODY3d;
+	return <<BODY3d;
 <table>
 	<tr>
 		<td colspan="2">
