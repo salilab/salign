@@ -62,10 +62,13 @@ sub get_footer {
     my $self = shift;
     my $htmlroot = $self->htmlroot;
     return <<FOOTER;
+<div style="clear:both;"></div>
 <div id="address">
-<p>Please cite: Hannes Braberg, Mallur S. Madhusudhan, Ursula Pieper,
-Ben Webb, Andrej Sali. SALIGN : A multiple protein structure/sequence
-alignment web server. In preparation.</p>
+<hr />
+        <p><b>
+        <a target="_blank" href="http://www.ncbi.nlm.nih.gov/pubmed/22618536">
+        SALIGN : A webserver for alignment of multiple protein sequences and structures. Bioinformatics 2012; doi: 10.1093/bioinformatics/bts302.<br />Hannes Braberg, Ben Webb, Elina Tjioe, Ursula Pieper, Andrej Sali, Mallur S. Madhusudhan.</a>&nbsp;<a target="_blank" href="http://salilab.org/pdf/Braberg_Bioinformatics_2012.pdf"><img src="http://modbase.compbio.ucsf.edu/salign/pdf.gif" alt="PDF" /></a><br />
+        </b></p>
 </div>
 FOOTER
 }
