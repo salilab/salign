@@ -2451,6 +2451,7 @@ sub print_pdb_segments {
 
 sub print_body1a_intro {
 	return <<BODY1a;
+        <div id="resulttable">
 		<h2 align="left">SALIGN: A multiple protein sequence/structure alignment server.</h2>
 		<form method="post" action="./index.cgi" enctype="multipart/form-data">
 	<table>
@@ -2546,7 +2547,6 @@ sub print_body3d_continue {
 	<input type="hidden" name="upld_pseqs" value="$upld_pseqs" />
 </div>
 </form>
-</div></div></div>
 </div>
 BODY3d
 }
