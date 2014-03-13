@@ -44,35 +44,27 @@ sub fpmain
   }
   
   my $job_name = $inputs->{'job_name'};
-  # Check that job name has not been tampered with
-  unless ( $job_name =~ /^([\w]+)$/ )
-  {
-    my $message = "Invalid job name: \n";
-    $message .= "Job name appears to have been tampered with";
-    error ($q,$message);  
-  }
-  # Untaint job name if safe  
-  $job_name = $1;
+  my $job = $self->resume_job($job_name);
 
   if ($inputs->{'tool'} eq "str_str")
   {
-     fp_str_str($q,$job_name,$inputs,0);
+     fp_str_str($q,$job,$inputs,0);
   }
   elsif ($inputs->{'tool'} eq "str_seq")
   {
-     fp_str_seq($q,$job_name,$inputs,0);
+     fp_str_seq($q,$job,$inputs,0);
   }
   elsif ($inputs->{'tool'} eq "2s_sese")
   {
-     fp_twostep_sese($q,$job_name,$inputs,0);
+     fp_twostep_sese($q,$job,$inputs,0);
   }
   elsif ($inputs->{'tool'} eq "1s_sese")
   {
-     fp_onestep_sese($q,$job_name,$inputs,'seqs',0);
+     fp_onestep_sese($q,$job,$inputs,'seqs',0);
   }
   else  # advanced views
   {
-     adv_views($q,$job_name,$inputs);
+     adv_views($q,$job,$inputs);
   }
 }
 
@@ -80,7 +72,7 @@ sub fpmain
 sub fp_str_str
 {
   my $q = shift;
-  my $job_name = shift;
+  my $job = shift;
   my $inputs = shift;
   my $adv = shift;
   my $conf_file = '/modbase5/home/salign/conf/salign.conf';
@@ -89,16 +81,11 @@ sub fp_str_str
 
   my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
   my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
-  my $todo_dir = $conf_ref->{'TODO_DIR'};
   my $static_dir = $conf_ref->{'STATIC_DIR'};
   my $submit_dir = $conf_ref->{'SUBMIT_DIR'};
   my $max_open = $conf_ref->{'MAX_OPEN_TRIES'};
   
-  # untaint $todo_dir
-  if ($todo_dir =~ /(.+)/) {$todo_dir = $1;}
-  else {error($q,"Can't untaint todo directory");} 
-  
-  my $job_dir = $todo_dir . '/' . $job_name;
+  my $job_dir = $job->directory;
   my $upl_dir = $job_dir . '/upload';
 
   # set 1D gap pens to their str-str values or usr value
@@ -129,7 +116,7 @@ sub fp_str_str
 #  if ($inputs->{'fw_6'} != 0)
   unless ($inputs->{'weight_mtx'} eq "")
   {
-     check_dir_size($q,$todo_dir,$max_dir_size);
+     check_dir_size($q,$job->directory,$max_dir_size);
      unless ( -d $upl_dir )
      {
         mkdir $upl_dir
@@ -147,7 +134,6 @@ sub fp_str_str
      }  
   } 
 
-  my $todo_str_dir;
   my $str_dir;
   my $upl_strs;
   # if there are both uploaded strs and lib strs, gather them in a common dir
@@ -165,24 +151,19 @@ sub fp_str_str
      } 
      untie %tie_hash;
      $str_dir = cp_PDBs($str_segm_ref,$upl_dir,$static_dir,$job_dir,$upl_strs);
-     $todo_str_dir = $str_dir;
-     $str_dir =~ s/^$todo_dir/$submit_dir/;
   }
   elsif ( exists $str_segm{'upl'} ) 
   { 
-     $todo_str_dir = $todo_dir . '/' . $job_name . '/upload';
-     $str_dir = $submit_dir . '/' . $job_name . '/upload';
+     $str_dir = 'upload';
   }
   else #only lib. copy to job dir (necessary for multiple entries of same pdb) 
   {
      $str_dir = cp_PDBs_noUpl($str_segm_ref,$static_dir,$job_dir); 
-     $todo_str_dir = $str_dir;
-     $str_dir =~ s/^$todo_dir/$submit_dir/;
   }
   
-  $str_segm_ref = OnePdbPerSegm($str_segm_ref,$todo_str_dir);
+  $str_segm_ref = OnePdbPerSegm($str_segm_ref,$job_dir, $str_dir);
   # create top file
-  my $output_ali = "$submit_dir/$job_name/str-str_out.ali";
+  my $output_ali = "str-str_out.ali";
   strstr_topf($job_dir,$submit_dir,$inputs,$static_dir,$str_segm_ref,$wt_mtx,$job_name,'str-str.py',$output_ali,$str_dir);
   # write relevant inputs to DBM file
   my $memo_inp;
@@ -197,7 +178,7 @@ sub fp_str_str
 sub fp_str_seq
 {
   my $q = shift;
-  my $job_name = shift;
+  my $job = shift;
   my $inputs = shift;
   my $adv = shift;
   my $conf_file = '/modbase5/home/salign/conf/salign.conf';
@@ -206,16 +187,11 @@ sub fp_str_seq
 
   my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
   my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
-  my $todo_dir = $conf_ref->{'TODO_DIR'};
   my $static_dir = $conf_ref->{'STATIC_DIR'};
   my $submit_dir = $conf_ref->{'SUBMIT_DIR'};
   my $max_open = $conf_ref->{'MAX_OPEN_TRIES'};
   
-  # untaint $todo_dir
-  if ($todo_dir =~ /(.+)/) {$todo_dir = $1;}
-  else {error($q,"Can't untaint todo directory");} 
- 
-  my $job_dir = $todo_dir . '/' . $job_name;
+  my $job_dir = $job->directory;
   my $upl_dir = $job_dir . '/upload';
   
   # check/fix inputs and get structure segments
@@ -254,7 +230,7 @@ sub fp_str_seq
 #  if ($inputs->{'fw_6'} != 0)
   unless ($inputs->{'weight_mtx'} eq "")
   {
-     check_dir_size($q,$todo_dir,$max_dir_size);
+     check_dir_size($q,$job->directory,$max_dir_size);
      unless ( -d $upl_dir )
      {
         mkdir $upl_dir
@@ -312,30 +288,24 @@ sub fp_str_seq
   }
 
   my $str_dir;
-  my $todo_str_dir;
   # if there are both uploaded strs and lib strs, gather them in a common dir
   if ( exists $str_segm{'upl'} && exists $str_segm{'lib'} )
   {
      $str_dir = cp_PDBs($str_segm_ref,$upl_dir,$static_dir,$job_dir,$upl_strs);
-     $todo_str_dir = $str_dir;
-     $str_dir =~ s/^$todo_dir/$submit_dir/;
   }
   elsif ( exists $str_segm{'upl'} ) 
   { 
-     $todo_str_dir = $todo_dir . '/' . $job_name . '/upload';
-     $str_dir = $submit_dir . '/' . $job_name . '/upload';
+     $str_dir = 'upload';
   }
   else #only lib. copy to job dir (necessary for multiple entries of same pdb) 
   {
      $str_dir = cp_PDBs_noUpl($str_segm_ref,$static_dir,$job_dir); 
-     $todo_str_dir = $str_dir;
-     $str_dir =~ s/^$todo_dir/$submit_dir/;
   }
 
-  $str_segm_ref = OnePdbPerSegm($str_segm_ref,$todo_str_dir);
+  $str_segm_ref = OnePdbPerSegm($str_segm_ref,$job_dir,$str_dir);
 
   # create str-str top file
-  my $output_strstr = "$submit_dir/$job_name/str-str_out.ali";
+  my $output_strstr = "str-str_out.ali";
   strstr_topf($job_dir,$submit_dir,$inputs,$static_dir,$str_segm_ref,$wt_mtx,$job_name,'str-str.py',$output_strstr,$str_dir);
 
   # section below is mostly seq-seq stuff
@@ -372,7 +342,7 @@ sub fp_str_seq
      }
   }
   $fin_alipath =~ s/^$todo_dir/$submit_dir/;
-  my $output_seqseq = "$submit_dir/$job_name/seq-seq_out.ali";
+  my $output_seqseq = "seq-seq_out.ali";
 
   if ( $adv == 1 )
   {
@@ -398,26 +368,26 @@ sub fp_str_seq
 
   # section below takes care of step 2 (alignment of the 2 outputs from step 1)
   my $step2_str_dir;
-  my $step2_input_ali = "$submit_dir/$job_name/str-seq_fuse.ali";
+  my $step2_input_ali = "str-seq_fuse.ali";
 #  my $step2_out_ali = "$submit_dir/$job_name/step2_out.ali";
-  my $step2_out_ali = "$submit_dir/$job_name/final_alignment.ali";
+  my $step2_out_ali = "final_alignment.ali";
   
   # structure-sequence or profile profile in step 2?
   if ( $seq_count <= 100 || $str_count <= 100 )   # str-seq
   {
      if ( $str_count > 1 ) # more than one str => fitted PDBs are in job dir
      {
-        $step2_str_dir = $submit_dir . '/' . $job_name;
+        $step2_str_dir = ".";
      }
      #only one str => stays in its original directory
      elsif ( exists $str_segm{'upl'} ) 
      { 
-        $step2_str_dir = $submit_dir . '/' . $job_name . '/upload';
+        $step2_str_dir = "upload";
      }
      else  
      { 
 #       $step2_str_dir = $pdb_database; 
-        $step2_str_dir = $submit_dir . '/' . $job_name . '/structures';
+        $step2_str_dir = 'structures';
      }
 
      # set 1D gap pens to their str-seq values if default chosen
@@ -478,7 +448,7 @@ sub fp_str_seq
 sub fp_onestep_sese
 {
   my $q = shift;
-  my $job_name = shift;
+  my $job = shift;
   my $inputs = shift;
   my $entries = shift; #sequences, structures or both?
   my $adv = shift;
@@ -486,15 +456,10 @@ sub fp_onestep_sese
   # Read conf_file
   my $conf_ref = read_conf($conf_file);
 
-  my $todo_dir = $conf_ref->{'TODO_DIR'};
   my $static_dir = $conf_ref->{'STATIC_DIR'};
   my $submit_dir = $conf_ref->{'SUBMIT_DIR'};
   
-  # untaint $todo_dir
-  if ($todo_dir =~ /(.+)/) {$todo_dir = $1;}
-  else {error($q,"Can't untaint todo directory");} 
-  
-  my $job_dir = $todo_dir . '/' . $job_name;
+  my $job_dir = $job->directory;
   my $upl_dir = $job_dir . '/upload';
 
   if ( $adv == 1 )
@@ -617,27 +582,21 @@ sub fp_onestep_sese
   else  #structures and maybe sequences
   {
      my $str_dir;
-     my $todo_str_dir;
      # if there are both uploaded strs and lib strs, gather them in a common dir
      if ( exists $str_segm{'upl'} && exists $str_segm{'lib'} )
      {
         $str_dir = cp_PDBs($str_segm_ref,$upl_dir,$static_dir,$job_dir,$upl_strs);
-        $todo_str_dir = $str_dir;
-        $str_dir =~ s/^$todo_dir/$submit_dir/;
      }
      elsif ( exists $str_segm{'upl'} ) 
      { 
-        $todo_str_dir = $todo_dir . '/' . $job_name . '/upload';
-        $str_dir = $submit_dir . '/' . $job_name . '/upload';
+        $str_dir = 'upload';
      }
      else #only lib. copy to job dir (necessary for multiple entries of same pdb) 
      {
         $str_dir = cp_PDBs_noUpl($str_segm_ref,$static_dir,$job_dir); 
-        $todo_str_dir = $str_dir;
-        $str_dir =~ s/^$todo_dir/$submit_dir/;
      }
      $seq_count += $str_count;
-     $str_segm_ref = OnePdbPerSegm($str_segm_ref,$todo_str_dir);
+     $str_segm_ref = OnePdbPerSegm($str_segm_ref,$job_dir,$str_dir);
      sese_stse_topf($job_dir,$submit_dir,$job_name,$output_file,$inputs,$static_dir,$fin_alipath,$fin_aliformat,$topf_namebase,$seq_count,'sese_pdbs',$str_dir,$str_segm_ref);
   }
 
@@ -654,22 +613,17 @@ sub fp_onestep_sese
 sub fp_twostep_sese
 {
   my $q = shift;
-  my $job_name = shift;
+  my $job = shift;
   my $inputs = shift;
   my $adv = shift;
   my $conf_file = '/modbase5/home/salign/conf/salign.conf';
   # Read conf_file
   my $conf_ref = read_conf($conf_file);
 
-  my $todo_dir = $conf_ref->{'TODO_DIR'};
   my $static_dir = $conf_ref->{'STATIC_DIR'};
   my $submit_dir = $conf_ref->{'SUBMIT_DIR'};
   
-  # untaint $todo_dir
-  if ($todo_dir =~ /(.+)/) {$todo_dir = $1;}
-  else {error($q,"Can't untaint todo directory");} 
-  
-  my $job_dir = $todo_dir . '/' . $job_name;
+  my $job_dir = $job->directory;
   my $subm_jobdir = $submit_dir . '/' . $job_name;
   my $subm_upldir = $subm_jobdir . '/upload';
 
@@ -784,14 +738,14 @@ sub fp_twostep_sese
 sub adv_views
 {
   my $q = shift;
-  my $job_name = shift;
+  my $job = shift;
   my $inputs = shift;
 
   if ($inputs->{'tool'} eq "str_str_adv")
   {
      if ($inputs->{'sa_feature'} eq 'str_str') #str-str alignment
      {
-        fp_str_str($q,$job_name,$inputs,1);
+        fp_str_str($q,$job,$inputs,1);
      }
      else  #only align sequences of structures
      {
@@ -802,30 +756,30 @@ sub adv_views
   {
      if ($inputs->{'sa_feature'} eq 'str_seq') #str-seq alignment
      {
-        fp_str_seq($q,$job_name,$inputs,1);
+        fp_str_seq($q,$job,$inputs,1);
      }
      else  #only align sequences 
      {
-        fp_onestep_sese($q,$job_name,$inputs,'seqs_and_strs',1);         #
+        fp_onestep_sese($q,$job,$inputs,'seqs_and_strs',1);         #
      }
   }
   elsif ($inputs->{'tool'} eq "sese_adv")
   {
      if ($inputs->{'sa_feature'} eq '2s_sese') 
      {
-        fp_twostep_sese($q,$job_name,$inputs,1);
+        fp_twostep_sese($q,$job,$inputs,1);
      }
      elsif ($inputs->{'sa_feature'} eq 'str_seq')
      {
-        fp_str_seq($q,$job_name,$inputs,1);
+        fp_str_seq($q,$job,$inputs,1);
      }
      else  # 1 step seq-seq
      {
         if ($inputs->{'structures'} == 1) 
 	{ 
-	   fp_onestep_sese($q,$job_name,$inputs,'seqs_and_strs',1);      #
+	   fp_onestep_sese($q,$job,$inputs,'seqs_and_strs',1);      #
 	}
-	else { fp_onestep_sese($q,$job_name,$inputs,'seqs',1); }         #
+	else { fp_onestep_sese($q,$job,$inputs,'seqs',1); }         #
      } 
   }
   else
@@ -1111,7 +1065,7 @@ sub cp_PDBs
      move("$upl_dir/$filen","$common_dir/$filen")
        or die "move failed: $!";
   }
-  return($common_dir);
+  return('structures');
 }
  
 # copy PDB files from PDB library to job dir
@@ -1151,7 +1105,7 @@ sub cp_PDBs_noUpl
      }
   }   
   untie %pdb_hash;
-  return($common_dir);
+  return('structures');
 }
 
 
@@ -1161,9 +1115,12 @@ sub cp_PDBs_noUpl
 sub OnePdbPerSegm
 {
   my $str_segm_ref = shift;
+  my $job_dir = shift;
   my $str_dir = shift;
   my %str_segm = %$str_segm_ref;
   my %mod_str_segm = { %str_segm };
+
+  $str_dir = $job_dir . '/' . $str_dir;
 
   foreach my $str ( keys %{ $str_segm{'upl'} } )
   {
