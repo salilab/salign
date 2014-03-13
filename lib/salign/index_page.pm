@@ -92,13 +92,11 @@ sub home
   my $email = shift;
   my $pdb_id = shift;
 
-  # Read configuration file
-  my $conf_file = '/modbase5/home/salign/conf/salign.conf';
-  my $conf_ref = read_conf($conf_file);
-  my $todo_dir = $conf_ref->{'TODO_DIR'};
-  # untaint todo directory 
-  if ($todo_dir =~ /(.+)/) {$todo_dir = $1;}
-  else {error($q,"Can't untaint todo directory");}
+  # Get job object (including upload directory)
+  my $job;
+  if ($job_name) {
+    $job = $self->resume_job($job_name);
+  }
 
   # Start html
   my $msg = print_body1a_intro($self, $q)
@@ -110,14 +108,14 @@ sub home
 
   $msg .=  "<hr />Uploaded files: <br />";
 
-  if ($job_name eq "no_name")
+  if (!$job)
   {
      $msg .= $q->p("No files uploaded");
   }
   else
   {
      # fetch the names of all uploaded files
-     my $upl_dir = $todo_dir . "/" . $job_name . "/upload";
+     my $upl_dir = $job->directory . "/upload";
      my @file_names;
      my @file_times;
      my @file_sizes;
@@ -189,23 +187,17 @@ sub upload_main
   # Read configuration file
   my $conf_file = '/modbase5/home/salign/conf/salign.conf';
   my $conf_ref = read_conf($conf_file);
-  my $todo_dir = $conf_ref->{'TODO_DIR'};
-  my $block_dir = $conf_ref->{'BLOCK_DIR'};
   my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
   my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
   my $max_open_tries = $conf_ref->{'MAX_OPEN_TRIES'};
 
+  my $job = $self->get_job_object($job_name);
+  $job_name = $job->name;
+
   my $msg = '';
 
-  # untaint todo directory 
-  if ($todo_dir =~ /(.+)/) {$todo_dir = $1;}
-  else {error($q,"Can't untaint todo directory");}
-  # untaint block directory
-  if ($block_dir =~ /(.+)/) {$block_dir = $1;}
-  else {error($q,"Can't untaint block directory");}
-
   # Run sub check_dir_size to see that there is space for the request
-  check_dir_size($q,$todo_dir,$max_dir_size);
+  check_dir_size($q,$job->directory,$max_dir_size);
   
   # Check what is being uploaded
   my $upl_file = $q->param('upl_file'); 
@@ -216,22 +208,7 @@ sub upload_main
   }   
   else
   {
-     # If job name doesn't exist, create it
-     if ($job_name eq "no_name")
-     {
-        $job_name = create_jobn($q,$block_dir,$max_open_tries);
-        # Create unique sub directory for current job
-        mkdir $todo_dir . "/$job_name" 
-	  or die "Can't create sub directory $job_name: $!\n";
-        chmod(oct(777),$todo_dir . "/$job_name") 
-	  or die "Can't change dir mode: $!\n";
-	mkdir $todo_dir . "/$job_name/upload" 
-	  or die "Can't create sub directory $job_name/upload: $!\n";
-        chmod(oct(777),$todo_dir . "/$job_name/upload") 
-	  or die "Can't change dir mode: $!\n";
-     }
-     my $job_dir = $todo_dir . "/" . $job_name;
-     my $upl_dir = $job_dir . "/upload";
+     my $upl_dir = $job->directory . "/upload";
      #save all filenames present in $upl_dir in hash
      my %upldir_files;
      opendir ( UPLOAD, $upl_dir ) or die "Can't open $upl_dir: $!\n";
@@ -254,16 +231,16 @@ sub upload_main
 	   if ($ascii == 1) 
 	   { 
 	      my $file_type = file_cat($upl_dir,$filen,$q);
-	      add_to_DBM($filen,$file_type,$job_dir); 
+	      add_to_DBM($filen,$file_type,$job->directory); 
            }
-	   else { unzip($upl_dir,$filen,$q,\%upldir_files,$job_dir); }
+	   else { unzip($upl_dir,$filen,$q,\%upldir_files,$job->directory); }
         }
      }	
      # save pasted sequence if exists
      if ( $paste_seq ne "" )
      {
         $paste_seq =~ s/[\r\n\s]+//g;
-	save_paste($job_dir,$paste_seq,$upld_pseqs);
+	save_paste($job->directory,$paste_seq,$upld_pseqs);
 	$upld_pseqs++;
      }
      $msg .= home($self, $q,$job_name,$upld_pseqs,$email,$pdb_id);
@@ -287,53 +264,27 @@ sub customizer
   # Read configuration file
   my $conf_file = '/modbase5/home/salign/conf/salign.conf';
   my $conf_ref = read_conf($conf_file);
-  my $todo_dir = $conf_ref->{'TODO_DIR'};
-  my $block_dir = $conf_ref->{'BLOCK_DIR'};
   my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
   my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
   my $max_open_tries = $conf_ref->{'MAX_OPEN_TRIES'};
   my $static_dir = $conf_ref->{'STATIC_DIR'};
-  my $msg = '';
 
-  # untaint todo directory 
-  if ($todo_dir =~ /(.+)/) {$todo_dir = $1;}
-  else {error($q,"Can't untaint todo directory");}
-  # untaint block directory
-  if ($block_dir =~ /(.+)/) {$block_dir = $1;}
-  else {error($q,"Can't untaint block directory");}
+  my $job = $self->get_job_object($job_name);
+  $job_name = $job->name;
+
+  my $upl_dir = $job->directory . "/upload";
+
+  my $msg = '';
 
   unless ( $email =~ /\@/ )
   {
      error($q,"No e-mail address entered");
   }  
-  if ( $job_name eq 'no_name' )
-  {
-     # might want to do nicer check here
-     if ( $upl_file eq "" && $paste_seq eq "" && $pdb_id eq "" )
-     {
-        error($q,"Nothing submitted to align");
-     }
-     $job_name = create_jobn($q,$block_dir,$max_open_tries);
-     # Create unique sub directory for current job
-     mkdir $todo_dir . "/$job_name" 
-       or die "Can't create sub directory $job_name: $!\n";
-     chmod(oct(777),$todo_dir . "/$job_name") 
-       or die "Can't change dir mode: $!\n";
-  }     
-  my $job_dir = $todo_dir . "/" . $job_name;
-  my $upl_dir = $job_dir . "/upload";
- 
+
   # upload file if exists
   if ( $upl_file ne "" )
   {
-     check_dir_size($q,$todo_dir,$max_dir_size);
-     unless ( -d $upl_dir )
-     {
-        mkdir $upl_dir 
-          or die "Can't create sub directory $job_name/upload: $!\n";
-        chmod(oct(777),$upl_dir) 
-          or die "Can't change dir mode: $!\n";
-     }	  
+     check_dir_size($q,$job->directory,$max_dir_size);
      #save all filenames present in $upl_dir in hash
      my %upldir_files;
      opendir ( UPLOAD, $upl_dir ) or die "Can't open $upl_dir: $!\n";
@@ -352,18 +303,18 @@ sub customizer
   	if ($ascii == 1) 
 	{ 
 	   my $file_type = file_cat($upl_dir,$filen,$q);
-	   add_to_DBM($filen,$file_type,$job_dir); 
+	   add_to_DBM($filen,$file_type,$job->directory); 
 	}
-	else { unzip($upl_dir,$filen,$q,\%upldir_files,$job_dir); }
+	else { unzip($upl_dir,$filen,$q,\%upldir_files,$job->directory); }
      }   
   }
   
   # save pasted sequence if exists
   if ( $paste_seq ne "" )
   {
-     if ( $upl_file eq "" ) { check_dir_size($q,$todo_dir,$max_dir_size); }
+     if ( $upl_file eq "" ) { check_dir_size($q,$job->directory,$max_dir_size); }
      $paste_seq =~ s/[\r\n\s]+//g;
-     save_paste($job_dir,$paste_seq,$upld_pseqs);
+     save_paste($job->directory,$paste_seq,$upld_pseqs);
      $upld_pseqs++;
   }
   
@@ -375,10 +326,10 @@ sub customizer
   $upl_count{'ali_stse'} = 0;
   $upl_count{'ali_seq'} = 0;
   $upl_count{'used_str'} = 0;    # can only be incremented in sub chk_alistrs
-  if ( -e "$job_dir/upl_files.db" )
+  if ( -e $job->directory . "/upl_files.db" )
   {
      #Get uploaded files
-     tie my %tie_hash, "DB_File", "$job_dir/upl_files.db", O_RDONLY 
+     tie my %tie_hash, "DB_File", $job->directory . "/upl_files.db", O_RDONLY 
        or die "Cannot open tie to filetype DBM: $!";
      while ( my ($filen,$type) = each %tie_hash )
      {
@@ -430,7 +381,7 @@ sub customizer
   {
      # check if structures in ali files exist and change whats needed if not
      my ($upl_files_ref,$upl_count_ref,$lib_PDBs_ref) = 
-     chk_alistrs(\%upl_files,$static_dir,\%upl_count,$job_dir,\%lib_PDBs,$upl_dir);
+     chk_alistrs(\%upl_files,$static_dir,\%upl_count,$job->directory,\%lib_PDBs,$upl_dir);
      %upl_files = %$upl_files_ref;
      %upl_count = %$upl_count_ref;
      %lib_PDBs  = %$lib_PDBs_ref;

@@ -5,7 +5,7 @@ package salign::Utils;
 # Inherit from Exporter class
 use Exporter;
 our @ISA = ("Exporter");
-our @EXPORT = qw( read_conf notify_by_mail log_message ascii_chk dir_chk );
+our @EXPORT = qw( read_conf notify_by_mail log_message ascii_chk dir_chk get_job_object );
 # Set version name
 our $VERSION = "1.00";
 use strict;
@@ -106,6 +106,19 @@ sub dir_chk
   }
   close FILE;
   return($direc);
+}
+
+sub get_job_object {
+  my ($self, $job_name) = @_;
+  my $job;
+  if ($job_name) {
+    $job = $self->resume_job($job_name);
+  } else {
+    $job = $self->make_job("job");
+    mkdir $job->directory . "/upload"
+      or die "Can't create sub directory " . $job->directory . "/upload: $!\n";
+  }
+  return $job;
 }
 
 # Return true when evaluated
