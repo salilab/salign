@@ -2487,8 +2487,8 @@ sub print_body3d_continue {
 	my ($q, $job, $upld_pseqs) = @_;
         my $jobname = "";
 	if ($job) {
-            $jobname = "<input type=\"hidden\" name=\"job_name\" " .
-                       "value=\"$job_name\" />";
+            $jobname = '<input type="hidden" name="job_name" value="' .
+                       $job->name . '" />';
         }
 	return <<BODY3d;
 <table>
