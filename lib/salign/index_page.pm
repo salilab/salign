@@ -2424,7 +2424,7 @@ sub print_body2_general_information {
     return <<BODY2;
 		<tr><td><h4>General information</h4></td></tr>
 		<tr>
-			<td>Email address <a class="helplink" onclick="launchHelp('http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#email'); return false;" href="http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#email"><img class="helplink" src="/saliweb/img/help.jpg" alt="help" /></a> <br /></td>
+			<td>Email address (optional) <a class="helplink" onclick="launchHelp('http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#email'); return false;" href="http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#email"><img class="helplink" src="/saliweb/img/help.jpg" alt="help" /></a> <br /></td>
 			<td><input type="text" name="email" value="$email" size="25" /></td>
 		</tr>
 BODY2

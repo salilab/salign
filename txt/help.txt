@@ -76,7 +76,8 @@ not a folder containing the files.</p>
     E-mail address:
 </b>
 <p>
-   This is an essential field as a link to the results page will be sent to the e-mail address entered.
+   If an email address is provided, an email will be sent out when the job
+   is completed.
 </p>
 <br>
 
