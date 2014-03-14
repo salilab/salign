@@ -1778,10 +1778,13 @@ sub print_job_submission{
 <div id="fullpart"><h1> Job Submitted </h1>
 <hr />
 <p>
-	Your job has been submitted to the server and was assigned job id: $job_name.<br />
-	Please save the job id for your reference.<br />
+	Your job has been submitted to the server and was assigned job id: $job_name.
+</p>
+<p>
+	Please save the job id for your reference.
+</p>
+<p>
         Results will be found at <a href="$results">this link</a>.
- 
 </p>
 SUBMIT1
         if ($email) {
