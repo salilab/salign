@@ -1762,18 +1762,6 @@ sub faa2pir_topf
   close TOP_OUT;
 }
 
-# Create html related to starting the html page 
-#sub start
-#{
-#  my $q = shift;
-#  print $q->header( "text/html" ),
-#        $q->start_html( -title => "SALIGN Server", -bgcolor => "#ffffff",
-#          -style=>{-src=>"/salign/css/main.css"} ),
-#        $q->h2("SALIGN Structure/Sequence Alignment Server"),
-#        $q->b("Web interface to the SALIGN module of MODELLER"),
-#        $q->hr;
-#}
-
 sub print_job_submission{
 	my ($job, $email) = @_;
         chdir('/');
