@@ -32,21 +32,11 @@ sub main
   # Look for errors in the transfer process
   if ($q->cgi_error) { error($q, "Transfer error: " . $q->cgi_error); }
 
-  my $job_name = $q->param('job_name') || 'no_name';
+  my $job_name = $q->param('job_name');
   my $cur_state = $q->param('state') || 'home';
   my $upld_pseqs = $q->param('upld_pseqs') || 0;
   my $email = $q->param('email') || "";
   my $pdb_id = $q->param('pdb_id') || "";
-
-  # Check that job name has not been tampered with
-  unless ( $job_name =~ /^([\w]+)$/ )
-  {
-     my $message = "Invalid job name: \n";
-     $message .= "Job name appears to have been tampered with:";
-     error ($q,$message);
-  }
-  # Untaint job name if safe
-  $job_name = $1;
 
   # start requested option
   if ( $cur_state eq "home" ) 
@@ -100,7 +90,7 @@ sub home
 
   # Start html
   my $msg = print_body1a_intro($self, $q)
-         .  print_body2_general_information($q, $email, $job_name)
+         .  print_body2_general_information($q, $email)
          .  print_body3_input_alignment($q)
          .  print_body3a_sequence($q)
          .  print_body3b_file($q)
@@ -125,7 +115,7 @@ sub home
      {
         if ( $line =~ /No such file or directory/ )
         {
-           error($q,"Job directory $job_name non existent");
+           error($q,"Job directory non existent");
         }
 	elsif ( $line =~ /^d/ || $line =~ /^total/i ) { next; }
 	else
@@ -169,7 +159,7 @@ sub home
 
   $msg .= "<hr />";
 
-  $msg .= print_body3d_continue($q, $job_name, $upld_pseqs);
+  $msg .= print_body3d_continue($q, $job, $upld_pseqs);
   return $msg;
 }	
 
@@ -2430,7 +2420,7 @@ BODY1a
 }
 
 sub print_body2_general_information {
-	my ($q, $email, $job_name) = @_;
+	my ($q, $email) = @_;
     return <<BODY2;
 		<tr><td><h4>General information</h4></td></tr>
 		<tr>
@@ -2494,7 +2484,12 @@ sub print_body3c_PDB_code {
 BODY3c
 }
 sub print_body3d_continue {
-	my ($q, $job_name, $upld_pseqs) = @_;
+	my ($q, $job, $upld_pseqs) = @_;
+        my $jobname = "";
+	if ($job) {
+            $jobname = "<input type=\"hidden\" name=\"job_name\" " .
+                       "value=\"$job_name\" />";
+        }
 	return <<BODY3d;
 <table>
 	<tr>
@@ -2506,8 +2501,8 @@ sub print_body3d_continue {
 	</tr>
 </table>
 <div>
-	<input type="hidden" name="job_name" value="$job_name" />
-	<input type="hidden" name="upld_pseqs" value="$upld_pseqs" />
+	$jobname
+        <input type="hidden" name="upld_pseqs" value="$upld_pseqs" />
 </div>
 </form>
 </div>
