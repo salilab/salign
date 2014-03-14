@@ -84,7 +84,6 @@ sub fp_str_str
   my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
   my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
   my $static_dir = $conf_ref->{'STATIC_DIR'};
-  my $submit_dir = $conf_ref->{'SUBMIT_DIR'};
   my $max_open = $conf_ref->{'MAX_OPEN_TRIES'};
   
   my $job_dir = '.';
@@ -166,7 +165,7 @@ sub fp_str_str
   $str_segm_ref = OnePdbPerSegm($str_segm_ref,$job_dir, $str_dir);
   # create top file
   my $output_ali = "str-str_out.ali";
-  strstr_topf($job_dir,$submit_dir,$inputs,$static_dir,$str_segm_ref,$wt_mtx,$job_name,'str-str.py',$output_ali,$str_dir);
+  strstr_topf($job_dir,$inputs,$static_dir,$str_segm_ref,$wt_mtx,$job_name,'str-str.py',$output_ali,$str_dir);
   # write relevant inputs to DBM file
   my $memo_inp;
   $memo_inp->{'email'} = $inputs->{'email'};
@@ -190,7 +189,6 @@ sub fp_str_seq
   my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
   my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
   my $static_dir = $conf_ref->{'STATIC_DIR'};
-  my $submit_dir = $conf_ref->{'SUBMIT_DIR'};
   my $max_open = $conf_ref->{'MAX_OPEN_TRIES'};
   
   my $job_dir = '.'
@@ -308,7 +306,7 @@ sub fp_str_seq
 
   # create str-str top file
   my $output_strstr = "str-str_out.ali";
-  strstr_topf($job_dir,$submit_dir,$inputs,$static_dir,$str_segm_ref,$wt_mtx,$job_name,'str-str.py',$output_strstr,$str_dir);
+  strstr_topf($job_dir,$inputs,$static_dir,$str_segm_ref,$wt_mtx,$job_name,'str-str.py',$output_strstr,$str_dir);
 
   # section below is mostly seq-seq stuff
   # add uploaded sequences to ali file hash
@@ -365,7 +363,7 @@ sub fp_str_seq
   }
   
   # create seq-seq top file
-  sese_stse_topf($job_dir,$submit_dir,$job_name,$output_seqseq,$inputs,$static_dir,$fin_alipath,$fin_aliformat,'seq-seq',$seq_count,'sese','','');
+  sese_stse_topf($job_dir,$job_name,$output_seqseq,$inputs,$static_dir,$fin_alipath,$fin_aliformat,'seq-seq',$seq_count,'sese','','');
 
   # section below takes care of step 2 (alignment of the 2 outputs from step 1)
   my $step2_str_dir;
@@ -411,7 +409,7 @@ sub fp_str_seq
  
      # create seq-str top file
 #     sese_stse_topf($job_dir,$submit_dir,$job_name,$step2_out_ali,$inputs,$static_dir,$step2_input_ali,'pir','step2',$str_count,'stse',$step2_str_dir,'');
-     sese_stse_topf($job_dir,$submit_dir,$job_name,$step2_out_ali,$inputs,$static_dir,$step2_input_ali,'pir','final_alignment',$str_count,'stse',$step2_str_dir,'');
+     sese_stse_topf($job_dir,$job_name,$step2_out_ali,$inputs,$static_dir,$step2_input_ali,'pir','final_alignment',$str_count,'stse',$step2_str_dir,'');
   }
   else  # profile-profile
   {
@@ -458,7 +456,6 @@ sub fp_onestep_sese
   my $conf_ref = read_conf($conf_file);
 
   my $static_dir = $conf_ref->{'STATIC_DIR'};
-  my $submit_dir = $conf_ref->{'SUBMIT_DIR'};
   
   my $job_dir = ".";
   my $upl_dir = $job_dir . '/upload';
@@ -577,7 +574,7 @@ sub fp_onestep_sese
   # create top files
   if ( $entries eq 'seqs' ) #only sequences
   {
-     sese_stse_topf($job_dir,$submit_dir,$job_name,$output_file,$inputs,$static_dir,$fin_alipath,$fin_aliformat,$topf_namebase,$seq_count,'sese','','');
+     sese_stse_topf($job_dir,$job_name,$output_file,$inputs,$static_dir,$fin_alipath,$fin_aliformat,$topf_namebase,$seq_count,'sese','','');
   }
   else  #structures and maybe sequences
   {
@@ -597,7 +594,7 @@ sub fp_onestep_sese
      }
      $seq_count += $str_count;
      $str_segm_ref = OnePdbPerSegm($str_segm_ref,$job_dir,$str_dir);
-     sese_stse_topf($job_dir,$submit_dir,$job_name,$output_file,$inputs,$static_dir,$fin_alipath,$fin_aliformat,$topf_namebase,$seq_count,'sese_pdbs',$str_dir,$str_segm_ref);
+     sese_stse_topf($job_dir,$job_name,$output_file,$inputs,$static_dir,$fin_alipath,$fin_aliformat,$topf_namebase,$seq_count,'sese_pdbs',$str_dir,$str_segm_ref);
   }
 
   # write relevant inputs to DBM file
@@ -621,7 +618,6 @@ sub fp_twostep_sese
   my $conf_ref = read_conf($conf_file);
 
   my $static_dir = $conf_ref->{'STATIC_DIR'};
-  my $submit_dir = $conf_ref->{'SUBMIT_DIR'};
   
   my $job_dir = '.';
   my $upl_dir = $job_dir . '/upload';
@@ -690,7 +686,7 @@ sub fp_twostep_sese
      # create top file for step 1
      if ( $seq_count <= 500 )  # dyn progr alignment 
      {
-        sese_stse_topf($job_dir,$submit_dir,$job_name,$output_file,$inputs,$static_dir,$fin_alipath,$fin_aliformat,$topf_namebase,$seq_count,'sese','','');
+        sese_stse_topf($job_dir,$job_name,$output_file,$inputs,$static_dir,$fin_alipath,$fin_aliformat,$topf_namebase,$seq_count,'sese','','');
      }
      else        # no realignment, but makes sure output format is PIR
      {
@@ -1257,7 +1253,6 @@ sub create_memo
 sub strstr_topf
 {
   my $job_dir = shift;
-  my $submit_dir = shift;
   my $inputs = shift;
   my $static_dir = shift;
   my $str_segm_ref = shift;
@@ -1425,7 +1420,7 @@ sub strstr_topf
   my $dnd_file;
   if ( $ali_type eq "'tree'" )
   {
-     $dnd_file = "dendrogram_file='$submit_dir/$job_name/str-str.tree',";
+     $dnd_file = "dendrogram_file='str-str.tree',";
   }
   else { $dnd_file = ''; }
   
@@ -1446,7 +1441,7 @@ sub strstr_topf
      open TOP_IN, "<$static_dir/salign_mix_1f.py" or die "Can't open template top file: $!";
   }  
   else {                                  # ext weight mtx uploaded
-     $weight_mtx = "input_weights_file='$submit_dir/$job_name/upload/$wt_mtx',";
+     $weight_mtx = "input_weights_file='upload/$wt_mtx',";
      $feat_weights .= "1";
      # Open oldschool template top file
      open TOP_IN, "<$static_dir/st-st_tmpl.py" or die "Can't open template top file: $!";
@@ -1492,7 +1487,6 @@ sub strstr_topf
 sub sese_stse_topf
 {
   my $job_dir = shift;
-  my $submit_dir = shift;
   my $job_name = shift;
   my $output_file = shift;
   my $inputs = shift;
@@ -1669,7 +1663,7 @@ sub sese_stse_topf
      if ( $ali_type eq "'tree'" && $seq_count > 2 )
      {
 	my $dnd_name = $topf_namebase . '.tree';
-        $dnd_file = "dendrogram_file='$submit_dir/$job_name/$dnd_name',";
+        $dnd_file = "dendrogram_file='$dnd_name',";
      }
      else { $dnd_file = ''; }
      $gap_fctn   = '';
