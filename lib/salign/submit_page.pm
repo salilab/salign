@@ -1804,6 +1804,7 @@ sub print_job_submission{
         chdir('/');
         $job->submit($email);
         my $job_name = $job->name;
+        my $results = $job->results_url;
         my $msg = '<div id="left"></div>\n';
 	$msg .= <<SUBMIT1;
 <div id="fullpart"><h1> Job Submitted </h1>
@@ -1811,6 +1812,8 @@ sub print_job_submission{
 <p>
 	Your job has been submitted to the server and was assigned job id: $job_name.<BR>
 	Please save the job id for your reference.<BR>
+        Results will be found at <a href="$results">this link</a>.
+ 
 </p>
 SUBMIT1
         if ($email) {
