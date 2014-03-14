@@ -50,23 +50,23 @@ sub fpmain
 
   if ($inputs->{'tool'} eq "str_str")
   {
-     return $self->fp_str_str($q,$job,$inputs,0);
+     return fp_str_str($self,$q,$job,$inputs,0);
   }
   elsif ($inputs->{'tool'} eq "str_seq")
   {
-     return $self->fp_str_seq($q,$job,$inputs,0);
+     return fp_str_seq($self,$q,$job,$inputs,0);
   }
   elsif ($inputs->{'tool'} eq "2s_sese")
   {
-     return $self->fp_twostep_sese($q,$job,$inputs,0);
+     return fp_twostep_sese($self,$q,$job,$inputs,0);
   }
   elsif ($inputs->{'tool'} eq "1s_sese")
   {
-     return $self->fp_onestep_sese($q,$job,$inputs,'seqs',0);
+     return fp_onestep_sese($self,$q,$job,$inputs,'seqs',0);
   }
   else  # advanced views
   {
-     return $self->adv_views($q,$job,$inputs);
+     return adv_views($self,$q,$job,$inputs);
   }
 }
 
@@ -171,7 +171,7 @@ sub fp_str_str
 #  $memo_inp->{'fit_coord'} = $inputs->{'fit_coord'};
   $memo_inp->{'tool'} = 'str_str';
   create_memo($memo_inp,$job_dir);
-  return $self->print_job_submission($job, $inputs->{'email'});
+  return print_job_submission($self,$job, $inputs->{'email'});
 }
 
 # Main sub for structure sequence alignment
@@ -436,7 +436,7 @@ sub fp_str_seq
 #  $memo_inp->{'fit_coord'} = $inputs->{'fit_coord'};
   $memo_inp->{'tool'} = 'str_seq';
   create_memo($memo_inp,$job_dir);
-  return $self->print_job_submission($job, $inputs->{'email'});
+  return print_job_submission($self,$job, $inputs->{'email'});
 }
 
 # Main sub for one step seq-seq alignments
@@ -599,7 +599,7 @@ sub fp_onestep_sese
   $memo_inp->{'email'} = $inputs->{'email'};
   $memo_inp->{'tool'} = '1s_sese';
   create_memo($memo_inp,$job_dir);
-  return $self->print_job_submission($job, $inputs->{'email'});
+  return print_job_submission($self,$job, $inputs->{'email'});
 }
 
 
@@ -722,7 +722,7 @@ sub fp_twostep_sese
   $memo_inp->{'email'} = $inputs->{'email'};
   $memo_inp->{'tool'} = '2s_sese';
   create_memo($memo_inp,$job_dir);
-  return $self->print_job_submission($job, $inputs->{'email'});
+  return print_job_submission($self,$job, $inputs->{'email'});
 }
 
 
@@ -738,41 +738,41 @@ sub adv_views
   {
      if ($inputs->{'sa_feature'} eq 'str_str') #str-str alignment
      {
-        return $self->fp_str_str($q,$job,$inputs,1);
+        return fp_str_str($self,$q,$job,$inputs,1);
      }
      else  #only align sequences of structures
      {
-        return $self->fp_onestep_sese($q,$job,$inputs,'strs',1);                  #
+        return fp_onestep_sese($self,$q,$job,$inputs,'strs',1);                  #
      }
   }
   elsif ($inputs->{'tool'} eq "str_seq_adv")
   {
      if ($inputs->{'sa_feature'} eq 'str_seq') #str-seq alignment
      {
-        return $self->fp_str_seq($q,$job,$inputs,1);
+        return fp_str_seq($self,$q,$job,$inputs,1);
      }
      else  #only align sequences 
      {
-        return $self->fp_onestep_sese($q,$job,$inputs,'seqs_and_strs',1);         #
+        return fp_onestep_sese($self,$q,$job,$inputs,'seqs_and_strs',1);         #
      }
   }
   elsif ($inputs->{'tool'} eq "sese_adv")
   {
      if ($inputs->{'sa_feature'} eq '2s_sese') 
      {
-        return $self->fp_twostep_sese($q,$job,$inputs,1);
+        return fp_twostep_sese($self,$q,$job,$inputs,1);
      }
      elsif ($inputs->{'sa_feature'} eq 'str_seq')
      {
-        return $self->fp_str_seq($q,$job,$inputs,1);
+        return fp_str_seq($self,$q,$job,$inputs,1);
      }
      else  # 1 step seq-seq
      {
         if ($inputs->{'structures'} == 1) 
 	{ 
-	   return $self->fp_onestep_sese($q,$job,$inputs,'seqs_and_strs',1);      #
+	   return fp_onestep_sese($self,$q,$job,$inputs,'seqs_and_strs',1);      #
 	}
-	else { return $self->fp_onestep_sese($q,$job,$inputs,'seqs',1); }         #
+	else { return fp_onestep_sese($self,$q,$job,$inputs,'seqs',1); }         #
      } 
   }
   else
