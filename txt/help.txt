@@ -180,7 +180,7 @@ Chimera installed on their computer (<a href="http://www.cgl.ucsf.edu/chimera/do
 
 
 <a name="example"><h4>Examples</h4></a>
-<b>1. Multiple structure alignment</b> - <a href="file/asp.ali">asp.ali</a>
+<b>1. Multiple structure alignment</b> - <a href="html/examples/asp.ali">asp.ali</a>
 <p>This alignment file in MODELLER PIR format contains several structure entries and no sequence entries.
 The comment section at the top of the file describes how the server recognizes these as structures
 rather than sequences. Since the input consists of only structures, the server suggests a multiple
@@ -193,7 +193,7 @@ alignment segments. Click <a href="#segments">here</a> for more information on s
 segments.
 </p>
 <br>
-<b> 2. Multiple sequence alignment</b> - <a href="file/asp_seqs.ali">asp_seqs.ali</a>
+<b> 2. Multiple sequence alignment</b> - <a href="html/examples/asp_seqs.ali">asp_seqs.ali</a>
 <p>
 This alignment file in MODELLER PIR format contains several sequence entries. The comment section at the top of the
 file explains why the server recognizes these as sequences rather than structures. Since the input consists of
@@ -204,7 +204,7 @@ the appropriate field of the interface. Click <a href="#paste_seq">here</a> for 
 on pasting sequences.
 </p>
 <br>
-<b> 3. Profile-profile sequence alignment</b> - <a href="file/asp_seqs_half1.ali">asp_seqs_half1.ali</a> + <a href="file/asp_seqs_half2.ali">asp_seqs_half2.ali</a>
+<b> 3. Profile-profile sequence alignment</b> - <a href="html/examples/asp_seqs_half1.ali">asp_seqs_half1.ali</a> + <a href="examples/asp_seqs_half2.ali">asp_seqs_half2.ali</a>
 <p>
 These alignment files in MODELLER PIR format contain several sequences each. The comment sections at the top of the
 files explain why the server recognizes these as sequences rather than structures. Since the input consists of
@@ -212,7 +212,7 @@ two groups of sequences, the server first generates multiple sequence alignments
 then aligns these to each other using the profile-profile alignment algorithm.
 </p>
 <br>
-<b> 4. Structure-sequence alignment</b> - <a href="file/asp_strs_seqs.ali">asp_strs_seqs.ali</a>
+<b> 4. Structure-sequence alignment</b> - <a href="html/examples/asp_strs_seqs.ali">asp_strs_seqs.ali</a>
 <p>
 This alignment file in MODELLER PIR format contains both structure entries and sequence entries. The comment sections
 in the file explain why the server recognizes some entries as sequences and some as structures. Since the
