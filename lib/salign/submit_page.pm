@@ -50,29 +50,30 @@ sub fpmain
 
   if ($inputs->{'tool'} eq "str_str")
   {
-     return fp_str_str($q,$job,$inputs,0);
+     return $self->fp_str_str($q,$job,$inputs,0);
   }
   elsif ($inputs->{'tool'} eq "str_seq")
   {
-     return fp_str_seq($q,$job,$inputs,0);
+     return $self->fp_str_seq($q,$job,$inputs,0);
   }
   elsif ($inputs->{'tool'} eq "2s_sese")
   {
-     return fp_twostep_sese($q,$job,$inputs,0);
+     return $self->fp_twostep_sese($q,$job,$inputs,0);
   }
   elsif ($inputs->{'tool'} eq "1s_sese")
   {
-     return fp_onestep_sese($q,$job,$inputs,'seqs',0);
+     return $self->fp_onestep_sese($q,$job,$inputs,'seqs',0);
   }
   else  # advanced views
   {
-     return adv_views($q,$job,$inputs);
+     return $self->adv_views($q,$job,$inputs);
   }
 }
 
 # Main sub for structure-structure alignments
 sub fp_str_str
 {
+  my $self = shift;
   my $q = shift;
   my $job = shift;
   my $inputs = shift;
@@ -170,12 +171,13 @@ sub fp_str_str
 #  $memo_inp->{'fit_coord'} = $inputs->{'fit_coord'};
   $memo_inp->{'tool'} = 'str_str';
   create_memo($memo_inp,$job_dir);
-  return print_job_submission($job, $inputs->{'email'});
+  return $self->print_job_submission($job, $inputs->{'email'});
 }
 
 # Main sub for structure sequence alignment
 sub fp_str_seq
 {
+  my $self = shift;
   my $q = shift;
   my $job = shift;
   my $inputs = shift;
@@ -434,12 +436,13 @@ sub fp_str_seq
 #  $memo_inp->{'fit_coord'} = $inputs->{'fit_coord'};
   $memo_inp->{'tool'} = 'str_seq';
   create_memo($memo_inp,$job_dir);
-  return print_job_submission($job, $inputs->{'email'});
+  return $self->print_job_submission($job, $inputs->{'email'});
 }
 
 # Main sub for one step seq-seq alignments
 sub fp_onestep_sese
 {
+  my $self = shift;
   my $q = shift;
   my $job = shift;
   my $inputs = shift;
@@ -596,13 +599,14 @@ sub fp_onestep_sese
   $memo_inp->{'email'} = $inputs->{'email'};
   $memo_inp->{'tool'} = '1s_sese';
   create_memo($memo_inp,$job_dir);
-  return print_job_submission($job, $inputs->{'email'});
+  return $self->print_job_submission($job, $inputs->{'email'});
 }
 
 
 # Main sub for two step seq-seq alignments
 sub fp_twostep_sese
 {
+  my $self = shift;
   my $q = shift;
   my $job = shift;
   my $inputs = shift;
@@ -718,13 +722,14 @@ sub fp_twostep_sese
   $memo_inp->{'email'} = $inputs->{'email'};
   $memo_inp->{'tool'} = '2s_sese';
   create_memo($memo_inp,$job_dir);
-  return print_job_submission($job, $inputs->{'email'});
+  return $self->print_job_submission($job, $inputs->{'email'});
 }
 
 
 # main sub for advanced views
 sub adv_views
 {
+  my $self = shift;
   my $q = shift;
   my $job = shift;
   my $inputs = shift;
@@ -733,41 +738,41 @@ sub adv_views
   {
      if ($inputs->{'sa_feature'} eq 'str_str') #str-str alignment
      {
-        return fp_str_str($q,$job,$inputs,1);
+        return $self->fp_str_str($q,$job,$inputs,1);
      }
      else  #only align sequences of structures
      {
-        return fp_onestep_sese($q,$job,$inputs,'strs',1);                  #
+        return $self->fp_onestep_sese($q,$job,$inputs,'strs',1);                  #
      }
   }
   elsif ($inputs->{'tool'} eq "str_seq_adv")
   {
      if ($inputs->{'sa_feature'} eq 'str_seq') #str-seq alignment
      {
-        return fp_str_seq($q,$job,$inputs,1);
+        return $self->fp_str_seq($q,$job,$inputs,1);
      }
      else  #only align sequences 
      {
-        return fp_onestep_sese($q,$job,$inputs,'seqs_and_strs',1);         #
+        return $self->fp_onestep_sese($q,$job,$inputs,'seqs_and_strs',1);         #
      }
   }
   elsif ($inputs->{'tool'} eq "sese_adv")
   {
      if ($inputs->{'sa_feature'} eq '2s_sese') 
      {
-        return fp_twostep_sese($q,$job,$inputs,1);
+        return $self->fp_twostep_sese($q,$job,$inputs,1);
      }
      elsif ($inputs->{'sa_feature'} eq 'str_seq')
      {
-        return fp_str_seq($q,$job,$inputs,1);
+        return $self->fp_str_seq($q,$job,$inputs,1);
      }
      else  # 1 step seq-seq
      {
         if ($inputs->{'structures'} == 1) 
 	{ 
-	   return fp_onestep_sese($q,$job,$inputs,'seqs_and_strs',1);      #
+	   return $self->fp_onestep_sese($q,$job,$inputs,'seqs_and_strs',1);      #
 	}
-	else { return fp_onestep_sese($q,$job,$inputs,'seqs',1); }         #
+	else { return $self->fp_onestep_sese($q,$job,$inputs,'seqs',1); }         #
      } 
   }
   else
@@ -1763,18 +1768,18 @@ sub faa2pir_topf
 }
 
 sub print_job_submission{
-	my ($job, $email) = @_;
+	my ($self, $job, $email) = @_;
         chdir('/');
         $job->submit($email);
         my $job_name = $job->name;
         my $results = $job->results_url;
-        my $msg = '<div id="left"></div>\n';
-	$msg .= <<SUBMIT1;
+        my $contact = $self->contact_url;
+	my $msg = <<SUBMIT1;
 <div id="fullpart"><h1> Job Submitted </h1>
 <hr />
 <p>
-	Your job has been submitted to the server and was assigned job id: $job_name.<BR>
-	Please save the job id for your reference.<BR>
+	Your job has been submitted to the server and was assigned job id: $job_name.<br />
+	Please save the job id for your reference.<br />
         Results will be found at <a href="$results">this link</a>.
  
 </p>
@@ -1782,18 +1787,18 @@ SUBMIT1
         if ($email) {
             $msg .= <<EMAIL;
 <p>
-	<BR>You will be sent a notification email when job results are available.
+	You will be sent a notification email when job results are available.
 </p>
 EMAIL
         }
 	$msg .= <<SUBMIT2;
 <p>
-	<BR>If you experience any problems or if you do not receive the results for more than 12 hours, please <a href="http://modbase.compbio.ucsf.edu/salign/salign_contact_new">contact us</a>.
+	If you experience any problems or if you do not receive the results for more than 12 hours, please <a href="$contact">contact us</a>.
 </p>
 <p>
-	<BR>Thank you for using our server and good luck in your research!
+	Thank you for using our server and good luck in your research!
 </p>
-</div></div><div style="clear:both;"></div>
+</div>
 SUBMIT2
 	return $msg;
 }
