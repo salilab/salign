@@ -45,26 +45,28 @@ sub fpmain
   
   my $job_name = $inputs->{'job_name'};
   my $job = $self->resume_job($job_name);
+  # All paths will be relative to the current directory (the job directory)
+  chdir($job->directory) or die "Cannot change into job directory: $!";
 
   if ($inputs->{'tool'} eq "str_str")
   {
-     fp_str_str($q,$job,$inputs,0);
+     return fp_str_str($q,$job,$inputs,0);
   }
   elsif ($inputs->{'tool'} eq "str_seq")
   {
-     fp_str_seq($q,$job,$inputs,0);
+     return fp_str_seq($q,$job,$inputs,0);
   }
   elsif ($inputs->{'tool'} eq "2s_sese")
   {
-     fp_twostep_sese($q,$job,$inputs,0);
+     return fp_twostep_sese($q,$job,$inputs,0);
   }
   elsif ($inputs->{'tool'} eq "1s_sese")
   {
-     fp_onestep_sese($q,$job,$inputs,'seqs',0);
+     return fp_onestep_sese($q,$job,$inputs,'seqs',0);
   }
   else  # advanced views
   {
-     adv_views($q,$job,$inputs);
+     return adv_views($q,$job,$inputs);
   }
 }
 
@@ -85,7 +87,7 @@ sub fp_str_str
   my $submit_dir = $conf_ref->{'SUBMIT_DIR'};
   my $max_open = $conf_ref->{'MAX_OPEN_TRIES'};
   
-  my $job_dir = $job->directory;
+  my $job_dir = '.';
   my $upl_dir = $job_dir . '/upload';
 
   # set 1D gap pens to their str-str values or usr value
@@ -116,7 +118,7 @@ sub fp_str_str
 #  if ($inputs->{'fw_6'} != 0)
   unless ($inputs->{'weight_mtx'} eq "")
   {
-     check_dir_size($q,$job->directory,$max_dir_size);
+     check_dir_size($q,$job_dir,$max_dir_size);
      unless ( -d $upl_dir )
      {
         mkdir $upl_dir
@@ -171,7 +173,7 @@ sub fp_str_str
 #  $memo_inp->{'fit_coord'} = $inputs->{'fit_coord'};
   $memo_inp->{'tool'} = 'str_str';
   create_memo($memo_inp,$job_dir);
-  print_job_submission($q,$job_name);
+  return print_job_submission($q,$job_name);
 }
 
 # Main sub for structure sequence alignment
@@ -191,7 +193,7 @@ sub fp_str_seq
   my $submit_dir = $conf_ref->{'SUBMIT_DIR'};
   my $max_open = $conf_ref->{'MAX_OPEN_TRIES'};
   
-  my $job_dir = $job->directory;
+  my $job_dir = '.'
   my $upl_dir = $job_dir . '/upload';
   
   # check/fix inputs and get structure segments
@@ -230,7 +232,7 @@ sub fp_str_seq
 #  if ($inputs->{'fw_6'} != 0)
   unless ($inputs->{'weight_mtx'} eq "")
   {
-     check_dir_size($q,$job->directory,$max_dir_size);
+     check_dir_size($q,$job_dir,$max_dir_size);
      unless ( -d $upl_dir )
      {
         mkdir $upl_dir
@@ -341,7 +343,6 @@ sub fp_str_seq
 	$fin_alipath = shift ( @file_ary );
      }
   }
-  $fin_alipath =~ s/^$todo_dir/$submit_dir/;
   my $output_seqseq = "seq-seq_out.ali";
 
   if ( $adv == 1 )
@@ -441,7 +442,7 @@ sub fp_str_seq
 #  $memo_inp->{'fit_coord'} = $inputs->{'fit_coord'};
   $memo_inp->{'tool'} = 'str_seq';
   create_memo($memo_inp,$job_dir);
-  print_job_submission($q,$job_name);
+  return print_job_submission($q,$job_name);
 }
 
 # Main sub for one step seq-seq alignments
@@ -459,7 +460,7 @@ sub fp_onestep_sese
   my $static_dir = $conf_ref->{'STATIC_DIR'};
   my $submit_dir = $conf_ref->{'SUBMIT_DIR'};
   
-  my $job_dir = $job->directory;
+  my $job_dir = ".";
   my $upl_dir = $job_dir . '/upload';
 
   if ( $adv == 1 )
@@ -564,7 +565,6 @@ sub fp_onestep_sese
 	   $fin_alipath = shift ( @file_ary );
         }
      }
-     $fin_alipath =~ s/^$todo_dir/$submit_dir/;
   }  
   else  # only structure files
   {
@@ -572,7 +572,7 @@ sub fp_onestep_sese
      $fin_aliformat = '';
   }
   
-  my $output_file = "$submit_dir/$job_name/seq-seq_out.ali";
+  my $output_file = "seq-seq_out.ali";
   my $topf_namebase = 'seq-seq';
   # create top files
   if ( $entries eq 'seqs' ) #only sequences
@@ -605,7 +605,7 @@ sub fp_onestep_sese
   $memo_inp->{'email'} = $inputs->{'email'};
   $memo_inp->{'tool'} = '1s_sese';
   create_memo($memo_inp,$job_dir);
-  print_job_submission($q,$job_name);
+  return print_job_submission($q,$job_name);
 }
 
 
@@ -623,9 +623,8 @@ sub fp_twostep_sese
   my $static_dir = $conf_ref->{'STATIC_DIR'};
   my $submit_dir = $conf_ref->{'SUBMIT_DIR'};
   
-  my $job_dir = $job->directory;
-  my $subm_jobdir = $submit_dir . '/' . $job_name;
-  my $subm_upldir = $subm_jobdir . '/upload';
+  my $job_dir = '.';
+  my $upl_dir = $job_dir . '/upload';
 
   if ( $adv == 1 )
   {
@@ -661,7 +660,7 @@ sub fp_twostep_sese
         # skip uploaded str files (called 'used_strs' in SA_form.cgi)
         unless ( $type eq 'str' )
 	{
-           my $file_path = $subm_upldir . '/' . $filen;
+           my $file_path = $upl_dir . '/' . $filen;
            my @type_split = split(/-/,$type); # [0] = type, [1] = no_of_entries
    	   $ali_files{$file_path}{'format'} = $type_split[0];
 	   $ali_files{$file_path}{'length'} = $type_split[1];
@@ -672,7 +671,7 @@ sub fp_twostep_sese
   else { error($q,'No uploaded files for 2-step seq-seq'); }
   if ( $inputs->{'upld_pseqs'} > 0 )
   {
-     my $file_path = $subm_jobdir . '/' . 'pasted_seqs.pir';
+     my $file_path = 'pasted_seqs.pir';
      $ali_files{$file_path}{'format'} = 'pir';
      $ali_files{$file_path}{'length'} = $inputs->{'upld_pseqs'};
   }
@@ -685,7 +684,7 @@ sub fp_twostep_sese
      my $fin_aliformat = $ali_files{$fin_alipath}{'format'};
      my $seq_count = $ali_files{$fin_alipath}{'length'};
      push @seq_counts, $seq_count;
-     my $output_file = "$submit_dir/$job_name/seq-seq_out$i.ali";
+     my $output_file = "seq-seq_out$i.ali";
      my $topf_namebase = "seq-seq$i";
      my $topf_name = $topf_namebase . '.py';
      # create top file for step 1
@@ -720,8 +719,8 @@ sub fp_twostep_sese
   }
   
 #  my $output_file = "$submit_dir/$job_name/prof_out.ali";
-  my $output_file = "$submit_dir/$job_name/final_alignment.ali";
-  my $input_file = "$submit_dir/$job_name/prof_in.ali";
+  my $output_file = "final_alignment.ali";
+  my $input_file = "prof_in.ali";
   my $topf_name = "profile.py";
   profile_topf($job_dir,$output_file,$inputs,$static_dir,$input_file,$topf_name,$seq_counts[0]);
 
@@ -730,7 +729,7 @@ sub fp_twostep_sese
   $memo_inp->{'email'} = $inputs->{'email'};
   $memo_inp->{'tool'} = '2s_sese';
   create_memo($memo_inp,$job_dir);
-  print_job_submission($q,$job_name);
+  return print_job_submission($q,$job_name);
 }
 
 
@@ -745,41 +744,41 @@ sub adv_views
   {
      if ($inputs->{'sa_feature'} eq 'str_str') #str-str alignment
      {
-        fp_str_str($q,$job,$inputs,1);
+        return fp_str_str($q,$job,$inputs,1);
      }
      else  #only align sequences of structures
      {
-        fp_onestep_sese($q,$job_name,$inputs,'strs',1);                  #
+        return fp_onestep_sese($q,$job,$inputs,'strs',1);                  #
      }
   }
   elsif ($inputs->{'tool'} eq "str_seq_adv")
   {
      if ($inputs->{'sa_feature'} eq 'str_seq') #str-seq alignment
      {
-        fp_str_seq($q,$job,$inputs,1);
+        return fp_str_seq($q,$job,$inputs,1);
      }
      else  #only align sequences 
      {
-        fp_onestep_sese($q,$job,$inputs,'seqs_and_strs',1);         #
+        return fp_onestep_sese($q,$job,$inputs,'seqs_and_strs',1);         #
      }
   }
   elsif ($inputs->{'tool'} eq "sese_adv")
   {
      if ($inputs->{'sa_feature'} eq '2s_sese') 
      {
-        fp_twostep_sese($q,$job,$inputs,1);
+        return fp_twostep_sese($q,$job,$inputs,1);
      }
      elsif ($inputs->{'sa_feature'} eq 'str_seq')
      {
-        fp_str_seq($q,$job,$inputs,1);
+        return fp_str_seq($q,$job,$inputs,1);
      }
      else  # 1 step seq-seq
      {
         if ($inputs->{'structures'} == 1) 
 	{ 
-	   fp_onestep_sese($q,$job,$inputs,'seqs_and_strs',1);      #
+	   return fp_onestep_sese($q,$job,$inputs,'seqs_and_strs',1);      #
 	}
-	else { fp_onestep_sese($q,$job,$inputs,'seqs',1); }         #
+	else { return fp_onestep_sese($q,$job,$inputs,'seqs',1); }         #
      } 
   }
   else
@@ -1836,9 +1835,8 @@ sub faa2pir_topf
  
 sub print_job_submission{
 	my ($q, $job_name) = @_;
-	start($q);
-        print '<div id="left"></div>\n';
-	print <<SUBMIT;
+        my $msg = '<div id="left"></div>\n';
+	$msg .= <<SUBMIT;
 <div id="fullpart"><h1> Job Submitted </h1>
 <hr />
 <p>
@@ -1856,7 +1854,7 @@ sub print_job_submission{
 </p>
 </div></div><div style="clear:both;"></div>
 SUBMIT
-	print_footer($q);
+	return $msg;
 }
 
 1;
