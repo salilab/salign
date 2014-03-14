@@ -122,8 +122,6 @@ sub fp_str_str
      {
         mkdir $upl_dir
           or die "Can't create sub directory upload: $!\n";
-        chmod(oct(777),$upl_dir)
-          or die "Can't change dir mode: $!\n";
      }
      # upload weight matrix 
      $wt_mtx = fp_file_upload($q,$upl_dir,$buffer_size,"weight_mtx",$max_open);
@@ -235,8 +233,6 @@ sub fp_str_seq
      {
         mkdir $upl_dir
           or die "Can't create sub directory upload: $!\n";
-        chmod(oct(777),$upl_dir)
-          or die "Can't change dir mode: $!\n";
      }
      # upload weight matrix 
      $wt_mtx = fp_file_upload($q,$upl_dir,$buffer_size,"weight_mtx",$max_open);
@@ -852,7 +848,6 @@ sub ali_fuser
      }
   }
   close FUSE_FILE;
-  chmod(oct(666),$fuse_file) or die "Can't change fuse_file mode: $!\n";
   return($format);
 }
  
@@ -901,7 +896,6 @@ sub weed_strs
 #    else {die "Can't untaint input ali file";}
   move("$tmp_file", "$ali_file")
     or die "move failed:$ali_file $tmp_file $! ";
-  chmod(oct(666),"$ali_file") or die "Can't change $ali_file mode: $!\n";
   return($weeded_strs);
 }  
 
@@ -1025,8 +1019,6 @@ sub cp_PDBs
 
   mkdir $common_dir
     or die "Can't create sub directory $common_dir: $!\n";
-  chmod(oct(777),$common_dir)
-    or die "Can't change dir mode: $!\n";
 
   my $pdb_dbm = "$static_dir/lib_pdbs.db";  
   tie my %pdb_hash, "DB_File", $pdb_dbm, O_RDONLY  
@@ -1043,8 +1035,6 @@ sub cp_PDBs
 #           system ("cp","$pdb_dir/$filen","$common_dir/$filen");
            copy("$pdb_dir/$filen", "$common_dir/$lib_str.ent")
              or die "copy failed: $!";
-           chmod(oct(666),"$common_dir/$lib_str.ent") 
-	     or die "Can't change $common_dir/$lib_str.ent mode: $!\n";
 	   last;
 	}   
      }
@@ -1072,8 +1062,6 @@ sub cp_PDBs_noUpl
 
   mkdir $common_dir
     or die "Can't create sub directory $common_dir: $!\n";
-  chmod(oct(777),$common_dir)
-    or die "Can't change dir mode: $!\n";
 
   my $pdb_dbm = "$static_dir/lib_pdbs.db";  
   tie my %pdb_hash, "DB_File", $pdb_dbm, O_RDONLY  
@@ -1090,8 +1078,6 @@ sub cp_PDBs_noUpl
 #           system ("cp","$pdb_dir/$filen","$common_dir/$filen");
            copy("$pdb_dir/$filen", "$common_dir/$lib_str.ent")
              or die "copy failed: $!";
-           chmod(oct(666),"$common_dir/$lib_str.ent") 
-	     or die "Can't change $common_dir/$lib_str.ent mode: $!\n";
 	   last;
 	}   
      }
@@ -1183,7 +1169,6 @@ sub fp_file_upload
   while( read($fh,$buffer,$buffer_size) ) {print UPLOAD_OUT "$buffer";}
   close UPLOAD_OUT;
   
-  chmod(oct(666),"$upl_dir/$filen") or die "Can't change input_file mode: $!\n";
   return($filen);
 }
 
@@ -1242,8 +1227,6 @@ sub create_memo
   tie(%memo_inp, "DB_File", "$job_dir/$memo_name", O_CREAT|O_WRONLY) or die "Cannot open tie to $memo_name: $!";
   %memo_inp = %$memo_inp_ref;
   untie %memo_inp;
-
-  chmod(oct(666),"$job_dir/$memo_name") or die "Can't change memo_file mode: $!\n";
 }
 
 # Create top file for str-str
@@ -1474,8 +1457,6 @@ sub strstr_topf
        
   close TOP_IN;
   close TOP_OUT;
-  chmod(oct(666),$top_file)
-    or die "Can't change top_file mode: $!\n";
 }
 
  
@@ -1715,8 +1696,6 @@ sub sese_stse_topf
   }   
   close TOP_IN;
   close TOP_OUT;
-  chmod(oct(666),$top_file)
-    or die "Can't change top_file mode: $!\n";
 }
 
 # Create top file for profile-profile alignment
@@ -1751,8 +1730,6 @@ sub profile_topf
        
   close TOP_IN;
   close TOP_OUT;
-  chmod(oct(666),$top_file)
-    or die "Can't change top_file mode: $!\n";
 }
 
 
@@ -1783,8 +1760,6 @@ sub faa2pir_topf
   }   
   close TOP_IN;
   close TOP_OUT;
-  chmod(oct(666),$top_file)
-    or die "Can't change top_file mode: $!\n";
 }
 
 # Create html related to starting the html page 
