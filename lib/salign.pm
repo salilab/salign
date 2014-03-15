@@ -92,9 +92,14 @@ sub get_results_page {
     open(FH, "email_info") or die "Cannot open: $!";
     my $info = <FH>;
     close(FH) or die "Cannot close: $!";
+    my $failmsg;
     if ($info =~ /^OK/) {
-        return salign::results_page::display_ok_job($self, $q, $job);
+        $failmsg = '';
+    } else {
+        $failmsg = $q->b("Your alignment failed <br /> Details may be found " .
+                         "in the log files <br /><br />");
     }
+    return salign::results_page::display_job($self, $q, $job, $failmsg);
 }
 
 1;

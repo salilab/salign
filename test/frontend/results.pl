@@ -47,3 +47,28 @@ my $t = new saliweb::Test('salign');
                'output\.log.*/ms',
                'get_results_page (input and output)');
 }
+
+# Check job that failed
+{
+    my $frontend = $t->make_frontend();
+    my $job = new saliweb::frontend::CompletedJob($frontend,
+                        {name=>'testjob', passwd=>'foo', directory=>'/foo/bar',
+                         archive_time=>'2009-01-01 08:45:00'});
+    my $tmpdir = tempdir(CLEANUP=>1);
+    ok(chdir($tmpdir), "chdir into tempdir");
+
+    ok(open(FH, "> email_info"), "Open email_info");
+    print FH "FAIL||\n";
+    ok(close(FH), "Close email_info");
+
+    ok(open(FH, "> input.py"), "Open input.py");
+    ok(close(FH), "Close input.py");
+
+    my $ret = $frontend->get_results_page($job);
+    chdir("/");
+
+    like($ret, '/Your alignment failed.*' .
+               'Modeller Input Files.*' .
+               'input\.py/ms',
+               'get_results_page (failed job)');
+}

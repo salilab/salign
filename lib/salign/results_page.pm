@@ -11,11 +11,11 @@ use Fcntl qw( :DEFAULT :flock);
 use POSIX qw(strftime);
 use DB_File;
 
-sub display_ok_job {
-    my ($self, $q, $job) = @_;
+sub display_job {
+    my ($self, $q, $job, $failmsg) = @_;
 
     my $msg = $q->b("<br><h1>Results for Salign job id: " . $job->name
-                    . "</h1><hr />");
+                    . "</h1><hr />$failmsg");
     my @filetypes=("_fit.pdb",".tree",".py",".log",".ali");
     $msg .= "\n<table width=\"90%\" align=\"center\">";
     foreach $filetype (@filetypes) {
