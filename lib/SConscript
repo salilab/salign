@@ -1,4 +1,5 @@
 Import('env')
 
 env.InstallPerl(['salign.pm', 'salign/CGI_Utils.pm', 'salign/Utils.pm',
-                 'salign/index_page.pm', 'salign/submit_page.pm'])
+                 'salign/index_page.pm', 'salign/submit_page.pm',
+                 'salign/results_page.pm'])

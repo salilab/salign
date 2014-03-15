@@ -15,6 +15,7 @@ use salign::Utils;
 use salign::CGI_Utils;
 use salign::index_page;
 use salign::submit_page;
+use salign::results_page;
 use Cwd;
 use Fcntl qw( :DEFAULT :flock);
 use DB_File;
@@ -86,8 +87,14 @@ sub get_submit_page {
 }
 
 sub get_results_page {
-  my ($self, $job) = @_;
-  my $q = $self->cgi;
+    my ($self, $job) = @_;
+    my $q = $self->cgi;
+    open(FH, "email_info") or die "Cannot open: $!";
+    my $info = <FH>;
+    close(FH) or die "Cannot close: $!";
+    if ($info =~ /^OK/) {
+        return salign::results_page::display_ok_job($self, $q, $job);
+    }
 }
 
 1;
