@@ -1193,10 +1193,10 @@ sub str_str
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1);
 
-  $msg .= print_cont1_category_choice ($q, "Structure-structure alignment");
+  $msg .= print_cont1_category_choice ($self, $q, "Structure-structure alignment");
   $msg .= "Specified structure segments will be multiply aligned.<br /><br />";
   $msg .= "\n<table> <col width=\"100\"><col width=\"100\">\n";
-  $msg .= print_pdb_segments ($q, $upl_files_ref, $lib_PDBs_ref);
+  $msg .= print_pdb_segments ($self, $q, $upl_files_ref, $lib_PDBs_ref);
   $msg .= "<tr><td>\n";
 
 #  # Show uploaded ali files - do we want this or not?
@@ -1326,13 +1326,13 @@ sub str_seq
 	$q->hidden( -name => "email", -default => $email, -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1);
 
-  $msg .= print_cont1_category_choice ($q, "Structure-sequence alignment");
+  $msg .= print_cont1_category_choice ($self, $q, "Structure-sequence alignment");
   $msg .= "Step 1: Structures and sequences will be multiply aligned independently.<br />";
   $msg .= "Step 2: The resulting alignments from step 1 will be aligned to each other.<br /><br />";
 
   $msg .= "\n<table> <col width=\"100\"><col width=\"100\">\n";
 
-  $msg .= print_pdb_segments ($q, $upl_files_ref, $lib_PDBs_ref);
+  $msg .= print_pdb_segments ($self, $q, $upl_files_ref, $lib_PDBs_ref);
 
   $msg .= "<tr><td>&nbsp;</td><td>\n";
 
@@ -1513,7 +1513,7 @@ sub twostep_sese
 	$q->hidden( -name => "email", -default => $email, -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1);
 
-  $msg .= print_cont1_category_choice ($q, "Sequence-sequence alignment");
+  $msg .= print_cont1_category_choice ($self, $q, "Sequence-sequence alignment");
   $msg .= "Step 1: The two sets of sequences will be multiply aligned independently.<br />";
   $msg .= "Step 2: The resulting alignments from step 1 will be aligned to each other.<br /><br />";
 
@@ -1653,7 +1653,7 @@ sub onestep_sese
 	$q->hidden( -name => "email", -default => $email, -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1);
 
-  $msg .= print_cont1_category_choice ($q, "Sequence-sequence alignment");
+  $msg .= print_cont1_category_choice ($self, $q, "Sequence-sequence alignment");
   $msg .= "All uploaded sequences will be multiply aligned.<br /><br />";
 
   # Show uploaded ali files and no of pasted seqs
@@ -1745,20 +1745,20 @@ sub adv_stst
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1);
 
-  $msg .= print_cont1_advance_option ($q);
+  $msg .= print_cont1_advance_option ($self, $q);
   $msg .= "Depending on the choice of the alignment category, some options may have no effect.\n";
 
   $msg .= "<table>\n"
-  . print_advance_alignment_category ($q)
-  . print_alignment_type ($q)
-  . print_advance_pdb_segments ($q, \%params)
-  . print_advance_penalties ($q)
-  . print_advance_weight ($q)
-  . print_advance_rms ($q)
-  . print_advance_gap ($q, 1)
-  . print_advance_fit ($q)
-  . print_advance_improve ($q)
-  . print_advance_write_pdb ($q, 1)
+  . print_advance_alignment_category ($self, $q)
+  . print_alignment_type ($self, $q)
+  . print_advance_pdb_segments ($self, $q, \%params)
+  . print_advance_penalties ($self, $q)
+  . print_advance_weight ($self, $q)
+  . print_advance_rms ($self, $q)
+  . print_advance_gap ($self, $q, 1)
+  . print_advance_fit ($self, $q)
+  . print_advance_improve ($self, $q)
+  . print_advance_write_pdb ($self, $q, 1)
   . print_advance_submit ($q);
   $msg .= "</table></div>\n";
   return $msg;
@@ -1784,21 +1784,21 @@ sub adv_stse
 	$q->hidden( -name => "email", -default => $email, -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1);
 
-  $msg .= print_cont1_advance_option ($q);
+  $msg .= print_cont1_advance_option ($self, $q);
   $msg .= "Depending on the choice of the alignment category, some options may have no effect.\n";
 
   $msg .= "<table>\n"
-  . print_advance_alignment_category_2 ($q)
-  . print_alignment_type ($q)
-  . print_advance_pdb_segments ($q, \%params)
+  . print_advance_alignment_category_2 ($self, $q)
+  . print_alignment_type ($self, $q)
+  . print_advance_pdb_segments ($self, $q, \%params)
   . print_advance_uploaded_ali ($q, \%params)
-  . print_advance_penalties_2a ($q)
-  . print_advance_weight ($q)
-  . print_advance_rms ($q)
-  . print_advance_gap ($q, 1)
-  . print_advance_fit ($q)
-  . print_advance_improve ($q)
-  . print_advance_write_pdb ($q, 0)
+  . print_advance_penalties_2a ($self, $q)
+  . print_advance_weight ($self, $q)
+  . print_advance_rms ($self, $q)
+  . print_advance_gap ($self, $q, 1)
+  . print_advance_fit ($self, $q)
+  . print_advance_improve ($self, $q)
+  . print_advance_write_pdb ($self, $q, 0)
   . print_advance_submit ($q)
   . "</table></div>\n";
   return $msg;
@@ -1828,17 +1828,17 @@ sub adv_sese
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1).
 	$q->hidden( -name => "structures", -default => $structures, -override => 1);
 
-  $msg .= print_cont1_advance_option ($q);
+  $msg .= print_cont1_advance_option ($self, $q);
   if ( $params{'caller'} eq '2s_sese' ) {
      $msg .= "Depending on the choice of the alignment category, some options may have no effect.\n";
   }
 
   $msg .= "<table>\n";
   if ( $params{'caller'} eq '2s_sese' ) {
-     $msg .= print_advance_alignment_category_3 ($q, $structures); 
+     $msg .= print_advance_alignment_category_3 ($self, $q, $structures); 
 
      if ( $structures == 1 ) {
-  	$msg .= print_advance_pdb_segments ($q, \%params); 
+  	$msg .= print_advance_pdb_segments ($self, $q, \%params); 
      }
   }  
   else #called from 1step seq seq
@@ -1848,21 +1848,21 @@ sub adv_sese
 
   # Present uploaded ali files and no of pasted seqs
   $msg .= print_advance_uploaded_ali ($q, \%params)
-          . print_alignment_type ($q);
+          . print_alignment_type ($self, $q);
 
   if ( $structures == 1 ) {
-     $msg .= print_advance_penalties_2b ($q)
-     . print_advance_weight ($q)
-     . print_advance_rms ($q)
-     . print_advance_gap ($q, 1)
-     . print_advance_fit ($q)
-     . print_advance_write_pdb ($q, 1);
+     $msg .= print_advance_penalties_2b ($self, $q)
+     . print_advance_weight ($self, $q)
+     . print_advance_rms ($self, $q)
+     . print_advance_gap ($self, $q, 1)
+     . print_advance_fit ($self, $q)
+     . print_advance_write_pdb ($self, $q, 1);
   }
   else {
-     $msg .= print_advance_penalties_3 ($q)
-             . print_advance_gap ($q, 0);
+     $msg .= print_advance_penalties_3 ($self, $q)
+             . print_advance_gap ($self, $q, 0);
   }
-  $msg .= print_advance_improve ($q) . print_advance_submit ($q)
+  $msg .= print_advance_improve ($self, $q) . print_advance_submit ($q)
           . "</table></div>\n";
   return $msg;
 }
@@ -1887,22 +1887,22 @@ sub make_size_nice
 }
 
 sub print_cont1_category_choice {
-	my ($q, $cat_choice) = @_;
+	my ($self, $q, $cat_choice) = @_;
 
 return "<div id=\"left\"></div><div id=\"fullpart\">\n"
-       . $q->h2("<br />Choice of alignment category",  help_link($q, "ali_cat_choice"),
+       . $q->h2("<br />Choice of alignment category",  $self->help_link("ali_cat_choice"),
 	     ": &nbsp;$cat_choice", $q->br, $q->hr);
 }
 
 sub print_cont1_advance_option {
-	my ($q) = @_;
+	my ($self, $q) = @_;
 
 return "<div id=\"left\"></div><div id=\"fullpart\">\n"
       . $q->h2("<br />SALIGN Advanced Options",  help_link_2($q, ""), $q->br, $q->hr);
 }
 
 sub print_alignment_type {
-  my $q = shift;
+  my ($self, $q) = @_;
 
   return	$q->Tr($q->td("Alignment type", help_link_2($q, "ali_type"), $q->br),
 		$q->td($q->radio_group(
@@ -1912,13 +1912,13 @@ sub print_alignment_type {
 				-labels  => { "automatic"   => "",
 	             			      "progressive" => "Progressive ",
 					      "tree"        => "Tree "          }
-			), "Optimal", help_link($q, "ali_type"), $q->br, $q->br));
+			), "Optimal", $self->help_link("ali_type"), $q->br, $q->br));
 }
 
 sub print_advance_alignment_category {
-  my $q = shift;
+  my ($self, $q) = @_;
 
-  return	$q->Tr($q->td("Alignment category", help_link($q, "ali_cat"), $q->br, $q->br),
+  return	$q->Tr($q->td("Alignment category", $self->help_link("ali_cat"), $q->br, $q->br),
 	$q->td($q->popup_menu(
 	  -name    => "sa_feature",
 	  -values  => [ "str_str", "1s_sese" ],
@@ -1928,9 +1928,9 @@ sub print_advance_alignment_category {
 	)));
 }
 sub print_advance_alignment_category_2 {
-  my $q = shift;
+  my ($self, $q) = @_;
 
-  return	$q->Tr($q->td("Alignment category", help_link($q, "ali_cat"), $q->br, $q->br),
+  return	$q->Tr($q->td("Alignment category", $self->help_link("ali_cat"), $q->br, $q->br),
 	$q->td($q->popup_menu(
 	  -name    => "sa_feature",
 	  -values  => [ "str_seq", "1s_sese" ],
@@ -1941,10 +1941,10 @@ sub print_advance_alignment_category_2 {
 }
 
 sub print_advance_alignment_category_3 {
-  my ($q, $structures) = @_;
+  my ($self, $q, $structures) = @_;
 
   if ($structures == 1){
-    return $q->Tr($q->td("Alignment category", help_link($q, "ali_cat"), $q->br, $q->br),
+    return $q->Tr($q->td("Alignment category", $self->help_link("ali_cat"), $q->br, $q->br),
 		$q->td($q->popup_menu(
 		-name    => "sa_feature",
                 -values  => [ "2s_sese","str_seq","1s_sese" ],
@@ -1954,7 +1954,7 @@ sub print_advance_alignment_category_3 {
 		              "1s_sese" => "One step sequence-sequence alignment"  }
 		)));
   } else{
-    return $q->Tr($q->td("Alignment category", help_link($q, "ali_cat"), $q->br, $q->br),
+    return $q->Tr($q->td("Alignment category", $self->help_link("ali_cat"), $q->br, $q->br),
 		$q->td($q->popup_menu(
 		-name    => "sa_feature",
                 -values  => [ "2s_sese","1s_sese" ],
@@ -1966,9 +1966,9 @@ sub print_advance_alignment_category_3 {
 }
 
 sub print_advance_penalties {
-  my $q = shift;
+  my ($self, $q) = @_;
 
-  return $q->Tr($q->td("1D gap penalties", help_link($q, "1D_gap_pen"), $q->br),
+  return $q->Tr($q->td("1D gap penalties", $self->help_link("1D_gap_pen"), $q->br),
 		$q->td($q->i("Opening: "),
 		$q->textfield( -name => "1D_open_usr", -default => "Default", -size => "10" ),
 		$q->i("&nbsp Extension: "),
@@ -1996,9 +1996,9 @@ sub print_advance_penalties {
 
 
 sub print_advance_penalties_3 {
-  my $q = shift;
+  my ($self, $q) = @_;
 
-  return	$q->Tr($q->td("1D gap penalties", help_link($q, "1D_gap_pen"), $q->br),
+  return	$q->Tr($q->td("1D gap penalties", $self->help_link("1D_gap_pen"), $q->br),
 		$q->td($q->i("Opening: "),
 		$q->textfield( -name => "1D_open_usr", -default => "Default", -size => "10" ),
 		$q->i("&nbsp Extension: "),
@@ -2011,7 +2011,7 @@ sub print_advance_penalties_3 {
 }
 
 sub print_advance_penalties_2a {
-  my $q = shift;
+  my ($self, $q) = @_;
 
   return print_advance_penalties_2 ($q) .
         $q->Tr($q->td("3D gap penalties", help_link_2($q, "3D_gap_pen"), $q->br),
@@ -2030,9 +2030,9 @@ sub print_advance_penalties_2a {
 }
 
 sub print_advance_penalties_2b {
-  my $q = shift;
+  my ($self, $q) = @_;
 
-  return print_advance_penalties_2 ($q).
+  return print_advance_penalties_2 ($self, $q).
         $q->Tr($q->td("3D gap penalties", help_link_2($q, "3D_gap_pen"), $q->br),
 		$q->td($q->i("Opening: "),
 		$q->textfield( -name => "3D_open", -default => "0", -size => "10" ),
@@ -2049,9 +2049,9 @@ sub print_advance_penalties_2b {
 }
 
 sub print_advance_penalties_2 {
-  my $q = shift;
+  my ($self, $q) = @_;
 
-  return	$q->Tr($q->td("1D gap penalties", help_link($q, "1D_gap_pen"), $q->br),
+  return	$q->Tr($q->td("1D gap penalties", $self->help_link("1D_gap_pen"), $q->br),
 		$q->td($q->i("Opening: "),
 		$q->textfield( -name => "1D_open_usr", -default => "Default", -size => "10" ),
 		$q->i("&nbsp Extension: "),
@@ -2097,7 +2097,7 @@ sub print_advance_penalties_2 {
 }
 
 sub print_advance_weight {
-  my $q = shift;
+  my ($self, $q) = @_;
 
   return	$q->Tr($q->td("External weight matrix", help_link_2($q, "wt_mtx"), $q->br),
 		$q->td($q->filefield( -name => "weight_mtx" ), $q->br, $q->br));
@@ -2112,7 +2112,7 @@ sub print_advance_weight {
 }
 
 sub print_advance_rms {
-  my $q = shift;
+  my ($self, $q) = @_;
 
   return	$q->Tr($q->td("RMS cut-off for average number<br /> of equivalent positions determination",
 		help_link_2($q, "rms_cutoff"), $q->br),
@@ -2121,7 +2121,7 @@ sub print_advance_rms {
 }
 
 sub print_advance_gap {
-  my ($q, $max_gap) = @_;
+  my ($self, $q, $max_gap) = @_;
 
   my $msg = '';
   if ($max_gap == 1){
@@ -2145,7 +2145,7 @@ sub print_advance_gap {
 }
 
 sub print_advance_fit {
-  my $q = shift;
+  my ($self, $q) = @_;
 
   return	$q->Tr($q->td("Fit", help_link_2($q, "fit"), $q->br),
 		$q->td($q->radio_group(
@@ -2158,7 +2158,7 @@ sub print_advance_fit {
 }
 
 sub print_advance_improve {
-  my $q = shift;
+  my ($self, $q) = @_;
 
   return	$q->Tr($q->td("Improve alignment", help_link_2($q, "improve"), $q->br),
 		$q->td($q->radio_group(
@@ -2171,7 +2171,7 @@ sub print_advance_improve {
 }
 
 sub print_advance_write_pdb {
-  my ($q, $show) = @_;
+  my ($self, $q, $show) = @_;
 
   if ($show == 1) {
       return	$q->Tr($q->td("Write whole PDB", help_link_2($q, "write_whole"), $q->br),
@@ -2202,12 +2202,12 @@ sub print_advance_submit {
 
 
 sub print_advance_pdb_segments {
-   my ($q, $params_ref) = @_;
+   my ($self, $q, $params_ref) = @_;
    my %params = %$params_ref;
 
    my $msg = '';
    $msg .= "<tr>";
-   $msg .= $q->td("Specify PDB segments", help_link($q, "segments"), $q->br);
+   $msg .= $q->td("Specify PDB segments", $self->help_link("segments"), $q->br);
    $msg .= "<td>";
 
   # Retrieve structures and their default segments sent from simple view
@@ -2290,12 +2290,12 @@ sub print_advance_uploaded_ali {
 }
 
 sub print_pdb_segments {
-   my ($q, $upl_files_ref, $lib_PDBs_ref) = @_;
+   my ($self, $q, $upl_files_ref, $lib_PDBs_ref) = @_;
    my %upl_files = %$upl_files_ref;
    my %lib_PDBs = %$lib_PDBs_ref;
 
    my $msg = "<tr>";
-   $msg .=  $q->td("Specify PDB segments\n", help_link($q, "segments"), $q->br);
+   $msg .=  $q->td("Specify PDB segments\n", $self->help_link("segments"), $q->br);
    $msg .= "<td>\n";
 
 
@@ -2494,16 +2494,6 @@ sub print_body3d_continue {
 </form>
 </div>
 BODY3d
-}
-
-sub help_link {
-    my ($q, $target) = @_;
-    my $url="/salign-test/help.cgi?type=help&amp;style=helplink#$target";
-    return $q->a({-href=>"$url",
-                  -class=>"helplink",
-                  -onClick=>"launchHelp(\'$url\'); return false;"},
-                 $q->img({-src=>"/saliweb/img/help.jpg", -alt=>"help",
-                          -class=>"helplink"} ));
 }
 
 sub help_link_2 {
