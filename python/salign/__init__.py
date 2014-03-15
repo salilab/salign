@@ -58,6 +58,46 @@ class Job(saliweb.backend.Job):
         else:
             raise ValueError("Tool %s not recognized" % tool)
 
+    def postprocess(self):
+        self.check_log_files()
+
+    def check_log_files():
+        fh = open('email_info', 'w')
+        print >> fh, "OK||"
+
+    def send_job_completed_email(self):
+        fh = open('email_info')
+        email_info = fh.readline().rstrip('\r\n').split('|')
+        if email_info[0] == 'OK':
+            tool = anydbm.open('inputs.db')['tool']
+            self.email_success(tool, email_info[1], email_info[2])
+        else:
+            self.email_failure(fh.read())
+
+    def email_success(self, tool, q_score, q_score_percent):
+        msg = "---------- SALIGN JOB ID %s ----------\n\n" % self.name + \
+              "Your SALIGN job has been processed\n\n"
+        if tool == 'str_str':
+            msg += "Quality score of alignment: %s ( %s )\n\n" \
+                   % (q_score, q_score_percent)
+        msg += "Please click on hyperlink below to collect results.\n" \
+               + self.url + "\nThank you for using SALIGN\n\n" \
+               + "Please address questions and comments to:\n" \
+               + "SALIGN web server administrator <%s>\n" \
+                 % self.config.admin_email
+        self.send_user_email("SALIGN job %s results" % self.name, msg)
+
+    def email_failure(self, errors):
+        msg = "---------- SALIGN JOB ID %s ----------\n\n" % self.name + \
+              "Dear SALIGN user,\n\n" + \
+              "Unfortunately, the SALIGN run did not complete " + \
+              "successfully, due to error(s):\n\n" + errors
+        msg += "Log files and further information about the MODELLER " \
+               + "run can be found at\n" + self.url \
+               + "\nPlease address questions and comments to:\n" \
+               + "SALIGN web server administrator <%s>\n" \
+                 % self.config.admin_email
+        self.send_user_email("SALIGN job %s run error" % self.name, msg)
 
 def get_web_service(config_file):
     db = saliweb.backend.Database(Job)
