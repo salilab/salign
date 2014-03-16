@@ -187,9 +187,9 @@ class Job(saliweb.backend.Job):
               "Dear SALIGN user,\n\n" + \
               "Unfortunately, the SALIGN run did not complete " + \
               "successfully, due to error(s):\n\n" + errors
-        msg += "Log files and further information about the MODELLER " \
+        msg += "\nLog files and further information about the MODELLER " \
                + "run can be found at\n" + self.url \
-               + "\nPlease address questions and comments to:\n" \
+               + "\n\nPlease address questions and comments to:\n" \
                + "SALIGN web server administrator <%s>\n" \
                  % self.config.admin_email
         subject = "SALIGN job %s run error" % self.name
