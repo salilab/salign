@@ -112,4 +112,17 @@ sub download_results_file {
     }
 }
 
+sub get_job_object {
+  my ($self, $job_name) = @_;
+  my $job;
+  if ($job_name) {
+    $job = $self->resume_job($job_name);
+  } else {
+    $job = $self->make_job("job");
+    mkdir $job->directory . "/upload"
+      or die "Can't create sub directory " . $job->directory . "/upload: $!\n";
+  }
+  return $job;
+}
+
 1;
