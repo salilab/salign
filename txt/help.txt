@@ -33,7 +33,7 @@
 <p>
     The server can recognize the contents of the following file formats:
 <br>
-    Alignment files: <a href="/salign/formats.html#pir">MODELLER PIR</a> or <a href="/salign/formats.html#fasta">FASTA</a>
+    Alignment files: <a href="/salign/html/formats.html#pir">MODELLER PIR</a> or <a href="/salign/html/formats.html#fasta">FASTA</a>
 <br>    
     Structure files: <a href="http://www.rcsb.org/pdb/">PDB</a> format (atomic coordinate files can have '.ent', '.pdb' or no extension at all)
 <br>    
@@ -87,12 +87,12 @@ not a folder containing the files.</p>
 <p>
     Upon submission of the start page inputs the SALIGN server determines the alignment category which is likely to produce the most accurate alignment.
 <br>
-    Click <a href="/salign/app_note.html">here</a> for more information about the decision process
+    Click <a href="/salign/html/app_note.html">here</a> for more information about the decision process
 <br>
     The proposed alignment category can be changed by pressing 'Advanced' if other options exist.
 <br>
     For a flowchart of default and optional alignment categories, click 
-<a href="/salign/FlowchartsComb.pdf">here</a> 
+<a href="/salign/html/FlowchartsComb.pdf">here</a> 
 </p>
 <br>
     
@@ -132,7 +132,7 @@ not a folder containing the files.</p>
     Only viable alternatives to the alignment category are displayed.
 <br>
     For a flowchart of default and optional alignment categories, click 
-<a href="/salign/FlowchartsComb.pdf">here</a> 
+<a href="/salign/html/FlowchartsComb.pdf">here</a> 
 </p>
 <br>
 
@@ -146,7 +146,7 @@ not a folder containing the files.</p>
     30 structures/sequences or less are aligned using the tree algorithm, while progressive alignments are performed for larger numbers of entries
 <br>
     For information about exceptions and intricate scenarios, click 
-<a href="/salign/app_note.html">here</a>
+<a href="/salign/html/app_note.html">here</a>
 </p>
 <br>
 
@@ -167,7 +167,7 @@ not a folder containing the files.</p>
     Each of these alignments have a distinct set of 1D gap penalties.
 </i><br><br>
     For more information about 1D gap penalties, click 
-<a href="/salign/manual.html#1D_gap_pen">here</a>
+<a href="/salign/html/manual.html#1D_gap_pen">here</a>
 </p>
 <br>
 <a name="chimera"><h4>Launch Chimera</h4></a>

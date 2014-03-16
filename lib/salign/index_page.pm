@@ -2494,7 +2494,7 @@ BODY3d
 
 sub help_link_2 {
     my ($q, $target) = @_;
-    my $url="/salign/manual.html#$target";
+    my $url="/salign/html/manual.html#$target";
     return $q->a({-href=>"$url",
                   -class=>"helplink",
                   -onClick=>"launchHelp(\'$url\'); return false;"},
