@@ -16,6 +16,7 @@ use salign::CGI_Utils;
 use salign::index_page;
 use salign::submit_page;
 use salign::results_page;
+use salign::chimera;
 use Cwd;
 use Fcntl qw( :DEFAULT :flock);
 use DB_File;
@@ -100,6 +101,15 @@ sub get_results_page {
                          "in the log files <br /><br />");
     }
     return salign::results_page::display_job($self, $q, $job, $failmsg);
+}
+
+sub download_results_file {
+    my ($self, $job, $file) = @_;
+    if ($file =~ /showfile\.chimerax/) {
+        salign::chimera::showfile($self, $job);
+    } else {
+        $self->SUPER::download_results_file($job, $file);
+    }
 }
 
 1;
