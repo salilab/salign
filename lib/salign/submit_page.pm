@@ -29,8 +29,6 @@ my $pdb_database = "/netapp/database/pdb/remediated/uncompressed_files";
 sub fpmain
 {  
   my ($self, $q) = @_;
-  # Look for errors in the transfer process
-  if ($q->cgi_error) { error($q, "Transfer error: " . $q->cgi_error); }
 
   # Fetch all form inputs.
   my $inputs;
@@ -126,7 +124,8 @@ sub fp_str_str
      my $ascii = ascii_chk($upl_dir,$wt_mtx);
      unless ($ascii == 1) 
      {
-        error($q,"Non ascii file found where only ascii files allowed: $wt_mtx");
+        throw saliweb::frontend::InputValidationError(
+            "Non ascii file found where only ascii files allowed: $wt_mtx");
      }  
   } 
 
@@ -197,7 +196,8 @@ sub fp_str_seq
      { 
         if ( $inputs->{"2D_$i"} eq "" )
         {
-           error($q,"You must specify all 2D gap penalties");
+           throw saliweb::frontend::InputValidationError(
+                      "You must specify all 2D gap penalties");
         }
      }
      # set 1D gap pens to their str-str values or usr value
@@ -238,7 +238,8 @@ sub fp_str_seq
      my $ascii = ascii_chk($upl_dir,$wt_mtx);
      unless ($ascii == 1) 
      {
-        error($q,"Non ascii file found where only ascii files allowed: $wt_mtx");
+        throw saliweb::frontend::InputValidationError(
+              "Non ascii file found where only ascii files allowed: $wt_mtx");
      }  
   } 
 
@@ -658,7 +659,7 @@ sub fp_twostep_sese
      }
      untie %tie_hash;
   }
-  else { error($q,'No uploaded files for 2-step seq-seq'); }
+  else { throw saliweb::frontend::InputValidationError('No uploaded files for 2-step seq-seq'); }
   if ( $inputs->{'upld_pseqs'} > 0 )
   {
      my $file_path = 'pasted_seqs.pir';
@@ -773,7 +774,7 @@ sub adv_views
   }
   else
   {
-     error($q,"Unidentified tool");
+     die "Unidentified tool";
   }
 }
 
@@ -928,7 +929,7 @@ sub strstr_inputs
 	   my @delim = split( /(:)/, $segment );
 	   unless ($#delim == 7)
 	   {
-	     error($q,"Incorrect input format: structure segments");
+	     throw saliweb::frontend::InputValidationError("Incorrect input format: structure segments");
 	   }
 	   my $start = $delim[0] . $delim[1] . $delim[2];
 	   my $end = $delim[4] . $delim[5] . $delim[6];
@@ -949,7 +950,7 @@ sub strstr_inputs
 	   my @delim = split( /(:)/, $segment );
 	   unless ($#delim == 7)
 	   {
-	     error($q,"Incorrect input format: structure segments");
+	     throw saliweb::frontend::InputValidationError("Incorrect input format: structure segments");
 	   }
 	   my $start = $delim[0] . $delim[1] . $delim[2];
 	   my $end = $delim[4] . $delim[5] . $delim[6];
@@ -964,39 +965,39 @@ sub strstr_inputs
   {
      unless ($inputs{'1D_open'} ne "")
      {
-        error($q,"You must specify a 1D gap open penalty");
+        throw saliweb::frontend::InputValidationError("You must specify a 1D gap open penalty");
      }
      unless ($inputs{'1D_elong'} ne "")
      {
-        error($q,"You must specify a 1D gap elongation penalty");
+        throw saliweb::frontend::InputValidationError("You must specify a 1D gap elongation penalty");
      }
      if ( $feat eq 'str' )
      {
         unless ($inputs{'3D_open'} ne "")
         {
-           error($q,"You must specify a 3D gap open penalty");
+           throw saliweb::frontend::InputValidationError("You must specify a 3D gap open penalty");
         }
         unless ($inputs{'3D_elong'} ne "")
         {
-           error($q,"You must specify a 3D gap elongation penalty");
+           throw saliweb::frontend::InputValidationError("You must specify a 3D gap elongation penalty");
         }
         foreach my $i ( 1 .. 6 )
         {
            unless ($inputs{"fw_$i"} ne "")
            {
-              error($q,"You must specify all feature weights");
+              throw saliweb::frontend::InputValidationError("You must specify all feature weights");
            }
         }   
         if ($inputs{'fw_6'} != 0)
         {
            unless ($inputs{'weight_mtx'} ne "")
            {
-              error($q,"You must specify a weight matrix to upload when feature weight 6 != 0");
+              throw saliweb::frontend::InputValidationError("You must specify a weight matrix to upload when feature weight 6 != 0");
            }
         }
         unless ($inputs{'RMS_cutoff'} ne "")  
         {     
-           error($q,"You must specify an RMS cutoff");  
+           throw saliweb::frontend::InputValidationError("You must specify an RMS cutoff");  
         }
      }	
   }   
@@ -1192,7 +1193,7 @@ sub change_name
   }
   unless ( $filen eq $tempn )
   {
-     error($q,"No unique file name found");
+     die "No unique file name found";
   }	
   return($filen);
 }

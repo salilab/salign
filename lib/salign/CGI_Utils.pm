@@ -25,7 +25,7 @@ sub filen_fix
      my $message = "Invalid file name: \n";
      $message .= "File name may contain letters, numbers, underscores, ";
      $message .= "spaces, periods and hyphens \n";
-     error ($q,$message);
+     die $message;
   }
   # Untaint file name if safe
   $filen = $1;
@@ -45,7 +45,7 @@ sub filen_fix_jr
      my $message = "Invalid file name: \n";
      $message .= "File name may contain letters, numbers, underscores, ";
      $message .= "spaces, periods and hyphens \n";
-     error ($q,$message);
+     die $message;
   }
   # Untaint file name if safe
   $filen = $1;
@@ -70,7 +70,7 @@ sub check_dir_size
   # Check that the directory will not be too large after the uploads
   if ($present_size + $ENV{CONTENT_LENGTH} > $max_dir_size)
   {
-     error($q, "Write directory full");
+     die "Write directory full";
   }
 }
 

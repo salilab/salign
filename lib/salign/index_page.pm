@@ -25,9 +25,6 @@ sub main
 {
   my ($self, $q) = @_;
 
-  # Look for errors in the transfer process
-  if ($q->cgi_error) { error($q, "Transfer error: " . $q->cgi_error); }
-
   my $job_name = $q->param('job_name');
   my $cur_state = $q->param('state') || 'home';
   my $upld_pseqs = $q->param('upld_pseqs') || 0;
@@ -62,9 +59,9 @@ sub main
      {
         return adv_sese($self, $q,$job_name,$email);
      }
-     else { error($q,"Caller $caller for advanced view does not exist"); }
+     else { die "Caller $caller for advanced view does not exist"; }
   }
-  else { error($q,"Routine $cur_state does not exist"); }
+  else { die "Routine $cur_state does not exist"; }
 }
 
 # Generate front page of salign interface
@@ -111,7 +108,7 @@ sub home
      {
         if ( $line =~ /No such file or directory/ )
         {
-           error($q,"Job directory non existent");
+           die "Job directory non existent";
         }
 	elsif ( $line =~ /^d/ || $line =~ /^total/i ) { next; }
 	else
@@ -261,11 +258,6 @@ sub customizer
   my $upl_dir = $job->directory . "/upload";
 
   my $msg = '';
-
-  unless ( $email =~ /\@/ )
-  {
-     error($q,"No e-mail address entered");
-  }  
 
   # upload file if exists
   if ( $upl_file ne "" )
@@ -457,7 +449,7 @@ sub unzip
   my $run_dir = cwd;
   # untaint run directory
   if ($run_dir =~ /(.+)/) {$run_dir = $1;}
-  else {error($q,"Can't untaint run directory");}
+  else {die "Can't untaint run directory";}
   my $unzip_dir = $upl_dir . "/unzip";
   
   #check file type
@@ -482,8 +474,7 @@ sub unzip
   # if incorrect file format
   if ( $type eq "unk" )  
   {     
-     error($q,"Uploaded file $cmp_file not supported file type");
-     #add line that moves all of this to rejected dir
+     die "Uploaded file $cmp_file not supported file type";
   }
 
   # create directory for unzipping if it doesn't exist
@@ -535,8 +526,8 @@ sub unzip
      close FILE;
      unless ( $tar_file == 1 )
      {
-        error ($q,"gzip file content not a .tar file");
-        #add line that moves all of this to rejected dir
+        throw saliweb::frontend::InputValidationError(
+                          "gzip file content not a .tar file");
      }
 #     system ("tar", "xf", "$unzip_dir/$gunz_file");
      my $tar = Archive::Tar->new;
@@ -585,26 +576,27 @@ sub unzip
         else #remove files and directory, and give error
         {
              if ($filen =~ /^([\w.-]+)$/) {$filen = $1;}
-             else {error($q,"Can't untaint directory name");}
+             else {die "Can't untaint directory name";}
              my $bad_dir = "$unzip_dir/$filen";
              opendir(BADDIR, $bad_dir) or die "Can't open $bad_dir: $!";
              while( defined (my $delfil = readdir BADDIR) ) 
              {
                   next if $delfil =~ /^\.\.?$/;     # skip . and ..
                   if ($delfil =~ /^([\w.-]+)$/) {$delfil = $1;}
-                  else {error($q,"Can't untaint filename");}
+                  else {die "Can't untaint filename";}
                   unlink ("$bad_dir/$delfil") or die "Couldn't unlink $delfil: $!\n";
              }            
              closedir(BADDIR);
              rmdir($bad_dir);
-             error ($q,"You uploaded an archive of a folder containing files. Archives (.zip and .tar.gz) should contain all files in the top level, and not within a folder. Thus, when preparing these, make sure to archive all desired files directly, not a folder containing the files. Please reload SALIGN webserver and follow these instructions.\n"); 
+             throw saliweb::frontend::InputValidationError("You uploaded an archive of a folder containing files. Archives (.zip and .tar.gz) should contain all files in the top level, and not within a folder. Thus, when preparing these, make sure to archive all desired files directly, not a folder containing the files. Please reload SALIGN webserver and follow these instructions."); 
         }
      }
      #check that file is ascii
      my $ascii = ascii_chk($unzip_dir,$filen);
      unless ($ascii == 1) 
      {
-        error ($q,"Non ascii file found where only ascii files allowed: $filen");
+        throw saliweb::frontend::InputValidationError(
+            "Non ascii file found where only ascii files allowed: $filen");
      }	
      #skip if file with same name exists in $upl_dir
      if ( exists $xupldir_files{$filen} ) 
@@ -675,7 +667,8 @@ sub file_cat
   # if neither pdb nor ali file - make this nicer than an error 
   if ($abrack == 0)
   {
-     error ($q,"Not correct PDB, pir or fasta format");
+     throw saliweb::frontend::InputValidationError(
+                "Not correct PDB, pir or fasta format");
   }
   # else ali file; check format - PIR or fasta
   elsif ($abrack_sc == $abrack && $ast >= $abrack)  #PIR
