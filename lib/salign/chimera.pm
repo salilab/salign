@@ -6,6 +6,9 @@ sub showfile {
     my ($self, $job) = @_;
     my @pdbfiles = glob("*fit.pdb");
     my @alignfiles = glob("*out.ali");
+    if (scalar(@alignfiles) != 1) {
+        die "Unexpected number of alignment files";
+    }
     my $alignfile = $alignfiles[0];
 
     print "Content-type: application/x-chimerax\n\n";
