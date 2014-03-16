@@ -8,8 +8,6 @@ package salign::submit_page;
 
 use strict;
 use lib "/modbase5/home/salign/perl_lib";
-use CGI;
-use CGI::Pretty;
 use Salign::CGI_Error;
 use Salign::Utils;
 use Salign::CGI_Utils;

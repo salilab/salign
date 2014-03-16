@@ -1,7 +1,5 @@
 package salign::results_page;
 
-use CGI; 
-use CGI::Carp qw(fatalsToBrowser);
 use lib "/modbase5/home/salign/perl_lib";
 use Salign::CGI_Error;
 use Salign::Utils;

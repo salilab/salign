@@ -1,11 +1,8 @@
-#!/usr/bin/perl -w
-
-# Declare package name
 package salign::Utils;
 # Inherit from Exporter class
 use Exporter;
 our @ISA = ("Exporter");
-our @EXPORT = qw( read_conf notify_by_mail log_message ascii_chk dir_chk get_job_object );
+our @EXPORT = qw( read_conf ascii_chk dir_chk );
 # Set version name
 our $VERSION = "1.00";
 use strict;
@@ -32,37 +29,6 @@ sub read_conf
   close CONF;
   return($conf_ref);
 }
-
-# Send email
-# INPUT: recipient e-mail address, subject and body message
-sub notify_by_mail
-{
-  my $email = shift;
-  my $subject = shift;
-  my $message = shift;
-   
-  open SENDMAIL, "|/usr/lib/sendmail -oi -t -F 'SALIGN Server Admin' -f 'salign\@salilab.org'" or print "Can't open sendmail: $!\n";
-  print SENDMAIL "To: $email\n";
-  print SENDMAIL "Subject: $subject\n";
-  print SENDMAIL "$message\n";
-
-  close SENDMAIL or print "Sendmail didn't close nicely\n";
-}
-
-# Add a message to log file specified by caller
-# INPUT: path to directory containing log file, name of log file, message to be logged
-sub log_message
-{
-  my $log_dir = shift;
-  my $log_file = shift;
-  my $message = shift;
-
-  my $time = localtime();
-  unless ( -d $log_dir ) { system ("mkdir -p $log_dir") }
-  open LOG, ">> $log_dir/$log_file" or print "Can't open $log_file: $!\n";
-  print LOG $$, ":", $time, ":", $message, "\n";
-  close LOG;
-}   
 
 # Check that a file is an ascii file
 # INPUT: path to directory of file, file name
@@ -108,19 +74,5 @@ sub dir_chk
   return($direc);
 }
 
-sub get_job_object {
-  my ($self, $job_name) = @_;
-  my $job;
-  if ($job_name) {
-    $job = $self->resume_job($job_name);
-  } else {
-    $job = $self->make_job("job");
-    mkdir $job->directory . "/upload"
-      or die "Can't create sub directory " . $job->directory . "/upload: $!\n";
-  }
-  return $job;
-}
-
-# Return true when evaluated
 1;
 
