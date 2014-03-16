@@ -13,11 +13,11 @@ sub showfile {
     print "<ChimeraPuppet type=\"std_webdata\">\n";
     print " \n";
     print "<web_files>\n";
-    print "         <file  name=\"alignment.pir\" format=\"html\" ".
+    print "         <file  name=\"alignment.pir\" format=\"text\" ".
           " loc=\"" . $job->get_results_file_url($alignfile) . "\" />\n";
 
     foreach my $pdbfile (@pdbfiles) {
-        print "         <file  name=\"$pdbfile\" format=\"html\" ".
+        print "         <file  name=\"$pdbfile\" format=\"text\" ".
 	      " loc=\"" . $job->get_results_file_url($pdbfile) . "\" />\n";
     }
     print "</web_files>\n";
