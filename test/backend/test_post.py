@@ -45,9 +45,108 @@ class Tests(saliweb.test.TestCase):
                          "%s does not match regex" % body)
         j = self.make_test_job(salign.Job, 'RUNNING')
         j.send_user_email = send_user_email
+        j.config.send_admin_email = send_user_email
         d = saliweb.test.RunInDir(j.directory)
         open('email_info', 'w').write("FAIL\nerror1\nerror2\n")
         j.send_job_completed_email()
+
+    def test_postprocess_1step_ok(self):
+        """Test postprocess of successful 1-step run"""
+        j = self.make_test_job(salign.Job, 'RUNNING')
+        d = saliweb.test.RunInDir(j.directory)
+        anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
+        open('str-str.log', 'w').write(
+               "Raw QUALITY_SCORE of the multiple alignment:  45.0\n"
+               "QUALITY_SCORE (percentage)  : 24.5\n"
+               "Completed successfully")
+        j.postprocess()
+        f = open('email_info').read()
+        self.assertEqual(f, "OK|45.0|24.5 %\n")
+
+    def test_postprocess_1step_noqscore(self):
+        """Test postprocess of successful 1-step run, no q score"""
+        j = self.make_test_job(salign.Job, 'RUNNING')
+        d = saliweb.test.RunInDir(j.directory)
+        anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
+        open('str-str.log', 'w').write("Completed successfully")
+        j.postprocess()
+        f = open('email_info').read()
+        self.assertEqual(f, "OK|Warning: no quality score found!|"
+                            "Warning: no percentage found!\n")
+
+    def test_postprocess_1step_nolog(self):
+        """Test postprocess of 1-step run, no log file"""
+        j = self.make_test_job(salign.Job, 'RUNNING')
+        d = saliweb.test.RunInDir(j.directory)
+        anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
+        self.assertRaises(salign.MissingLogError, j.postprocess)
+
+    def test_postprocess_1step_fail_noerrs(self):
+        """Test postprocess of failed 1-step run, no Modeller errors"""
+        j = self.make_test_job(salign.Job, 'RUNNING')
+        d = saliweb.test.RunInDir(j.directory)
+        anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
+        open('str-str.log', 'w').write("")
+        j.postprocess()
+        f = open('email_info').read()
+        self.assert_(re.match('FAIL\|\|.*No MODELLER error codes were found',
+                              f, re.MULTILINE|re.DOTALL),
+                     "%s does not match regex" % f)
+
+    def test_postprocess_1step_fail_custom(self):
+        """Test postprocess of failed 1-step run with custom error message"""
+        j = self.make_test_job(salign.Job, 'RUNNING')
+        d = saliweb.test.RunInDir(j.directory)
+        anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
+        open('str-str.log', 'w').write("fit2xyz_296E> Our custom error")
+        j.postprocess()
+        f = open('email_info').read()
+        self.assert_(re.match('FAIL\|\|.*'
+                       '=> The server could not find enough.*'
+                       'Hopefully, the information above helps.*'
+                       'fit2xyz_296E>\s*$',
+                              f, re.MULTILINE|re.DOTALL),
+                     "%s does not match regex" % f)
+
+    def test_postprocess_1step_fail_generic(self):
+        """Test postprocess of failed 1-step run with generic error message"""
+        j = self.make_test_job(salign.Job, 'RUNNING')
+        d = saliweb.test.RunInDir(j.directory)
+        anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
+        open('str-str.log', 'w').write("something_999E> Our generic error")
+        j.postprocess()
+        f = open('email_info').read()
+        self.assert_(re.match('FAIL\|\|.*'
+                       'Information about the errors can be found.*'
+                       'something_999E>\s*$',
+                              f, re.MULTILINE|re.DOTALL),
+                     "%s does not match regex" % f)
+
+    def test_postprocess_2step_ok(self):
+        """Test postprocess of successful 2-step run"""
+        j = self.make_test_job(salign.Job, 'RUNNING')
+        d = saliweb.test.RunInDir(j.directory)
+        anydbm.open('inputs.db', 'n')['tool'] = 'str_seq'
+        open('final_alignment.log', 'w').write(
+               "Raw QUALITY_SCORE of the multiple alignment:  45.0\n"
+               "QUALITY_SCORE (percentage)  : 24.5\n"
+               "Completed successfully")
+        open('seq-seq1.log', 'w').write("Completed successfully")
+        open('str-str.log', 'w').write("Completed successfully")
+        j.postprocess()
+        f = open('email_info').read()
+        self.assertEqual(f, "OK|45.0|24.5 %\n")
+
+    def test_postprocess_2step_nolog(self):
+        """Test postprocess of 2-step run, missing intermediate logs"""
+        j = self.make_test_job(salign.Job, 'RUNNING')
+        d = saliweb.test.RunInDir(j.directory)
+        anydbm.open('inputs.db', 'n')['tool'] = 'str_seq'
+        open('final_alignment.log', 'w').write(
+               "Raw QUALITY_SCORE of the multiple alignment:  45.0\n"
+               "QUALITY_SCORE (percentage)  : 24.5\n"
+               "Completed successfully")
+        self.assertRaises(salign.MissingLogError, j.postprocess)
 
 if __name__ == '__main__':
     unittest.main()
