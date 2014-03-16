@@ -2426,7 +2426,7 @@ BODY3
 sub print_body3a_sequence {
     my ($self, $upld_pseqs) = @_;
     my $help1 = $self->help_link("paste_seq");
-    my $help2 = $self->help_link("upload_button");
+    my $help2 = $self->help_link("seq_upload_button");
     return <<BODY3a;
 		<tr>
 			<td>Paste one sequence at a time, without header 
