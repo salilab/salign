@@ -5,10 +5,6 @@ package salign::index_page;
 # be "".
 
 use strict;
-use lib "/modbase5/home/salign/perl_lib";
-use Salign::CGI_Error;
-use Salign::Utils;
-use Salign::CGI_Utils;
 use File::Find;
 use Cwd;
 use Fcntl qw( :DEFAULT :flock);

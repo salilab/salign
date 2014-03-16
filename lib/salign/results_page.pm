@@ -1,8 +1,5 @@
 package salign::results_page;
 
-use lib "/modbase5/home/salign/perl_lib";
-use Salign::CGI_Error;
-use Salign::Utils;
 use File::Find;
 use Cwd;
 use Fcntl qw( :DEFAULT :flock);

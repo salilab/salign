@@ -7,10 +7,6 @@ package salign::submit_page;
 #to different values. 
 
 use strict;
-use lib "/modbase5/home/salign/perl_lib";
-use Salign::CGI_Error;
-use Salign::Utils;
-use Salign::CGI_Utils;
 use Fcntl qw( :DEFAULT :flock);
 use DB_File;
 use File::Find;
