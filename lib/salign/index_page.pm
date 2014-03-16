@@ -86,11 +86,11 @@ sub home
 
   # Start html
   my $msg = print_body1a_intro($self, $q)
-         .  print_body2_general_information($q, $email)
+         .  print_body2_general_information($self, $q, $email)
          .  print_body3_input_alignment($q)
-         .  print_body3a_sequence($q)
-         .  print_body3b_file($q)
-         .  print_body3c_PDB_code($q);
+         .  print_body3a_sequence($self, $q)
+         .  print_body3b_file($self, $q)
+         .  print_body3c_PDB_code($self, $q);
 
   $msg .=  "<hr />Uploaded files: <br />";
 
@@ -2403,11 +2403,12 @@ BODY1a
 }
 
 sub print_body2_general_information {
-	my ($q, $email) = @_;
+    my ($self, $q, $email) = @_;
+    my $help = $self->help_link("email");
     return <<BODY2;
 		<tr><td><h4>General information</h4></td></tr>
 		<tr>
-			<td>Email address (optional) <a class="helplink" onclick="launchHelp('http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#email'); return false;" href="http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#email"><img class="helplink" src="/saliweb/img/help.jpg" alt="help" /></a> <br /></td>
+			<td>Email address (optional) $help <br /></td>
 			<td><input type="text" name="email" value="$email" size="25" /></td>
 		</tr>
 BODY2
@@ -2423,33 +2424,38 @@ BODY3
 }
 
 sub print_body3a_sequence {
-	my $upld_pseqs = shift;
-	return <<BODY3a;
+    my ($self, $upld_pseqs) = @_;
+    my $help1 = $self->help_link("paste_seq");
+    my $help2 = $self->help_link("upload_button");
+    return <<BODY3a;
 		<tr>
 			<td>Paste one sequence at a time, without header 
-				<a class="helplink" onclick="launchHelp('http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#paste_seq'); return false;" href="http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#paste_seq"><img class="helplink" src="/saliweb/img/help.jpg" alt="help" /></a> <br /></td>
+				$help1 <br /></td>
 
 			<td>	<textarea name="paste_seq" rows="5" cols="40"></textarea><br />
 					<input type="submit" name="state" value="Upload" />
-					<a class="helplink" onclick="launchHelp('http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#seq_upload_button'); return false;" href="http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#seq_upload_button"><img class="helplink" src="/saliweb/img/help.jpg" alt="help" /></a> 
+					$help2
 					<br /><br /><hr /></td>
 		</tr>
 BODY3a
 }
 
 sub print_body3b_file {
-	my ($q) = @_;
-	return <<BODY3b;
+    my ($self, $q) = @_;
+    my $help1 = $self->help_link("file_upload");
+    my $help2 = $self->help_link("file_format");
+    my $help3 = $self->help_link("file_upload_button");
+    return <<BODY3b;
 		<tr>
 			<td>Upload sequence/PDB file(s) 
-				<a class="helplink" onclick="launchHelp('http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#file_upload'); return false;" href="http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#file_upload"><img class="helplink" src="/saliweb/img/help.jpg" alt="help" /></a> <br />
+				$help1 <br />
 			</td>
 
 			<td>
-				<a class="helplink" onclick="launchHelp('http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#file_format'); return false;" href="http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#file_format"><img class="helplink" src="/saliweb/img/help.jpg" alt="help" /></a> 
+				$help2
 				<input type="file" name="upl_file" /> <br /><br />
 				<input type="submit" name="state" value="Upload" />
-				<a class="helplink" onclick="launchHelp('http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#file_upload_button'); return false;" href="http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#file_upload_button"><img class="helplink" src="/saliweb/img/help.jpg" alt="help" /></a> 
+				$help3
 			<br /><br /><br /><hr />
 			</td>
 		</tr>
@@ -2457,10 +2463,12 @@ BODY3b
 }
 
 sub print_body3c_PDB_code {
+    my ($self, $q) = @_;
+    my $help = $self->help_link("lib_PDBs");
 	return <<BODY3c;
 		<tr>
 			<td>Enter 4-letter code(s) to choose PDB structures 
-				<a class="helplink" onclick="launchHelp('http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#lib_PDBs'); return false;" href="http://modbase.compbio.ucsf.edu/salign-test/help.cgi?type=help&amp;style=helplink#lib_PDBs"><img class="helplink" src="/saliweb/img/help.jpg" alt="help" /></a> <br /></td>
+				$help <br /></td>
 			<td><textarea name="pdb_id" rows="5" cols="5"></textarea></td>
 		</tr>
 </table>
