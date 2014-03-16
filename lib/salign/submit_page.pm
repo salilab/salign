@@ -10,6 +10,8 @@ use strict;
 use Fcntl qw( :DEFAULT :flock);
 use DB_File;
 use File::Find;
+use salign::CGI_Utils;
+use salign::Utils;
 #use locale;
 use constant MAX_POST_SIZE => 1_048_576; # Maximum upload size, 1 MB
 use File::Copy;
