@@ -1,1 +1,6 @@
+Import('env')
+
+env.InstallHTML(env.Glob('*.png') + env.Glob('*.html')
+                + env.Glob('*.pdf') + env.Glob('*.css'))
+
 SConscript('examples/SConscript')
