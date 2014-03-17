@@ -5,7 +5,7 @@ use strict;
 sub showfile {
     my ($self, $job) = @_;
     my @pdbfiles = glob("*fit.pdb");
-    my @alignfiles = glob("*out.ali");
+    my @alignfiles = glob("*str_out.ali");
     if (scalar(@alignfiles) != 1) {
         die "Unexpected number of alignment files";
     }
