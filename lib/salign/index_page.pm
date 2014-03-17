@@ -1964,7 +1964,7 @@ sub print_advance_penalties_3 {
 sub print_advance_penalties_2a {
   my ($self, $q) = @_;
 
-  return print_advance_penalties_2 ($q) .
+  return print_advance_penalties_2 ($self, $q) .
         $q->Tr($q->td("3D gap penalties", help_link_2($q, "3D_gap_pen"), $q->br),
 		$q->td($q->i("Opening: "),
 		$q->textfield( -name => "3D_open", -default => "0", -size => "10" ),
