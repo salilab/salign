@@ -2,33 +2,12 @@ package salign::Utils;
 # Inherit from Exporter class
 use Exporter;
 our @ISA = ("Exporter");
-our @EXPORT = qw( read_conf ascii_chk dir_chk );
+our @EXPORT = qw( ascii_chk dir_chk );
 # Set version name
 our $VERSION = "1.00";
 use strict;
 use File::Find;
 use Fcntl qw( :DEFAULT :flock);
-
-# Read config file and return as a hash
-# INPUT: Path to conf file
-sub read_conf
-{ 
-  my $conf_ref;
-  my $conf_file = shift;
-  open CONF, "<$conf_file" or die "Can't open conf file: $!";
-  while (<CONF>) 
-  {
-      chomp;                  # no newline
-      s/#.*//;                # no comments
-      s/^\s+//;               # no leading white
-      s/\s+$//;               # no trailing white
-      next unless length;     # anything left?
-      my ($key, $value) = split(/\s*=\s*/, $_, 2);
-      $conf_ref->{$key} = $value;
-  }
-  close CONF;
-  return($conf_ref);
-}
 
 # Check that a file is an ascii file
 # INPUT: path to directory of file, file name

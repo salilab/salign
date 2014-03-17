@@ -2,29 +2,19 @@ package salign;
 use base qw(saliweb::frontend);
 use strict;
 
-use constant MAX_POST_SIZE => 1073741824; # 1GB maximum upload size
-use constant BUFFER_SIZE => 16384; # Buffer size 16Kb
-
-# Never let write directory grow larger than 1 GB
-use constant MAX_DIR_SIZE => 1073741824;
-
-# Path for static directory
-use constant STATIC_DIR => "/modbase5/home/salign/static";
-
 use salign::Utils;
 use salign::CGI_Utils;
 use salign::index_page;
 use salign::submit_page;
 use salign::results_page;
 use salign::chimera;
+use salign::constants;
 use Cwd;
+use CGI;
 use Fcntl qw( :DEFAULT :flock);
 use DB_File;
 
-# Enable users to upload files to our server
-$CGI::DISABLE_UPLOADS = 0;
-
-# Users not allowed to post more data than 1 MB 
+# Limit size of uploaded files
 $CGI::POST_MAX = MAX_POST_SIZE;
 
 sub new {

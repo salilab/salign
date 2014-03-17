@@ -11,15 +11,10 @@ use Fcntl qw( :DEFAULT :flock);
 use DB_File;
 use salign::CGI_Utils;
 use salign::Utils;
+use salign::constants;
 use saliweb::frontend qw(pdb_code_exists);
-use constant MAX_POST_SIZE => 1073741824; # 1GB maximum upload size
 use File::Copy;
 use Archive::Tar;
-
-#Enable users to upload files to our server
-$CGI::DISABLE_UPLOADS = 0;
-#Users not allowed to post more data than 1 MB 
-$CGI::POST_MAX = MAX_POST_SIZE;
 
 # ======================= SUB ROUTINES ========================
 sub main
@@ -168,12 +163,6 @@ sub upload_main
   my $upld_pseqs = shift;
   my $email = shift;
   my $pdb_id = shift;
-  # Read configuration file
-  my $conf_file = '/modbase5/home/salign/conf/salign.conf';
-  my $conf_ref = read_conf($conf_file);
-  my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
-  my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
-  my $max_open_tries = $conf_ref->{'MAX_OPEN_TRIES'};
 
   my $job = $self->get_job_object($job_name);
   $job_name = $job->name;
@@ -181,7 +170,7 @@ sub upload_main
   my $msg = '';
 
   # Run sub check_dir_size to see that there is space for the request
-  check_dir_size($q,$job->directory,$max_dir_size);
+  check_dir_size($q,$job->directory);
   
   # Check what is being uploaded
   my $upl_file = $q->param('upl_file'); 
@@ -208,7 +197,7 @@ sub upload_main
      # upload file if exists
      if ( $upl_file ne "" )
      {
-        my $filen = file_upload($q,$upl_dir,$buffer_size,\%upldir_files,$upl_file);
+        my $filen = file_upload($q,$upl_dir,\%upldir_files,$upl_file);
 	unless ($filen eq "")
 	{
            my $ascii = ascii_chk($upl_dir,$filen);
@@ -245,12 +234,6 @@ sub customizer
   my $pdb_id = shift;
   my $upl_file = $q->param('upl_file'); 
   my $paste_seq = $q->param('paste_seq');
-  # Read configuration file
-  my $conf_file = '/modbase5/home/salign/conf/salign.conf';
-  my $conf_ref = read_conf($conf_file);
-  my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
-  my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
-  my $max_open_tries = $conf_ref->{'MAX_OPEN_TRIES'};
 
   my $job = $self->get_job_object($job_name);
   $job_name = $job->name;
@@ -262,7 +245,7 @@ sub customizer
   # upload file if exists
   if ( $upl_file ne "" )
   {
-     check_dir_size($q,$job->directory,$max_dir_size);
+     check_dir_size($q,$job->directory);
      #save all filenames present in $upl_dir in hash
      my %upldir_files;
      opendir ( UPLOAD, $upl_dir ) or die "Can't open $upl_dir: $!\n";
@@ -274,7 +257,7 @@ sub customizer
         $upldir_files{$file} = 1;
      }
      closedir (UPLOAD);
-     my $filen = file_upload($q,$upl_dir,$buffer_size,\%upldir_files,$upl_file);
+     my $filen = file_upload($q,$upl_dir,\%upldir_files,$upl_file);
      unless ($filen eq "")
      {
         my $ascii = ascii_chk($upl_dir,$filen);
@@ -290,7 +273,7 @@ sub customizer
   # save pasted sequence if exists
   if ( $paste_seq ne "" )
   {
-     if ( $upl_file eq "" ) { check_dir_size($q,$job->directory,$max_dir_size); }
+     if ( $upl_file eq "" ) { check_dir_size($q,$job->directory); }
      $paste_seq =~ s/[\r\n\s]+//g;
      save_paste($job->directory,$paste_seq,$upld_pseqs);
      $upld_pseqs++;
@@ -392,7 +375,6 @@ sub file_upload
 {
   my $q = shift;
   my $upl_dir = shift;
-  my $buffer_size = shift;
   my $upldir_files = shift;
   my $upl_file = shift;
   my %xupldir_files = %$upldir_files;
@@ -410,7 +392,7 @@ sub file_upload
   open(UPLOAD_OUT, ">$upl_dir/$filen") or die "Cannot open $filen: $!";
 
   # Write contents of upload file to $filen
-  while( read($fh,$buffer,$buffer_size) ) {print UPLOAD_OUT "$buffer";}
+  while( read($fh,$buffer,BUFFER_SIZE) ) {print UPLOAD_OUT "$buffer";}
 
   close UPLOAD_OUT;
   return($filen);

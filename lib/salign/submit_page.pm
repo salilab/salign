@@ -12,19 +12,9 @@ use DB_File;
 use File::Find;
 use salign::CGI_Utils;
 use salign::Utils;
+use salign::constants;
 use saliweb::frontend qw(pdb_code_exists get_pdb_code);
-#use locale;
-use constant MAX_POST_SIZE => 1_048_576; # Maximum upload size, 1 MB
 use File::Copy;
-
-#Enable users to upload files to our server
-$CGI::DISABLE_UPLOADS = 0;
-#Users not allowed to post more data than 1 MB 
-$CGI::POST_MAX = MAX_POST_SIZE; 
-
-# Location of PDB database
-#my $pdb_database = "/netapp/database/pdb/uncompressed_files";
-my $pdb_database = "/netapp/database/pdb/remediated/uncompressed_files";
 
 # ========================= SUB ROUTINES ================================
 sub fpmain
@@ -73,13 +63,6 @@ sub fp_str_str
   my $job = shift;
   my $inputs = shift;
   my $adv = shift;
-  my $conf_file = '/modbase5/home/salign/conf/salign.conf';
-  # Read conf_file
-  my $conf_ref = read_conf($conf_file);
-
-  my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
-  my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
-  my $max_open = $conf_ref->{'MAX_OPEN_TRIES'};
   
   my $job_dir = '.';
   my $upl_dir = $job_dir . '/upload';
@@ -112,14 +95,14 @@ sub fp_str_str
 #  if ($inputs->{'fw_6'} != 0)
   unless ($inputs->{'weight_mtx'} eq "")
   {
-     check_dir_size($q,$job_dir,$max_dir_size);
+     check_dir_size($q,$job_dir);
      unless ( -d $upl_dir )
      {
         mkdir $upl_dir
           or die "Can't create sub directory upload: $!\n";
      }
      # upload weight matrix 
-     $wt_mtx = fp_file_upload($q,$upl_dir,$buffer_size,"weight_mtx",$max_open);
+     $wt_mtx = fp_file_upload($q,$upl_dir,"weight_mtx");
      #check that file is ascii
      my $ascii = ascii_chk($upl_dir,$wt_mtx);
      unless ($ascii == 1) 
@@ -177,13 +160,6 @@ sub fp_str_seq
   my $job = shift;
   my $inputs = shift;
   my $adv = shift;
-  my $conf_file = '/modbase5/home/salign/conf/salign.conf';
-  # Read conf_file
-  my $conf_ref = read_conf($conf_file);
-
-  my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
-  my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
-  my $max_open = $conf_ref->{'MAX_OPEN_TRIES'};
   
   my $job_dir = '.';
   my $upl_dir = $job_dir . '/upload';
@@ -225,14 +201,14 @@ sub fp_str_seq
 #  if ($inputs->{'fw_6'} != 0)
   unless ($inputs->{'weight_mtx'} eq "")
   {
-     check_dir_size($q,$job_dir,$max_dir_size);
+     check_dir_size($q,$job_dir);
      unless ( -d $upl_dir )
      {
         mkdir $upl_dir
           or die "Can't create sub directory upload: $!\n";
      }
      # upload weight matrix 
-     $wt_mtx = fp_file_upload($q,$upl_dir,$buffer_size,"weight_mtx",$max_open);
+     $wt_mtx = fp_file_upload($q,$upl_dir,"weight_mtx");
      #check that file is ascii
      my $ascii = ascii_chk($upl_dir,$wt_mtx);
      unless ($ascii == 1) 
@@ -378,7 +354,6 @@ sub fp_str_seq
      }
      else  
      { 
-#       $step2_str_dir = $pdb_database; 
         $step2_str_dir = 'structures';
      }
 
@@ -602,7 +577,6 @@ sub fp_twostep_sese
   my $job = shift;
   my $inputs = shift;
   my $adv = shift;
-  my $conf_file = '/modbase5/home/salign/conf/salign.conf';
   
   my $job_dir = '.';
   my $upl_dir = $job_dir . '/upload';
@@ -1006,7 +980,6 @@ sub cp_PDBs
   my %str_segm = %$str_segm_ref;
   my %upl_strs = %$upl_strs_ref;
   my $common_dir = $job_dir . '/structures';
-  my $pdb_dir = $pdb_database;
 
   mkdir $common_dir
     or die "Can't create sub directory $common_dir: $!\n";
@@ -1034,7 +1007,6 @@ sub cp_PDBs_noUpl
   my $job_dir = shift;
   my %str_segm = %$str_segm_ref;
   my $common_dir = $job_dir . '/structures';
-  my $pdb_dir = $pdb_database;
 
   mkdir $common_dir
     or die "Can't create sub directory $common_dir: $!\n";
@@ -1112,15 +1084,13 @@ sub fp_file_upload
 {
   my $q = shift;
   my $upl_dir = shift;
-  my $buffer_size = shift;
   my $file = shift;
-  my $max_open = shift;
   # Extract and security check file name
   my $filen = $q->param($file);
   $filen = filen_fix( $q,$filen );
   if ( -e "$upl_dir/$filen" )
   {
-     $filen = change_name($q,$filen,$upl_dir,$max_open);
+     $filen = change_name($q,$filen,$upl_dir,200);
   }
   
   # Get file handle 
@@ -1128,7 +1098,7 @@ sub fp_file_upload
   my $buffer = "";
   open(UPLOAD_OUT, ">$upl_dir/$filen") or die "Cannot open $filen: $!";
   # Write contents of upload file to $filen
-  while( read($fh,$buffer,$buffer_size) ) {print UPLOAD_OUT "$buffer";}
+  while( read($fh,$buffer,BUFFER_SIZE) ) {print UPLOAD_OUT "$buffer";}
   close UPLOAD_OUT;
   
   return($filen);

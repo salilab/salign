@@ -6,6 +6,7 @@ our @EXPORT = qw( filen_fix filen_fix_jr check_dir_size );
 # Set version name
 our $VERSION = "1.00";
 use strict;
+use salign::constants;
 use File::Find;
 
 # strip uploaded file name and check for dangerous characters
@@ -53,13 +54,12 @@ sub filen_fix_jr
 }  
 
 # calculate the total size of a directory, including the current upload files
-# If the calculated size is larger than $max_dir_size error is called.
+# If the calculated size is larger than MAX_DIR_SIZE error is called.
 # INPUT: $q, directory to check, maximum directory size
 sub check_dir_size
 {
   my $q = shift;
   my $input_dir = shift;
-  my $max_dir_size = shift;
   my $present_size = 0;
   # Calculate present size of directory in Bytes, including sub directories
   my %options;
@@ -68,7 +68,7 @@ sub check_dir_size
   find (\%options, $input_dir);
 
   # Check that the directory will not be too large after the uploads
-  if ($present_size + $ENV{CONTENT_LENGTH} > $max_dir_size)
+  if ($present_size + $ENV{CONTENT_LENGTH} > MAX_DIR_SIZE)
   {
      die "Write directory full";
   }
