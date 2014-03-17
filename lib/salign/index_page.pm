@@ -1249,7 +1249,7 @@ sub str_str
   $msg .= $q->submit( -name => "state", -value => "Advanced" ),
 	$q->end_form();
 
-  $msg .= "</td></tr></table></div>\n";
+  $msg .= "</td></tr></table>\n";
   return $msg;
 
 }
@@ -1439,7 +1439,7 @@ sub str_seq
 	$q->end_form();
 
   $msg .= "</td></tr>\n";
-  $msg .= "</table></div>\n";
+  $msg .= "</table>\n";
   return $msg;
 }
 
@@ -1584,7 +1584,6 @@ sub twostep_sese
         $q->submit( -name => "state", -value => "Advanced" ).
 	$q->end_form();
 
-  $msg .= "</div>\n";
   return $msg;
 }
 
@@ -1678,7 +1677,6 @@ sub onestep_sese
         $q->submit( -name => "state", -value => "Advanced" ),
 	$q->end_form();
 
-  $msg .= "</div>\n";
   return $msg;
 }
 
@@ -1701,7 +1699,7 @@ sub adv_stst
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1);
 
-  $msg .= "Depending on the choice of the alignment category, some options may have no effect.\n";
+  $msg .= "<p>Depending on the choice of the alignment category, some options may have no effect.</p>\n";
 
   $msg .= "<table>\n"
   . print_advance_alignment_category ($self, $q)
@@ -1715,7 +1713,7 @@ sub adv_stst
   . print_advance_improve ($self, $q)
   . print_advance_write_pdb ($self, $q, 1)
   . print_advance_submit ($q);
-  $msg .= "</table></div>\n";
+  $msg .= "</table>\n";
   return $msg;
 }
 
@@ -1740,7 +1738,7 @@ sub adv_stse
 	$q->hidden( -name => "email", -default => $email, -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1);
 
-  $msg .= "Depending on the choice of the alignment category, some options may have no effect.\n";
+  $msg .= "<p>Depending on the choice of the alignment category, some options may have no effect.</p>\n";
 
   $msg .= "<table>\n"
   . print_advance_alignment_category_2 ($self, $q)
@@ -1755,7 +1753,7 @@ sub adv_stse
   . print_advance_improve ($self, $q)
   . print_advance_write_pdb ($self, $q, 0)
   . print_advance_submit ($q)
-  . "</table></div>\n";
+  . "</table>\n";
   return $msg;
 }
   
@@ -1785,7 +1783,7 @@ sub adv_sese
 	$q->hidden( -name => "structures", -default => $structures, -override => 1);
 
   if ( $params{'caller'} eq '2s_sese' ) {
-     $msg .= "Depending on the choice of the alignment category, some options may have no effect.\n";
+     $msg .= "<p>Depending on the choice of the alignment category, some options may have no effect.</p>\n";
   }
 
   $msg .= "<table>\n";
@@ -1818,7 +1816,7 @@ sub adv_sese
              . print_advance_gap ($self, $q, 0);
   }
   $msg .= print_advance_improve ($self, $q) . print_advance_submit ($q)
-          . "</table></div>\n";
+          . "</table>\n";
   return $msg;
 }
   
@@ -2306,7 +2304,7 @@ sub print_pdb_segments {
 	   {
 	      if ( exists $lib_PDBs{'ali'}{$pdb} ) { next; }
            }
-	   $msg .= $q->Tr($q->td({-align=>"right"},$q->br, $q->i("$pdb&nbsp"),
+	   $msg .= $q->Tr($q->td({-align=>"right"},$q->br, $q->i("$pdb&nbsp")),
                  $q->td($q->textarea( 
                    -name => "libsegm_$pdb", 
                    -cols => "15", 
@@ -2314,7 +2312,7 @@ sub print_pdb_segments {
 		   -default => 'FIRST:@:LAST:@',
 		   -override => 1
                  ),
-                 $q->br)));
+                 $q->br));
         }
      }
      if ( exists $lib_PDBs{'ali'} )
@@ -2323,7 +2321,7 @@ sub print_pdb_segments {
         {
 	   # Get default segments
            my $default = join "\n", @{ $lib_PDBs{'ali'}{$pdb} };
-           $msg .= $q->Tr($q->td({-align=>"right"},$q->br,$q->i("$pdb&nbsp"),
+           $msg .= $q->Tr($q->td({-align=>"right"},$q->br,$q->i("$pdb&nbsp")),
                  $q->td($q->textarea( 
 	           -name => "libsegm_$pdb",
 	           -cols => "15", 
@@ -2331,7 +2329,7 @@ sub print_pdb_segments {
 		   -default => $default,
 		   -override => 1
 	         ),
-	         $q->br)));
+	         $q->br));
         }
      }
      $msg .= "</table>\n";
