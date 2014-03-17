@@ -115,7 +115,7 @@ class Job(saliweb.backend.Job):
         # set path(s) to log file(s)
         intmed_logs = {'str_str': [], '1s_sese': [],
                        '2s_sese': ['seq-seq1.log', 'seq-seq2.log'],
-                       'str_seq': ['seq-seq1.log', 'str-str.log']}[tool]
+                       'str_seq': ['seq-seq.log', 'str-str.log']}[tool]
         mod_log = {'str_str': 'str-str.log', '1s_sese': 'seq-seq.log',
                    '2s_sese': 'profile.log',
                    'str_seq': 'final_alignment.log'}[tool]
