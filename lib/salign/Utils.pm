@@ -2,7 +2,7 @@ package salign::Utils;
 # Inherit from Exporter class
 use Exporter;
 our @ISA = ("Exporter");
-our @EXPORT = qw( ascii_chk dir_chk );
+our @EXPORT = qw( ascii_chk );
 # Set version name
 our $VERSION = "1.00";
 use strict;
@@ -31,27 +31,4 @@ sub ascii_chk
   return($ascii);
 }
 
-# Check if a file is a directory
-# INPUT: path to directory of file, file name
-sub dir_chk
-{
-  my $path = shift;
-  my $filen = shift;
-#  my $q = shift;
-  my $cmd = "file $path/$filen";
-  my $direc = 0;
-
-  open ( FILE, "$cmd |" );
-  while ( my $line = <FILE> )
-  {
-     if ( $line =~ /directory/i )
-     {
-        $direc = 1;
-     }
-  }
-  close FILE;
-  return($direc);
-}
-
 1;
-

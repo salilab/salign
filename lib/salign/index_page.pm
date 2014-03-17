@@ -549,8 +549,7 @@ sub unzip
 	}
      }
      #check if file is directory. skip if so. (OS X zip file artifact)
-     my $direc = dir_chk($unzip_dir,$filen);
-     if ($direc == 1)
+     if (-d "$unzip_dir/$filen")
      {
         my $rdstat = rmdir("$unzip_dir/$filen");
 #          or die "Could not remove directory in zip file: $!";
