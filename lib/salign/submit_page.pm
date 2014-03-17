@@ -12,6 +12,7 @@ use DB_File;
 use File::Find;
 use salign::CGI_Utils;
 use salign::Utils;
+use saliweb::frontend qw(pdb_code_exists get_pdb_code);
 #use locale;
 use constant MAX_POST_SIZE => 1_048_576; # Maximum upload size, 1 MB
 use File::Copy;
@@ -78,7 +79,6 @@ sub fp_str_str
 
   my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
   my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
-  my $static_dir = $conf_ref->{'STATIC_DIR'};
   my $max_open = $conf_ref->{'MAX_OPEN_TRIES'};
   
   my $job_dir = '.';
@@ -145,7 +145,7 @@ sub fp_str_str
         }
      } 
      untie %tie_hash;
-     $str_dir = cp_PDBs($str_segm_ref,$upl_dir,$static_dir,$job_dir,$upl_strs);
+     $str_dir = cp_PDBs($str_segm_ref,$upl_dir,$job_dir,$upl_strs);
   }
   elsif ( exists $str_segm{'upl'} ) 
   { 
@@ -153,7 +153,7 @@ sub fp_str_str
   }
   else #only lib. copy to job dir (necessary for multiple entries of same pdb) 
   {
-     $str_dir = cp_PDBs_noUpl($str_segm_ref,$static_dir,$job_dir); 
+     $str_dir = cp_PDBs_noUpl($str_segm_ref,$job_dir); 
   }
   
   $str_segm_ref = OnePdbPerSegm($str_segm_ref,$job_dir, $str_dir);
@@ -183,7 +183,6 @@ sub fp_str_seq
 
   my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
   my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
-  my $static_dir = $conf_ref->{'STATIC_DIR'};
   my $max_open = $conf_ref->{'MAX_OPEN_TRIES'};
   
   my $job_dir = '.';
@@ -286,7 +285,7 @@ sub fp_str_seq
   # if there are both uploaded strs and lib strs, gather them in a common dir
   if ( exists $str_segm{'upl'} && exists $str_segm{'lib'} )
   {
-     $str_dir = cp_PDBs($str_segm_ref,$upl_dir,$static_dir,$job_dir,$upl_strs);
+     $str_dir = cp_PDBs($str_segm_ref,$upl_dir,$job_dir,$upl_strs);
   }
   elsif ( exists $str_segm{'upl'} ) 
   { 
@@ -294,7 +293,7 @@ sub fp_str_seq
   }
   else #only lib. copy to job dir (necessary for multiple entries of same pdb) 
   {
-     $str_dir = cp_PDBs_noUpl($str_segm_ref,$static_dir,$job_dir); 
+     $str_dir = cp_PDBs_noUpl($str_segm_ref,$job_dir); 
   }
 
   $str_segm_ref = OnePdbPerSegm($str_segm_ref,$job_dir,$str_dir);
@@ -445,12 +444,7 @@ sub fp_onestep_sese
   my $inputs = shift;
   my $entries = shift; #sequences, structures or both?
   my $adv = shift;
-  my $conf_file = '/modbase5/home/salign/conf/salign.conf';
-  # Read conf_file
-  my $conf_ref = read_conf($conf_file);
 
-  my $static_dir = $conf_ref->{'STATIC_DIR'};
-  
   my $job_dir = ".";
   my $upl_dir = $job_dir . '/upload';
 
@@ -576,7 +570,7 @@ sub fp_onestep_sese
      # if there are both uploaded strs and lib strs, gather them in a common dir
      if ( exists $str_segm{'upl'} && exists $str_segm{'lib'} )
      {
-        $str_dir = cp_PDBs($str_segm_ref,$upl_dir,$static_dir,$job_dir,$upl_strs);
+        $str_dir = cp_PDBs($str_segm_ref,$upl_dir,$job_dir,$upl_strs);
      }
      elsif ( exists $str_segm{'upl'} ) 
      { 
@@ -584,7 +578,7 @@ sub fp_onestep_sese
      }
      else #only lib. copy to job dir (necessary for multiple entries of same pdb) 
      {
-        $str_dir = cp_PDBs_noUpl($str_segm_ref,$static_dir,$job_dir); 
+        $str_dir = cp_PDBs_noUpl($str_segm_ref,$job_dir); 
      }
      $seq_count += $str_count;
      $str_segm_ref = OnePdbPerSegm($str_segm_ref,$job_dir,$str_dir);
@@ -609,10 +603,6 @@ sub fp_twostep_sese
   my $inputs = shift;
   my $adv = shift;
   my $conf_file = '/modbase5/home/salign/conf/salign.conf';
-  # Read conf_file
-  my $conf_ref = read_conf($conf_file);
-
-  my $static_dir = $conf_ref->{'STATIC_DIR'};
   
   my $job_dir = '.';
   my $upl_dir = $job_dir . '/upload';
@@ -1011,7 +1001,6 @@ sub cp_PDBs
 {
   my $str_segm_ref = shift;
   my $upl_dir = shift;
-  my $static_dir = shift;
   my $job_dir = shift;
   my $upl_strs_ref = shift;
   my %str_segm = %$str_segm_ref;
@@ -1022,26 +1011,12 @@ sub cp_PDBs
   mkdir $common_dir
     or die "Can't create sub directory $common_dir: $!\n";
 
-  my $pdb_dbm = "$static_dir/lib_pdbs.db";  
-  tie my %pdb_hash, "DB_File", $pdb_dbm, O_RDONLY  
-    or die "Cannot open tie to PDB DBM: $!"; 
-
   foreach my $lib_str ( keys %{ $str_segm{'lib'} } )
   {
-     my @possible_filens = ( "pdb$lib_str.ent", "pdb$lib_str",
-                            "$lib_str.ent", "$lib_str"        );
-     foreach my $filen ( @possible_filens )
-     {
-        if ( exists $pdb_hash{$filen} )
-	{  
-#           system ("cp","$pdb_dir/$filen","$common_dir/$filen");
-           copy("$pdb_dir/$filen", "$common_dir/$lib_str.ent")
-             or die "copy failed: $!";
-	   last;
-	}   
+     if (pdb_code_exists($lib_str)) {
+         get_pdb_code($lib_str, $common_dir);
      }
   }   
-  untie %pdb_hash;
   
   foreach my $filen ( keys %upl_strs )
   {
@@ -1056,7 +1031,6 @@ sub cp_PDBs
 sub cp_PDBs_noUpl
 {
   my $str_segm_ref = shift;
-  my $static_dir = shift;
   my $job_dir = shift;
   my %str_segm = %$str_segm_ref;
   my $common_dir = $job_dir . '/structures';
@@ -1065,26 +1039,12 @@ sub cp_PDBs_noUpl
   mkdir $common_dir
     or die "Can't create sub directory $common_dir: $!\n";
 
-  my $pdb_dbm = "$static_dir/lib_pdbs.db";  
-  tie my %pdb_hash, "DB_File", $pdb_dbm, O_RDONLY  
-    or die "Cannot open tie to PDB DBM: $!"; 
-
   foreach my $lib_str ( keys %{ $str_segm{'lib'} } )
   {
-     my @possible_filens = ( "pdb$lib_str.ent", "pdb$lib_str",
-                            "$lib_str.ent", "$lib_str"        );
-     foreach my $filen ( @possible_filens )
-     {
-        if ( exists $pdb_hash{$filen} )
-	{  
-#           system ("cp","$pdb_dir/$filen","$common_dir/$filen");
-           copy("$pdb_dir/$filen", "$common_dir/$lib_str.ent")
-             or die "copy failed: $!";
-	   last;
-	}   
+     if (pdb_code_exists($lib_str)) {
+         get_pdb_code($lib_str, $common_dir);
      }
   }   
-  untie %pdb_hash;
   return('structures');
 }
 

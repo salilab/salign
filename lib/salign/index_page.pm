@@ -11,6 +11,7 @@ use Fcntl qw( :DEFAULT :flock);
 use DB_File;
 use salign::CGI_Utils;
 use salign::Utils;
+use saliweb::frontend qw(pdb_code_exists);
 use constant MAX_POST_SIZE => 1073741824; # 1GB maximum upload size
 use File::Copy;
 use Archive::Tar;
@@ -250,7 +251,6 @@ sub customizer
   my $buffer_size = $conf_ref->{'BUFFER_SIZE'};
   my $max_dir_size = $conf_ref->{'MAX_DIR_SIZE'};
   my $max_open_tries = $conf_ref->{'MAX_OPEN_TRIES'};
-  my $static_dir = $conf_ref->{'STATIC_DIR'};
 
   my $job = $self->get_job_object($job_name);
   $job_name = $job->name;
@@ -359,7 +359,7 @@ sub customizer
   {
      # check if structures in ali files exist and change whats needed if not
      my ($upl_files_ref,$upl_count_ref,$lib_PDBs_ref) = 
-     chk_alistrs(\%upl_files,$static_dir,\%upl_count,$job->directory,\%lib_PDBs,$upl_dir);
+     chk_alistrs(\%upl_files,\%upl_count,$job->directory,\%lib_PDBs,$upl_dir);
      %upl_files = %$upl_files_ref;
      %upl_count = %$upl_count_ref;
      %lib_PDBs  = %$lib_PDBs_ref;
@@ -753,7 +753,6 @@ sub guess
 sub chk_alistrs
 {
   my $upl_files_ref = shift;
-  my $static_dir = shift;
   my $upl_count_ref = shift;
   my $job_dir = shift;
   my $lib_PDBs_ref = shift;
@@ -763,10 +762,7 @@ sub chk_alistrs
   my %lib_PDBs = %$lib_PDBs_ref;
   
   my %changes;
-  my $pdb_dbm = "$static_dir/lib_pdbs.db";
-  tie my %pdb_hash, "DB_File", $pdb_dbm, O_RDONLY
-    or die "Cannot open tie to PDB DBM: $!";
-     
+
   if ( exists $upl_files{'ali_st'} )
   {
      foreach my $filen ( keys %{ $upl_files{'ali_st'} } )
@@ -894,12 +890,7 @@ sub chk_alistrs
 		    next;
 	         }
 	      }
-              if ( exists $pdb_hash{"pdb$pdb_code.ent"}  ||
-#	           exists $pdb_hash{"pdb$pdb_code.pdb"}  || 
-	           exists $pdb_hash{"pdb$pdb_code"}      || 
-                   exists $pdb_hash{"$pdb_code.ent"}     ||
-#	           exists $pdb_hash{"$pdb_code.pdb"}     || 
-	           exists $pdb_hash{"$pdb_code"}             )
+              if (pdb_code_exists($pdb_code))
 	      {	      
 	         push @{ $lib_PDBs{'ali'}{$pdb_code} }, $bounds;
                  push @pass, $.;
@@ -1059,12 +1050,7 @@ sub chk_alistrs
 		    next;
 	         }
 	      }
-              if ( exists $pdb_hash{"pdb$pdb_code.ent"}  ||
-#	           exists $pdb_hash{"pdb$pdb_code.pdb"}  || 
-	           exists $pdb_hash{"pdb$pdb_code"}      || 
-                   exists $pdb_hash{"$pdb_code.ent"}     ||
-#	           exists $pdb_hash{"$pdb_code.pdb"}     || 
-	           exists $pdb_hash{"$pdb_code"}             )
+              if (pdb_code_exists($pdb_code))
 	      {	      
 	         push @{ $lib_PDBs{'ali'}{$pdb_code} }, $bounds;
                  push @pass, $.;
@@ -1100,8 +1086,7 @@ sub chk_alistrs
 	}
      }
   }
-  untie %pdb_hash;
-     
+
   #implement changes saved in %changes ie fix %upl_files and %upl_count
   if ( exists $changes{'st'} )
   {
