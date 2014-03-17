@@ -9,7 +9,7 @@ use DB_File;
 sub display_job {
     my ($self, $q, $job, $failmsg) = @_;
 
-    my $msg = $q->b("<br><h1>Results for Salign job id: " . $job->name
+    my $msg = $q->b("<br><h1>Results for SALIGN job id: " . $job->name
                     . "</h1><hr />$failmsg");
     my @filetypes=("_fit.pdb",".tree",".py",".log",".ali");
     $msg .= "\n<table width=\"90%\" align=\"center\">";
@@ -17,7 +17,7 @@ sub display_job {
         $msg .= show_files($q,$job,$filetype);
     }
 
-    $msg .= "</table>";
+    $msg .= "</table>\n<hr />";
     $msg .= $job->get_results_available_time();
     return $msg;
 }
