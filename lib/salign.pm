@@ -125,4 +125,9 @@ sub get_job_object {
   return $job;
 }
 
+sub templatedir {
+    my ($self) = @_;
+    return $self->txtdir . '/template';
+}
+
 1;

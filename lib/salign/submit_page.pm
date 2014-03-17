@@ -159,7 +159,7 @@ sub fp_str_str
   $str_segm_ref = OnePdbPerSegm($str_segm_ref,$job_dir, $str_dir);
   # create top file
   my $output_ali = "str-str_out.ali";
-  strstr_topf($job_dir,$inputs,$static_dir,$str_segm_ref,$wt_mtx,'str-str.py',$output_ali,$str_dir);
+  strstr_topf($job_dir,$inputs,$self->templatedir,$str_segm_ref,$wt_mtx,'str-str.py',$output_ali,$str_dir);
   # write relevant inputs to DBM file
   my $memo_inp;
   $memo_inp->{'email'} = $inputs->{'email'};
@@ -301,7 +301,7 @@ sub fp_str_seq
 
   # create str-str top file
   my $output_strstr = "str-str_out.ali";
-  strstr_topf($job_dir,$inputs,$static_dir,$str_segm_ref,$wt_mtx,'str-str.py',$output_strstr,$str_dir);
+  strstr_topf($job_dir,$inputs,$self->templatedir,$str_segm_ref,$wt_mtx,'str-str.py',$output_strstr,$str_dir);
 
   # section below is mostly seq-seq stuff
   # add uploaded sequences to ali file hash
@@ -358,7 +358,7 @@ sub fp_str_seq
   }
   
   # create seq-seq top file
-  sese_stse_topf($job_dir,$output_seqseq,$inputs,$static_dir,$fin_alipath,$fin_aliformat,'seq-seq',$seq_count,'sese','','');
+  sese_stse_topf($job_dir,$output_seqseq,$inputs,$self->templatedir,$fin_alipath,$fin_aliformat,'seq-seq',$seq_count,'sese','','');
 
   # section below takes care of step 2 (alignment of the 2 outputs from step 1)
   my $step2_str_dir;
@@ -402,7 +402,7 @@ sub fp_str_seq
      }
  
      # create seq-str top file
-     sese_stse_topf($job_dir,$step2_out_ali,$inputs,$static_dir,$step2_input_ali,'pir','final_alignment',$str_count,'stse',$step2_str_dir,'');
+     sese_stse_topf($job_dir,$step2_out_ali,$inputs,$self->templatedir,$step2_input_ali,'pir','final_alignment',$str_count,'stse',$step2_str_dir,'');
   }
   else  # profile-profile
   {
@@ -425,7 +425,7 @@ sub fp_str_seq
      }
      # create profile-profile top file
 #     profile_topf($job_dir,$step2_out_ali,$inputs,$static_dir,$step2_input_ali,'step2.py',$str_count);
-     profile_topf($job_dir,$step2_out_ali,$inputs,$static_dir,$step2_input_ali,'final_alignment.py',$str_count);
+     profile_topf($job_dir,$step2_out_ali,$inputs,$self->templatedir,$step2_input_ali,'final_alignment.py',$str_count);
   }
   # write relevant inputs to DBM file
   my $memo_inp;
@@ -568,7 +568,7 @@ sub fp_onestep_sese
   # create top files
   if ( $entries eq 'seqs' ) #only sequences
   {
-     sese_stse_topf($job_dir,$output_file,$inputs,$static_dir,$fin_alipath,$fin_aliformat,$topf_namebase,$seq_count,'sese','','');
+     sese_stse_topf($job_dir,$output_file,$inputs,$self->templatedir,$fin_alipath,$fin_aliformat,$topf_namebase,$seq_count,'sese','','');
   }
   else  #structures and maybe sequences
   {
@@ -588,7 +588,7 @@ sub fp_onestep_sese
      }
      $seq_count += $str_count;
      $str_segm_ref = OnePdbPerSegm($str_segm_ref,$job_dir,$str_dir);
-     sese_stse_topf($job_dir,$output_file,$inputs,$static_dir,$fin_alipath,$fin_aliformat,$topf_namebase,$seq_count,'sese_pdbs',$str_dir,$str_segm_ref);
+     sese_stse_topf($job_dir,$output_file,$inputs,$self->templatedir,$fin_alipath,$fin_aliformat,$topf_namebase,$seq_count,'sese_pdbs',$str_dir,$str_segm_ref);
   }
 
   # write relevant inputs to DBM file
@@ -681,11 +681,11 @@ sub fp_twostep_sese
      # create top file for step 1
      if ( $seq_count <= 500 )  # dyn progr alignment 
      {
-        sese_stse_topf($job_dir,$output_file,$inputs,$static_dir,$fin_alipath,$fin_aliformat,$topf_namebase,$seq_count,'sese','','');
+        sese_stse_topf($job_dir,$output_file,$inputs,$self->templatedir,$fin_alipath,$fin_aliformat,$topf_namebase,$seq_count,'sese','','');
      }
      else        # no realignment, but makes sure output format is PIR
      {
-        faa2pir_topf($job_dir,$output_file,$static_dir,$fin_alipath,$fin_aliformat,$topf_name);  
+        faa2pir_topf($job_dir,$output_file,$self->templatedir,$fin_alipath,$fin_aliformat,$topf_name);  
      }
      $i++;
   }
@@ -712,7 +712,7 @@ sub fp_twostep_sese
   my $output_file = "final_alignment.ali";
   my $input_file = "prof_in.ali";
   my $topf_name = "profile.py";
-  profile_topf($job_dir,$output_file,$inputs,$static_dir,$input_file,$topf_name,$seq_counts[0]);
+  profile_topf($job_dir,$output_file,$inputs,$self->templatedir,$input_file,$topf_name,$seq_counts[0]);
 
   # write relevant inputs to DBM file
   my $memo_inp;
