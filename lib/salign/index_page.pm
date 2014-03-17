@@ -1143,12 +1143,12 @@ sub str_str
   my %upl_files = %$upl_files_ref;
   my %lib_PDBs = %$lib_PDBs_ref;
   
-  my $msg =	$q->start_form( -method => "post", -action => $self->submit_url ).
+  my $msg = print_cont1_category_choice ($self, $q, "Structure-structure alignment");
+  $msg .=	$q->start_form( -method => "post", -action => $self->submit_url ).
  	$q->hidden( -name => "tool", -default => "str_str", -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1);
 
-  $msg .= print_cont1_category_choice ($self, $q, "Structure-structure alignment");
   $msg .= "Specified structure segments will be multiply aligned.<br /><br />";
   $msg .= "\n<table> <col width=\"100\"><col width=\"100\">\n";
   $msg .= print_pdb_segments ($self, $q, $upl_files_ref, $lib_PDBs_ref);
@@ -1275,13 +1275,13 @@ sub str_seq
   my %lib_PDBs = %$lib_PDBs_ref;
   
 # Start html
-  my $msg = $q->start_form( -method => "post", -action => $self->submit_url ).
+  my $msg = print_cont1_category_choice ($self, $q, "Structure-sequence alignment");
+  $msg .= $q->start_form( -method => "post", -action => $self->submit_url ).
 	$q->hidden( -name => "tool", -default => "str_seq", -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1);
 
-  $msg .= print_cont1_category_choice ($self, $q, "Structure-sequence alignment");
   $msg .= "Step 1: Structures and sequences will be multiply aligned independently.<br />";
   $msg .= "Step 2: The resulting alignments from step 1 will be aligned to each other.<br /><br />";
 
@@ -1462,13 +1462,13 @@ sub twostep_sese
   my %upl_files = %$upl_files_ref;
   my %lib_PDBs = %$lib_PDBs_ref;
   
-  my $msg = $q->start_form( -method => "post", -action => $self->submit_url ).
+  my $msg = print_cont1_category_choice ($self, $q, "Sequence-sequence alignment");
+  $msg .= $q->start_form( -method => "post", -action => $self->submit_url ).
 	$q->hidden( -name => "tool", -default => "2s_sese", -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1);
 
-  $msg .= print_cont1_category_choice ($self, $q, "Sequence-sequence alignment");
   $msg .= "Step 1: The two sets of sequences will be multiply aligned independently.<br />";
   $msg .= "Step 2: The resulting alignments from step 1 will be aligned to each other.<br /><br />";
 
@@ -1602,13 +1602,13 @@ sub onestep_sese
   my $job_name = shift;
   my %upl_files = %$upl_files_ref;
 
-  my $msg =$q->start_form( -method => "post", -action => $self->submit_url ).
+  my $msg = print_cont1_category_choice ($self, $q, "Sequence-sequence alignment");
+  $msg .=$q->start_form( -method => "post", -action => $self->submit_url ).
 	$q->hidden( -name => "tool", -default => "1s_sese", -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1);
 
-  $msg .= print_cont1_category_choice ($self, $q, "Sequence-sequence alignment");
   $msg .= "All uploaded sequences will be multiply aligned.<br /><br />";
 
   # Show uploaded ali files and no of pasted seqs
@@ -1695,12 +1695,12 @@ sub adv_stst
      $params{$param_name} = $q->param($param_name);
   }
  
-  my $msg =	$q->start_multipart_form( -method => "post", -action => $self->submit_url ).
+  my $msg = print_cont1_advance_option ($self, $q);
+  $msg .=	$q->start_multipart_form( -method => "post", -action => $self->submit_url ).
  	$q->hidden( -name => "tool", -default => "str_str_adv", -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1);
 
-  $msg .= print_cont1_advance_option ($self, $q);
   $msg .= "Depending on the choice of the alignment category, some options may have no effect.\n";
 
   $msg .= "<table>\n"
@@ -1733,13 +1733,13 @@ sub adv_stse
   }
   my $upld_pseqs = $params{'upld_pseqs'};
   
-  my $msg = $q->start_multipart_form( -method => "post", -action => $self->submit_url ).
+  my $msg = print_cont1_advance_option ($self, $q);
+  $msg .= $q->start_multipart_form( -method => "post", -action => $self->submit_url ).
  	$q->hidden( -name => "tool", -default => "str_seq_adv", -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1);
 
-  $msg .= print_cont1_advance_option ($self, $q);
   $msg .= "Depending on the choice of the alignment category, some options may have no effect.\n";
 
   $msg .= "<table>\n"
@@ -1776,14 +1776,14 @@ sub adv_sese
   my $upld_pseqs = $params{'upld_pseqs'};
   my $structures = $params{'structures'};
 
-  my $msg = $q->start_multipart_form( -method => "post", -action => $self->submit_url ).
+  my $msg = print_cont1_advance_option ($self, $q);
+  $msg .= $q->start_multipart_form( -method => "post", -action => $self->submit_url ).
  	$q->hidden( -name => "tool", -default => "sese_adv", -override => 1).
         $q->hidden( -name => "job_name", -default => $job_name, -override => 1).
 	$q->hidden( -name => "email", -default => $email, -override => 1).
 	$q->hidden( -name => "upld_pseqs", -default => $upld_pseqs, -override => 1).
 	$q->hidden( -name => "structures", -default => $structures, -override => 1);
 
-  $msg .= print_cont1_advance_option ($self, $q);
   if ( $params{'caller'} eq '2s_sese' ) {
      $msg .= "Depending on the choice of the alignment category, some options may have no effect.\n";
   }
@@ -1844,16 +1844,14 @@ sub make_size_nice
 sub print_cont1_category_choice {
 	my ($self, $q, $cat_choice) = @_;
 
-return "<div id=\"left\"></div><div id=\"fullpart\">\n"
-       . $q->h2("<br />Choice of alignment category",  $self->help_link("ali_cat_choice"),
+return $q->h2("<br />Choice of alignment category",  $self->help_link("ali_cat_choice"),
 	     ": &nbsp;$cat_choice", $q->br, $q->hr);
 }
 
 sub print_cont1_advance_option {
 	my ($self, $q) = @_;
 
-return "<div id=\"left\"></div><div id=\"fullpart\">\n"
-      . $q->h2("<br />SALIGN Advanced Options",  help_link_2($q, ""), $q->br, $q->hr);
+return $q->h2("<br />SALIGN Advanced Options",  help_link_2($q, ""), $q->br, $q->hr);
 }
 
 sub print_alignment_type {
