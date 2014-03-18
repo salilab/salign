@@ -131,7 +131,7 @@ class Tests(saliweb.test.TestCase):
                "Raw QUALITY_SCORE of the multiple alignment:  45.0\n"
                "QUALITY_SCORE (percentage)  : 24.5\n"
                "Completed successfully")
-        open('seq-seq1.log', 'w').write("Completed successfully")
+        open('seq-seq.log', 'w').write("Completed successfully")
         open('str-str.log', 'w').write("Completed successfully")
         j.postprocess()
         f = open('email_info').read()
