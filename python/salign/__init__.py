@@ -16,7 +16,7 @@ date
 """ % "\n".join(commands)
     r = runnercls(script)
     r.set_sge_options("-o output.error -j y -l netappsali=1G -p -4 "
-                      "-l h_rt=24:00:00 -r y -N salign")
+                      "-l h_rt=72:00:00 -r y -N salign")
     return r
 
 def run_mod(scriptname):
