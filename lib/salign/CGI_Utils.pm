@@ -7,6 +7,7 @@ our @EXPORT = qw( filen_fix filen_fix_jr check_dir_size );
 our $VERSION = "1.00";
 use strict;
 use salign::constants;
+use saliweb::frontend;
 use File::Find;
 
 # strip uploaded file name and check for dangerous characters
@@ -26,7 +27,7 @@ sub filen_fix
      my $message = "Invalid file name: \n";
      $message .= "File name may contain letters, numbers, underscores, ";
      $message .= "spaces, periods and hyphens \n";
-     die $message;
+     throw saliweb::frontend::InputValidationError($message);
   }
   # Untaint file name if safe
   $filen = $1;
@@ -46,7 +47,7 @@ sub filen_fix_jr
      my $message = "Invalid file name: \n";
      $message .= "File name may contain letters, numbers, underscores, ";
      $message .= "spaces, periods and hyphens \n";
-     die $message;
+     throw saliweb::frontend::InputValidationError($message);
   }
   # Untaint file name if safe
   $filen = $1;

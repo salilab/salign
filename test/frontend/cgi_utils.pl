@@ -14,8 +14,9 @@ BEGIN {
     my $f = filen_fix(undef, "/foo/bar/ aA0 b-_.z ");
     is($f, "aA0_b-_.z", "filen_fix valid file");
 
-    dies_ok { filen_fix(undef, "/foo/bar/ a#^A0 b-_.z ") }
-            "filen_fix invalid file";
+    throws_ok { filen_fix(undef, "/foo/bar/ a#^A0 b-_.z ") }
+              saliweb::frontend::InputValidationError,
+              "filen_fix invalid file";
 }
 
 # Test filen_fix_jr
@@ -23,6 +24,7 @@ BEGIN {
     my $f = filen_fix_jr(undef, " aA0 b-_.z ");
     is($f, "_aA0_b-_.z_", "filen_fix_jr valid file");
 
-    dies_ok { filen_fix_jr(undef, "a#^A0 b-_.z") }
-            "filen_fix_jr invalid file";
+    throws_ok { filen_fix_jr(undef, "a#^A0 b-_.z") }
+              saliweb::frontend::InputValidationError,
+              "filen_fix_jr invalid file";
 }
