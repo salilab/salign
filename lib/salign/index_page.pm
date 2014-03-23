@@ -14,6 +14,7 @@ use salign::Utils;
 use salign::constants;
 use saliweb::frontend qw(pdb_code_exists);
 use File::Copy;
+use File::Path qw(remove_tree);
 use Archive::Tar;
 
 # ======================= SUB ROUTINES ========================
@@ -556,19 +557,7 @@ sub unzip
         if ($rdstat == 1) { next; } #empty dir, possibly os x zip artifact
         else #remove files and directory, and give error
         {
-             if ($filen =~ /^([\w.-]+)$/) {$filen = $1;}
-             else {die "Can't untaint directory name";}
-             my $bad_dir = "$unzip_dir/$filen";
-             opendir(BADDIR, $bad_dir) or die "Can't open $bad_dir: $!";
-             while( defined (my $delfil = readdir BADDIR) ) 
-             {
-                  next if $delfil =~ /^\.\.?$/;     # skip . and ..
-                  if ($delfil =~ /^([\w.-]+)$/) {$delfil = $1;}
-                  else {die "Can't untaint filename";}
-                  unlink ("$bad_dir/$delfil") or die "Couldn't unlink $delfil: $!\n";
-             }            
-             closedir(BADDIR);
-             rmdir($bad_dir);
+             remove_tree("$unzip_dir/$filen");
              throw saliweb::frontend::InputValidationError("You uploaded an archive of a folder containing files. Archives (.zip and .tar.gz) should contain all files in the top level, and not within a folder. Thus, when preparing these, make sure to archive all desired files directly, not a folder containing the files. Please reload SALIGN webserver and follow these instructions."); 
         }
      }
