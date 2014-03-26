@@ -457,7 +457,8 @@ sub unzip
   # if incorrect file format
   if ( $type eq "unk" )  
   {     
-     die "Uploaded file $cmp_file not supported file type";
+     throw saliweb::frontend::InputValidationError(
+                       "Uploaded file $cmp_file not supported file type");
   }
 
   # create directory for unzipping if it doesn't exist
