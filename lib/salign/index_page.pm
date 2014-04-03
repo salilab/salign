@@ -31,7 +31,12 @@ sub main
   # start requested option
   if ( $cur_state eq "home" ) 
   { 
-     return home($self, $q,$job_name,$upld_pseqs,$email,$pdb_id);
+     # Get job object (including upload directory)
+     my $job;
+     if ($job_name) {
+       $job = $self->resume_job($job_name);
+     }
+     return home($self, $q,$job,$upld_pseqs,$email,$pdb_id);
   }
   elsif ( $cur_state eq "Upload" )
   {
@@ -67,16 +72,10 @@ sub home
 {
   my $self = shift; 
   my $q = shift; 
-  my $job_name = shift;
+  my $job = shift;
   my $upld_pseqs = shift;
   my $email = shift;
   my $pdb_id = shift;
-
-  # Get job object (including upload directory)
-  my $job;
-  if ($job_name) {
-    $job = $self->resume_job($job_name);
-  }
 
   # Start html
   my $msg = print_body1a_intro($self, $q)
@@ -178,7 +177,7 @@ sub upload_main
   my $paste_seq = $q->param('paste_seq'); 
   if ( $upl_file eq "" && $paste_seq eq "" )
   {
-     $msg .= home($self, $q,$job_name,$upld_pseqs,$email,$pdb_id);
+     $msg .= home($self, $q,$job,$upld_pseqs,$email,$pdb_id);
   }   
   else
   {
@@ -217,7 +216,7 @@ sub upload_main
 	save_paste($job->directory,$paste_seq,$upld_pseqs);
 	$upld_pseqs++;
      }
-     $msg .= home($self, $q,$job_name,$upld_pseqs,$email,$pdb_id);
+     $msg .= home($self, $q,$job,$upld_pseqs,$email,$pdb_id);
   }
   return $msg;
 }
