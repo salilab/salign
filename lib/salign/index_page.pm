@@ -23,6 +23,7 @@ sub main
   my ($self, $q) = @_;
 
   my $job_name = $q->param('job_name');
+  my $user_name = $q->param('user_name');
   my $cur_state = $q->param('state') || 'home';
   my $upld_pseqs = $q->param('upld_pseqs') || 0;
   my $email = $q->param('email') || "";
@@ -40,11 +41,13 @@ sub main
   }
   elsif ( $cur_state eq "Upload" )
   {
-     return upload_main($self, $q,$job_name,$upld_pseqs,$email,$pdb_id);
+     return upload_main($self, $q, $self->get_job_object($job_name, $user_name),
+                        $upld_pseqs, $email, $pdb_id);
   }
   elsif ( $cur_state eq "Continue" )
   {
-     return customizer($self, $q,$job_name,$upld_pseqs,$email,$pdb_id);
+     return customizer($self, $q, $self->get_job_object($job_name, $user_name),
+                       $upld_pseqs, $email, $pdb_id);
   }
   elsif ( $cur_state eq "Advanced" )
   {
@@ -159,13 +162,10 @@ sub upload_main
 {
   my $self = shift;
   my $q = shift;
-  my $job_name = shift;
+  my $job = shift;
   my $upld_pseqs = shift;
   my $email = shift;
   my $pdb_id = shift;
-
-  my $job = $self->get_job_object($job_name);
-  $job_name = $job->name;
 
   my $msg = '';
 
@@ -228,15 +228,14 @@ sub customizer
 {
   my $self = shift;
   my $q = shift;
-  my $job_name = shift;
+  my $job = shift;
   my $upld_pseqs = shift;
   my $email = shift;
   my $pdb_id = shift;
   my $upl_file = $q->param('upl_file'); 
   my $paste_seq = $q->param('paste_seq');
 
-  my $job = $self->get_job_object($job_name);
-  $job_name = $job->name;
+  my $job_name = $job->name;
 
   my $upl_dir = $job->directory . "/upload";
 
@@ -2349,11 +2348,16 @@ BODY1a
 sub print_body2_general_information {
     my ($self, $q, $email) = @_;
     my $help = $self->help_link("email");
+    my $job_help = $self->help_link("job_name");
     return <<BODY2;
 		<tr><td><h4>General information</h4></td></tr>
 		<tr>
 			<td>Email address (optional) $help <br /></td>
 			<td><input type="text" name="email" value="$email" size="25" /></td>
+		</tr>
+		<tr>
+			<td>Job name (optional) $job_help <br /></td>
+			<td><input type="text" name="user_name" value="" size="25" /></td>
 		</tr>
 BODY2
 }

@@ -81,6 +81,14 @@ not a folder containing the files.</p>
 </p>
 <br>
 
+<b id="job_name">
+    Job name:
+</b>
+<p>
+   The job can be given a name to more easily identify it.
+</p>
+<br>
+
 <b id="ali_cat_choice">
     Choice of alignment category:
 </b> 
