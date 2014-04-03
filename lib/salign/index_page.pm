@@ -82,7 +82,7 @@ sub home
 
   # Start html
   my $msg = print_body1a_intro($self, $q)
-         .  print_body2_general_information($self, $q, $email)
+         .  print_body2_general_information($self, $q, $email, $job)
          .  print_body3_input_alignment($q)
          .  print_body3a_sequence($self, $q)
          .  print_body3b_file($self, $q)
@@ -2346,20 +2346,24 @@ BODY1a
 }
 
 sub print_body2_general_information {
-    my ($self, $q, $email) = @_;
-    my $help = $self->help_link("email");
+    my ($self, $q, $email, $job) = @_;
     my $job_help = $self->help_link("job_name");
-    return <<BODY2;
-		<tr><td><h4>General information</h4></td></tr>
-		<tr>
-			<td>Email address (optional) $help <br /></td>
-			<td><input type="text" name="email" value="$email" size="25" /></td>
-		</tr>
-		<tr>
-			<td>Job name (optional) $job_help <br /></td>
-			<td><input type="text" name="user_name" value="" size="25" /></td>
-		</tr>
-BODY2
+    my $msg = "<tr><td><h4>General information</h4></td></tr>\n" .
+	      "<tr>\n".
+              "<td>Email address (optional) " . $self->help_link("email") .
+              " <br /></td>\n".
+              "<td><input type=\"text\" name=\"email\" value=\"$email\" " .
+              "size=\"25\" /></td>\n" .
+              "</tr>\n";
+    if (!$job) {
+        $msg .= "<tr>\n".
+              "<td>Job name (optional) " . $self->help_link("job_name") .
+              " <br /></td>\n".
+              "<td><input type=\"text\" name=\"user_name\" value=\"\" " .
+              "size=\"25\" /></td>\n" .
+              "</tr>\n";
+    }
+    return $msg;
 }
 
 sub print_body3_input_alignment {
