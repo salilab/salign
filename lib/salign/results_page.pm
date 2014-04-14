@@ -43,7 +43,10 @@ sub show_files {
 	#hb 050216
 	if ( $type eq '_fit.pdb' && $#uploadinfo > -1 )
 	{
-            $msg .= $q->Tr($q->td($q->a({-href=>$job->get_results_file_url("showfile.chimerax")},"Launch Chimera")));
+            my @alignfiles = glob("*str_out.ali");
+            if ($#alignfiles > -1) {
+                $msg .= $q->Tr($q->td($q->a({-href=>$job->get_results_file_url("showfile.chimerax")},"Launch Chimera")));
+            }  
         }  
     return $msg;
 }
