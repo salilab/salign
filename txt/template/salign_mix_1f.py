@@ -172,6 +172,7 @@ def run():
 
     nejon = True
     poi = False
+    win_ogp3d = None
 
     #log.verbose
     #env = environ()
@@ -269,7 +270,8 @@ def run():
                 del (aln)
 
     print "final max quality = ",qmax
-
+    if win_ogp3d is None:
+        raise ModellerError("Structure alignment failed")
 
     aln = alignment(env)
     aln.append(file=opfile, align_codes = 'all')
