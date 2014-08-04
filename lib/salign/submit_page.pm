@@ -99,7 +99,7 @@ sub fp_str_str
      unless ( -d $upl_dir )
      {
         mkdir $upl_dir
-          or die "Can't create sub directory upload: $!\n";
+          or die "Can't create sub directory upload: $!";
      }
      # upload weight matrix 
      $wt_mtx = fp_file_upload($q,$upl_dir,"weight_mtx");
@@ -205,7 +205,7 @@ sub fp_str_seq
      unless ( -d $upl_dir )
      {
         mkdir $upl_dir
-          or die "Can't create sub directory upload: $!\n";
+          or die "Can't create sub directory upload: $!";
      }
      # upload weight matrix 
      $wt_mtx = fp_file_upload($q,$upl_dir,"weight_mtx");
@@ -982,7 +982,7 @@ sub cp_PDBs
   my $common_dir = $job_dir . '/structures';
 
   mkdir $common_dir
-    or die "Can't create sub directory $common_dir: $!\n";
+    or die "Can't create sub directory $common_dir: $!";
 
   foreach my $lib_str ( keys %{ $str_segm{'lib'} } )
   {
@@ -1009,7 +1009,7 @@ sub cp_PDBs_noUpl
   my $common_dir = $job_dir . '/structures';
 
   mkdir $common_dir
-    or die "Can't create sub directory $common_dir: $!\n";
+    or die "Can't create sub directory $common_dir: $!";
 
   foreach my $lib_str ( keys %{ $str_segm{'lib'} } )
   {

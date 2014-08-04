@@ -184,7 +184,7 @@ sub upload_main
      my $upl_dir = $job->directory . "/upload";
      #save all filenames present in $upl_dir in hash
      my %upldir_files;
-     opendir ( UPLOAD, $upl_dir ) or die "Can't open $upl_dir: $!\n";
+     opendir ( UPLOAD, $upl_dir ) or die "Can't open $upl_dir: $!";
      while ( defined (my $file = readdir UPLOAD) )
      {
         #skip . and ..
@@ -247,7 +247,7 @@ sub customizer
      check_dir_size($q,$job->directory);
      #save all filenames present in $upl_dir in hash
      my %upldir_files;
-     opendir ( UPLOAD, $upl_dir ) or die "Can't open $upl_dir: $!\n";
+     opendir ( UPLOAD, $upl_dir ) or die "Can't open $upl_dir: $!";
      while ( defined (my $file = readdir UPLOAD) )
      {
         #skip . and ..
@@ -462,9 +462,9 @@ sub unzip
   # create directory for unzipping if it doesn't exist
   unless ( -d $unzip_dir )
   {
-     mkdir $unzip_dir or die "Can't create sub directory $unzip_dir: $!\n";
+     mkdir $unzip_dir or die "Can't create sub directory $unzip_dir: $!";
   }
-  chdir "$unzip_dir" or die "Can't change working directory to $unzip_dir: $!\n";
+  chdir "$unzip_dir" or die "Can't change working directory to $unzip_dir: $!";
 #  system ("mv","$upl_dir/$cmp_file","$unzip_dir/$cmp_file");
   move ("$upl_dir/$cmp_file","$unzip_dir/$cmp_file")
     or die "move failed: $cmp_file $!";
@@ -474,7 +474,7 @@ sub unzip
   {
      system ("unzip","$unzip_dir/$cmp_file");
      # delete zip file post extraction
-     unlink ("$unzip_dir/$cmp_file") or die "Couldn't unlink $cmp_file: $!\n";
+     unlink ("$unzip_dir/$cmp_file") or die "Couldn't unlink $cmp_file: $!";
   }
   # gunzip and untar if .tar.gz file
   else
@@ -490,7 +490,7 @@ sub unzip
         $gunz_file = $cmp_file;
 	my $cmp_file = $cmp_file . ".gz";
         rename ("$unzip_dir/$gunz_file","$unzip_dir/$cmp_file")
-          or die "Couldn't rename $gunz_file: $!\n";
+          or die "Couldn't rename $gunz_file: $!";
      }	  
      # gunzip  
      system ("gunzip","$unzip_dir/$cmp_file");
@@ -515,13 +515,13 @@ sub unzip
      my $tar = Archive::Tar->new;
      $tar->read("$unzip_dir/$gunz_file",1,{extract=>'true'});
      # delete tar file
-     unlink ("$unzip_dir/$gunz_file") or die "Couldn't unlink $gunz_file: $!\n";
+     unlink ("$unzip_dir/$gunz_file") or die "Couldn't unlink $gunz_file: $!";
   }
 
   # process all unzipped files
   my @redundant;
   my %unz_files;
-  opendir ( UNZIP, $unzip_dir ) or die "Can't open $unzip_dir: $!\n";
+  opendir ( UNZIP, $unzip_dir ) or die "Can't open $unzip_dir: $!";
   while ( defined (my $file = readdir UNZIP) )
   {
      #skip . and ..
@@ -545,7 +545,7 @@ sub unzip
 	else
 	{
            rename ("$unzip_dir/$old_filen","$unzip_dir/$filen")
-             or die "Couldn't rename $old_filen: $!\n";
+             or die "Couldn't rename $old_filen: $!";
 	}
      }
      #check if file is directory. skip if so. (OS X zip file artifact)
@@ -582,9 +582,9 @@ sub unzip
   # delete duplicate file uploads
   foreach my $i ( 0 .. $#redundant )
   {
-     unlink ("$unzip_dir/$redundant[$i]") or die "Couldn't unlink $redundant[$i]: $!\n";
+     unlink ("$unzip_dir/$redundant[$i]") or die "Couldn't unlink $redundant[$i]: $!";
   } 
-  chdir "$run_dir" or die "Can't change working directory to $run_dir: $!\n";
+  chdir "$run_dir" or die "Can't change working directory to $run_dir: $!";
 }
 
 
