@@ -64,9 +64,11 @@ sub main
      {
         return adv_sese($self, $q,$job_name,$email);
      }
-     else { die "Caller $caller for advanced view does not exist"; }
+     else { throw saliweb::frontend::InputValidationError(
+                       "Caller $caller for advanced view does not exist"); }
   }
-  else { die "Routine $cur_state does not exist"; }
+  else { throw saliweb::frontend::InputValidationError(
+                     "Routine $cur_state does not exist"); }
 }
 
 # Generate front page of salign interface
