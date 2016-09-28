@@ -18,7 +18,7 @@ use DB_File;
 $CGI::POST_MAX = MAX_POST_SIZE;
 
 sub new {
-    return saliweb::frontend::new(@_, @CONFIG@);
+    return saliweb::frontend::new(@_, "##CONFIG##");
 }
 
 sub get_navigation_links {
