@@ -474,7 +474,8 @@ sub unzip
   # unzip if zip file
   if ( $type eq "zip" )
   {
-     system ("unzip","$unzip_dir/$cmp_file");
+     system ("unzip", "-qq", "$unzip_dir/$cmp_file") == 0
+           or die "unzip failed: $?";
      # delete zip file post extraction
      unlink ("$unzip_dir/$cmp_file") or die "Couldn't unlink $cmp_file: $!";
   }
@@ -495,7 +496,8 @@ sub unzip
           or die "Couldn't rename $gunz_file: $!";
      }	  
      # gunzip  
-     system ("gunzip","$unzip_dir/$cmp_file");
+     system ("gunzip","$unzip_dir/$cmp_file") == 0
+           or die "gunzip failed: $?";
      # check that gzipped file really is a tar file
      $file_cmd = "file $unzip_dir/$gunz_file";
      my $tar_file = 0;
