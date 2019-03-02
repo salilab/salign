@@ -15,6 +15,7 @@ class Tests(saliweb.test.TestCase):
         j = self.make_test_job(salign.Job, 'RUNNING')
         j.send_user_email = send_user_email
         d = saliweb.test.RunInDir(j.directory)
+        open('output.error', 'w').write("")
         db = anydbm.open('inputs.db', 'n')
         db['tool'] = 'str_str'
         db.close()
@@ -30,6 +31,7 @@ class Tests(saliweb.test.TestCase):
         j = self.make_test_job(salign.Job, 'RUNNING')
         j.send_user_email = send_user_email
         d = saliweb.test.RunInDir(j.directory)
+        open('output.error', 'w').write("")
         db = anydbm.open('inputs.db', 'n')
         db['tool'] = 'seq_seq'
         db.close()
@@ -54,6 +56,7 @@ class Tests(saliweb.test.TestCase):
         """Test postprocess of successful 1-step run"""
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
+        open('output.error', 'w').write("")
         anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
         open('str-str.log', 'w').write(
                "Raw QUALITY_SCORE of the multiple alignment:  45.0\n"
@@ -67,6 +70,7 @@ class Tests(saliweb.test.TestCase):
         """Test postprocess of successful 1-step run, no q score"""
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
+        open('output.error', 'w').write("")
         anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
         open('str-str.log', 'w').write("Completed successfully")
         j.postprocess()
@@ -78,6 +82,7 @@ class Tests(saliweb.test.TestCase):
         """Test postprocess of 1-step run, no log file"""
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
+        open('output.error', 'w').write("")
         anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
         self.assertRaises(salign.MissingLogError, j.postprocess)
 
@@ -85,6 +90,7 @@ class Tests(saliweb.test.TestCase):
         """Test postprocess of failed 1-step run, no Modeller errors"""
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
+        open('output.error', 'w').write("")
         anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
         open('str-str.log', 'w').write("")
         j.postprocess()
@@ -97,6 +103,7 @@ class Tests(saliweb.test.TestCase):
         """Test postprocess of failed 1-step run with custom error message"""
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
+        open('output.error', 'w').write("")
         anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
         open('str-str.log', 'w').write("fit2xyz_296E> Our custom error")
         j.postprocess()
@@ -112,6 +119,7 @@ class Tests(saliweb.test.TestCase):
         """Test postprocess of failed 1-step run with generic error message"""
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
+        open('output.error', 'w').write("")
         anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
         open('str-str.log', 'w').write("something_999E> Our generic error")
         j.postprocess()
@@ -126,6 +134,7 @@ class Tests(saliweb.test.TestCase):
         """Test postprocess of successful 2-step run"""
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
+        open('output.error', 'w').write("")
         anydbm.open('inputs.db', 'n')['tool'] = 'str_seq'
         open('final_alignment.log', 'w').write(
                "Raw QUALITY_SCORE of the multiple alignment:  45.0\n"
@@ -141,12 +150,20 @@ class Tests(saliweb.test.TestCase):
         """Test postprocess of 2-step run, missing intermediate logs"""
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
+        open('output.error', 'w').write("")
         anydbm.open('inputs.db', 'n')['tool'] = 'str_seq'
         open('final_alignment.log', 'w').write(
                "Raw QUALITY_SCORE of the multiple alignment:  45.0\n"
                "QUALITY_SCORE (percentage)  : 24.5\n"
                "Completed successfully")
         self.assertRaises(salign.MissingLogError, j.postprocess)
+
+    def test_postprocess_import_failed(self):
+        """Test postprocess, Modeller import failure"""
+        j = self.make_test_job(salign.Job, 'RUNNING')
+        d = saliweb.test.RunInDir(j.directory)
+        open('output.error', 'w').write("ImportError: No module named modeller")
+        self.assertRaises(salign.ModellerImportError, j.postprocess)
 
 if __name__ == '__main__':
     unittest.main()

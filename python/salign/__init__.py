@@ -6,6 +6,9 @@ import re
 class MissingLogError(Exception):
     pass
 
+class ModellerImportError(Exception):
+    pass
+
 def make_sge_script(runnercls, commands):
     script = """
 date
@@ -63,8 +66,16 @@ class Job(saliweb.backend.Job):
             raise ValueError("Tool %s not recognized" % tool)
 
     def postprocess(self):
+        self.check_import_failure()
         tool = anydbm.open('inputs.db')['tool']
         self.check_log_files(tool)
+
+    def check_import_failure(self):
+        """Fail the job if Modeller could not be imported"""
+        with open("output.error") as fh:
+            contents = fh.read()
+        if 'ImportError' in contents:
+            raise ModellerImportError("Could not import Modeller")
 
     def check_line_error(self, line, errorcodes):
         if 'E>' in line:
