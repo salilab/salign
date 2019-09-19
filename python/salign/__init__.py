@@ -1,5 +1,9 @@
+from __future__ import print_function
 import saliweb.backend
-import anydbm
+try:
+    import anydbm  # python2
+except ImportError:
+    import dbm as anydbm  # python3
 import os
 import re
 
@@ -58,9 +62,9 @@ class Job(saliweb.backend.Job):
 
     def run(self):
         tool = anydbm.open('inputs.db')['tool']
-        if tool in ('str_str', '1s_sese'):
+        if tool in (b'str_str', b'1s_sese'):
             return make_onestep_script(self.runnercls, tool)
-        elif tool in ('2s_sese', 'str_seq'):
+        elif tool in (b'2s_sese', b'str_seq'):
             return make_twostep_script(self.runnercls, tool)
         else:
             raise ValueError("Tool %s not recognized" % tool)
@@ -124,12 +128,12 @@ class Job(saliweb.backend.Job):
 
     def check_log_files(self, tool):
         # set path(s) to log file(s)
-        intmed_logs = {'str_str': [], '1s_sese': [],
-                       '2s_sese': ['seq-seq1.log', 'seq-seq2.log'],
-                       'str_seq': ['seq-seq.log', 'str-str.log']}[tool]
-        mod_log = {'str_str': 'str-str.log', '1s_sese': 'seq-seq.log',
-                   '2s_sese': 'profile.log',
-                   'str_seq': 'final_alignment.log'}[tool]
+        intmed_logs = {b'str_str': [], b'1s_sese': [],
+                       b'2s_sese': ['seq-seq1.log', 'seq-seq2.log'],
+                       b'str_seq': ['seq-seq.log', 'str-str.log']}[tool]
+        mod_log = {b'str_str': 'str-str.log', b'1s_sese': 'seq-seq.log',
+                   b'2s_sese': 'profile.log',
+                   b'str_seq': 'final_alignment.log'}[tool]
         errorcodes = {}
         compl_succ_intmed = self.check_intermediate_logs(intmed_logs,
                                                          errorcodes)
@@ -142,8 +146,8 @@ class Job(saliweb.backend.Job):
             self.report_log_failure(errorcodes)
 
     def report_logs_ok(self, q_score, q_score_percent):
-        fh = open('email_info', 'w')
-        print >> fh, "OK|%s|%s" % (q_score, q_score_percent)
+        with open('email_info', 'w') as fh:
+            print("OK|%s|%s" % (q_score, q_score_percent), file=fh)
 
     def report_log_failure(self, errorcodes):
         customerrors = {
@@ -155,21 +159,21 @@ class Job(saliweb.backend.Job):
            'readlinef__E>': ' => The most likely reason for this error is that you uploaded an archive of a folder containing files. Archives (.zip and .tar.gz) should contain all files in the top level, and not within a folder. Thus, when preparing these, make sure to archive all desired files directly, not a folder containing the files.'
         }
 
-        fh = open('email_info', 'w')
-        print >> fh, "FAIL||"
-        custom = False
-        for err, line in errorcodes.items():
-            if err in customerrors:
-                print >> fh, customerrors[err]
-                custom = True
-        if errorcodes:
-            if custom:
-                print >> fh, "\nHopefully, the information above helps solve the problem. However, if more information is needed, please search the MODELLER log file for the following error codes for more information:\n\n"
+        with open('email_info', 'w') as fh:
+            print("FAIL||", file=fh)
+            custom = False
+            for err, line in errorcodes.items():
+                if err in customerrors:
+                    print(customerrors[err], file=fh)
+                    custom = True
+            if errorcodes:
+                if custom:
+                    print("\nHopefully, the information above helps solve the problem. However, if more information is needed, please search the MODELLER log file for the following error codes for more information:\n\n", file=fh)
+                else:
+                    print("Information about the errors can be found in the MODELLER log file. Normally, you will find the error at the bottom of the log file, or you can search it for the following error codes:\n\n", file=fh)
+                print("\n".join(errorcodes.keys()), file=fh)
             else:
-                print >> fh, "Information about the errors can be found in the MODELLER log file. Normally, you will find the error at the bottom of the log file, or you can search it for the following error codes:\n\n"
-            print >> fh, "\n".join(errorcodes.keys())
-        else:
-            print >> fh, "No MODELLER error codes were found, however the log file does not indicate successful completion. Usually this means that your job ran out of time (in which case you could try a smaller alignment, or download the script files and run it on your own computer). Please see if the log file provides more information.\n"
+                print("No MODELLER error codes were found, however the log file does not indicate successful completion. Usually this means that your job ran out of time (in which case you could try a smaller alignment, or download the script files and run it on your own computer). Please see if the log file provides more information.\n", file=fh)
 
     def send_job_completed_email(self):
         fh = open('email_info')
@@ -183,7 +187,7 @@ class Job(saliweb.backend.Job):
     def email_success(self, tool, q_score, q_score_percent):
         msg = "---------- SALIGN JOB ID %s ----------\n\n" % self.name + \
               "Your SALIGN job has been processed\n\n"
-        if tool == 'str_str':
+        if tool == b'str_str':
             msg += "Quality score of alignment: %s ( %s )\n\n" \
                    % (q_score, q_score_percent)
         msg += "Please click on hyperlink below to collect results.\n" \

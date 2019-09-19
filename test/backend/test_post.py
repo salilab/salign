@@ -1,7 +1,10 @@
 import unittest
 import salign
 import saliweb.test
-import anydbm
+try:
+    import anydbm  # python2
+except ImportError:
+    import dbm as anydbm  # python3
 import re
 
 class Tests(saliweb.test.TestCase):
