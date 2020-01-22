@@ -1,9 +1,6 @@
 from __future__ import print_function
 import saliweb.backend
-try:
-    import anydbm  # python2
-except ImportError:
-    import dbm as anydbm  # python3
+import json
 import os
 import re
 
@@ -60,18 +57,22 @@ def make_twostep_script(runnercls, tool):
 class Job(saliweb.backend.Job):
     runnercls = saliweb.backend.SaliSGERunner
 
+    def get_tool(self):
+        with open('inputs.json') as fh:
+            return json.load(fh)['tool']
+
     def run(self):
-        tool = anydbm.open('inputs.db')['tool']
-        if tool in (b'str_str', b'1s_sese'):
+        tool = self.get_tool()
+        if tool in ('str_str', '1s_sese'):
             return make_onestep_script(self.runnercls, tool)
-        elif tool in (b'2s_sese', b'str_seq'):
+        elif tool in ('2s_sese', 'str_seq'):
             return make_twostep_script(self.runnercls, tool)
         else:
             raise ValueError("Tool %s not recognized" % tool)
 
     def postprocess(self):
         self.check_import_failure()
-        tool = anydbm.open('inputs.db')['tool']
+        tool = self.get_tool()
         self.check_log_files(tool)
 
     def check_import_failure(self):
@@ -128,12 +129,12 @@ class Job(saliweb.backend.Job):
 
     def check_log_files(self, tool):
         # set path(s) to log file(s)
-        intmed_logs = {b'str_str': [], b'1s_sese': [],
-                       b'2s_sese': ['seq-seq1.log', 'seq-seq2.log'],
-                       b'str_seq': ['seq-seq.log', 'str-str.log']}[tool]
-        mod_log = {b'str_str': 'str-str.log', b'1s_sese': 'seq-seq.log',
-                   b'2s_sese': 'profile.log',
-                   b'str_seq': 'final_alignment.log'}[tool]
+        intmed_logs = {'str_str': [], '1s_sese': [],
+                       '2s_sese': ['seq-seq1.log', 'seq-seq2.log'],
+                       'str_seq': ['seq-seq.log', 'str-str.log']}[tool]
+        mod_log = {'str_str': 'str-str.log', '1s_sese': 'seq-seq.log',
+                   '2s_sese': 'profile.log',
+                   'str_seq': 'final_alignment.log'}[tool]
         errorcodes = {}
         compl_succ_intmed = self.check_intermediate_logs(intmed_logs,
                                                          errorcodes)
@@ -179,7 +180,7 @@ class Job(saliweb.backend.Job):
         fh = open('email_info')
         email_info = fh.readline().rstrip('\r\n').split('|')
         if email_info[0] == 'OK':
-            tool = anydbm.open('inputs.db')['tool']
+            tool = self.get_tool()
             self.email_success(tool, email_info[1], email_info[2])
         else:
             self.email_failure(fh.read())
@@ -187,7 +188,7 @@ class Job(saliweb.backend.Job):
     def email_success(self, tool, q_score, q_score_percent):
         msg = "---------- SALIGN JOB ID %s ----------\n\n" % self.name + \
               "Your SALIGN job has been processed\n\n"
-        if tool == b'str_str':
+        if tool == 'str_str':
             msg += "Quality score of alignment: %s ( %s )\n\n" \
                    % (q_score, q_score_percent)
         msg += "Please click on hyperlink below to collect results.\n" \

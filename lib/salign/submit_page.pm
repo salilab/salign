@@ -9,6 +9,7 @@ package salign::submit_page;
 use strict;
 use Fcntl qw( :DEFAULT :flock);
 use DB_File;
+use JSON;
 use File::Find;
 use salign::CGI_Utils;
 use salign::Utils;
@@ -1147,18 +1148,17 @@ sub change_name1
   return($filen);
 }
 
-# create a memo file storing the user inputs in DBM format
+# create a memo file storing the user inputs in JSON format
 sub create_memo
 {
   my $memo_inp_ref = shift;
   my $job_dir = shift;
-  my $memo_name = "inputs.db";  
+  my $memo_name = "inputs.json";  
    
-  # Create DBM file and let it store the user input
-  my %memo_inp;
-  tie(%memo_inp, "DB_File", "$job_dir/$memo_name", O_CREAT|O_WRONLY) or die "Cannot open tie to $memo_name: $!";
-  %memo_inp = %$memo_inp_ref;
-  untie %memo_inp;
+  # Create JSON file and let it store the user input
+  open MEMO, ">", "$job_dir/$memo_name" or die "Cannot open $memo_name: $!";
+  print MEMO encode_json $memo_inp_ref;
+  close MEMO;
 }
 
 # Create top file for str-str

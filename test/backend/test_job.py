@@ -1,10 +1,7 @@
 import unittest
 import salign
 import saliweb.test
-try:
-    import anydbm  # python2
-except ImportError:
-    import dbm as anydbm  # python3
+import json
 
 class JobTests(saliweb.test.TestCase):
     def test_run(self):
@@ -12,9 +9,8 @@ class JobTests(saliweb.test.TestCase):
         for tool in ('str_str', '1s_sese', '2s_sese', 'str_seq'):
             j = self.make_test_job(salign.Job, 'RUNNING')
             d = saliweb.test.RunInDir(j.directory)
-            db = anydbm.open('inputs.db', 'n')
-            db['tool'] = tool
-            db.close()
+            with open('inputs.json', 'w') as fh:
+                json.dump({'tool':tool}, fh)
             j.run()
             del d
 
@@ -22,9 +18,8 @@ class JobTests(saliweb.test.TestCase):
         """Test run method with bad tool"""
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
-        db = anydbm.open('inputs.db', 'n')
-        db['tool'] = 'garbage'
-        db.close()
+        with open('inputs.json', 'w') as fh:
+            json.dump({'tool':'garbage'}, fh)
         self.assertRaises(ValueError, j.run)
 
 if __name__ == '__main__':

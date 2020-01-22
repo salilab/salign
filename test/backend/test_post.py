@@ -1,10 +1,7 @@
 import unittest
 import salign
 import saliweb.test
-try:
-    import anydbm  # python2
-except ImportError:
-    import dbm as anydbm  # python3
+import json
 import re
 
 class Tests(saliweb.test.TestCase):
@@ -19,9 +16,8 @@ class Tests(saliweb.test.TestCase):
         j.send_user_email = send_user_email
         d = saliweb.test.RunInDir(j.directory)
         open('output.error', 'w').write("")
-        db = anydbm.open('inputs.db', 'n')
-        db['tool'] = 'str_str'
-        db.close()
+        with open('inputs.json', 'w') as fh:
+            json.dump({'tool':'str_str'}, fh)
         open('email_info', 'w').write("OK|42|63\n")
         j.send_job_completed_email()
 
@@ -35,9 +31,8 @@ class Tests(saliweb.test.TestCase):
         j.send_user_email = send_user_email
         d = saliweb.test.RunInDir(j.directory)
         open('output.error', 'w').write("")
-        db = anydbm.open('inputs.db', 'n')
-        db['tool'] = 'seq_seq'
-        db.close()
+        with open('inputs.json', 'w') as fh:
+            json.dump({'tool':'seq_seq'}, fh)
         open('email_info', 'w').write("OK|42|63\n")
         j.send_job_completed_email()
 
@@ -60,7 +55,8 @@ class Tests(saliweb.test.TestCase):
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
         open('output.error', 'w').write("")
-        anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
+        with open('inputs.json', 'w') as fh:
+            json.dump({'tool':'str_str'}, fh)
         open('str-str.log', 'w').write(
                "Raw QUALITY_SCORE of the multiple alignment:  45.0\n"
                "QUALITY_SCORE (percentage)  : 24.5\n"
@@ -74,7 +70,8 @@ class Tests(saliweb.test.TestCase):
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
         open('output.error', 'w').write("")
-        anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
+        with open('inputs.json', 'w') as fh:
+            json.dump({'tool':'str_str'}, fh)
         open('str-str.log', 'w').write("Completed successfully")
         j.postprocess()
         f = open('email_info').read()
@@ -86,7 +83,8 @@ class Tests(saliweb.test.TestCase):
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
         open('output.error', 'w').write("")
-        anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
+        with open('inputs.json', 'w') as fh:
+            json.dump({'tool':'str_str'}, fh)
         self.assertRaises(salign.MissingLogError, j.postprocess)
 
     def test_postprocess_1step_fail_noerrs(self):
@@ -94,7 +92,8 @@ class Tests(saliweb.test.TestCase):
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
         open('output.error', 'w').write("")
-        anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
+        with open('inputs.json', 'w') as fh:
+            json.dump({'tool':'str_str'}, fh)
         open('str-str.log', 'w').write("")
         j.postprocess()
         f = open('email_info').read()
@@ -107,7 +106,8 @@ class Tests(saliweb.test.TestCase):
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
         open('output.error', 'w').write("")
-        anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
+        with open('inputs.json', 'w') as fh:
+            json.dump({'tool':'str_str'}, fh)
         open('str-str.log', 'w').write("fit2xyz_296E> Our custom error")
         j.postprocess()
         f = open('email_info').read()
@@ -123,7 +123,8 @@ class Tests(saliweb.test.TestCase):
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
         open('output.error', 'w').write("")
-        anydbm.open('inputs.db', 'n')['tool'] = 'str_str'
+        with open('inputs.json', 'w') as fh:
+            json.dump({'tool':'str_str'}, fh)
         open('str-str.log', 'w').write("something_999E> Our generic error")
         j.postprocess()
         f = open('email_info').read()
@@ -138,7 +139,8 @@ class Tests(saliweb.test.TestCase):
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
         open('output.error', 'w').write("")
-        anydbm.open('inputs.db', 'n')['tool'] = 'str_seq'
+        with open('inputs.json', 'w') as fh:
+            json.dump({'tool':'str_seq'}, fh)
         open('final_alignment.log', 'w').write(
                "Raw QUALITY_SCORE of the multiple alignment:  45.0\n"
                "QUALITY_SCORE (percentage)  : 24.5\n"
@@ -154,7 +156,8 @@ class Tests(saliweb.test.TestCase):
         j = self.make_test_job(salign.Job, 'RUNNING')
         d = saliweb.test.RunInDir(j.directory)
         open('output.error', 'w').write("")
-        anydbm.open('inputs.db', 'n')['tool'] = 'str_seq'
+        with open('inputs.json', 'w') as fh:
+            json.dump({'tool':'str_seq'}, fh)
         open('final_alignment.log', 'w').write(
                "Raw QUALITY_SCORE of the multiple alignment:  45.0\n"
                "QUALITY_SCORE (percentage)  : 24.5\n"
