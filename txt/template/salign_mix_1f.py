@@ -1,3 +1,4 @@
+from __future__ import print_function
 from modeller import *
 import sys
 
@@ -20,7 +21,7 @@ def frange(start,end=None,inc=None):
 
 
     L = [None,]*count
-    for i in xrange(count):
+    for i in range(count):
         L[i] = start + i*inc
 
     return L
@@ -200,9 +201,9 @@ def run():
                         win_ogp = ogp
                         win_egp = egp
                         win_mo = mo
-                    print "Qlty scrs", ogp,"\t",egp,"\t",qwlty1.qscorepct
-                except ModellerError, detail:
-                    print "Set of parameters",fw1,ogp,egp,"resulted in the following error\t"+str(detail)
+                    print("Qlty scrs", ogp,"\t",egp,"\t",qwlty1.qscorepct)
+                except ModellerError as detail:
+                    print("Set of parameters",fw1,ogp,egp,"resulted in the following error\t"+str(detail))
                 del(aln)
 
 
@@ -219,12 +220,12 @@ def run():
                     aln.write(file=opfile2, alignment_format='PIR')
                     win_ogp3d = ogp3d
                     win_egp3d = egp3d
-                print "Qlty scrs", ogp3d,"\t",egp3d,"\t",qwlty2.qscorepct
-            except ModellerError,detail:
-                print "Set of parameters",fw2,ogp3d,egp3d,"resulted in the following error\t"+str(detail)
+                print("Qlty scrs", ogp3d,"\t",egp3d,"\t",qwlty2.qscorepct)
+            except ModellerError as detail:
+                print("Set of parameters",fw2,ogp3d,egp3d,"resulted in the following error\t"+str(detail))
             del (aln)
 
-    #print "final max quality = ",qmax
+    #print("final max quality = ",qmax)
 
     # -- try alternate initial alignments only if the qmax score is less than 70%
 
@@ -245,9 +246,9 @@ def run():
                             win_ogp = ogp
                             win_egp = egp
                             win_mo = mo
-                        print "Qlty scrs", ogp,"\t",egp,"\t",qwlty1.qscorepct
-                    except ModellerError, detail:
-                        print "Set of parameters",fw3,ogp,egp,"resulted in the following error\t"+str(detail)
+                        print("Qlty scrs", ogp,"\t",egp,"\t",qwlty1.qscorepct)
+                    except ModellerError as detail:
+                        print("Set of parameters",fw3,ogp,egp,"resulted in the following error\t"+str(detail))
                     del(aln)
 
     # -- Iterating over gap panelties 3D to get final alignments
@@ -264,12 +265,12 @@ def run():
                         aln.write(file=opfile2, alignment_format='PIR')
                         win_ogp3d = ogp3d
                         win_egp3d = egp3d
-                    print "Qlty scrs", ogp3d,"\t",egp3d,"\t",qwlty2.qscorepct
-                except ModellerError,detail:
-                    print "Set of parameters",fw2,ogp3d,egp3d,"resulted in the following error\t"+str(detail)
+                    print("Qlty scrs", ogp3d,"\t",egp3d,"\t",qwlty2.qscorepct)
+                except ModellerError as detail:
+                    print("Set of parameters",fw2,ogp3d,egp3d,"resulted in the following error\t"+str(detail))
                 del (aln)
 
-    print "final max quality = ",qmax
+    print("final max quality = ",qmax)
     if win_ogp3d is None:
         raise ModellerError("Structure alignment failed")
 
@@ -280,7 +281,7 @@ def run():
 if __name__ == '__main__':
     try:
         run()
-    except Exception, detail:
-        print "Exited with error:", str(detail)
+    except Exception as detail:
+        print("Exited with error:", str(detail))
         raise
-    print "Completed successfully"
+    print("Completed successfully")

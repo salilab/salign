@@ -1,4 +1,5 @@
 # Structure-structure alignment input file.
+from __future__ import print_function
 from modeller import *
 
 def run():
@@ -47,7 +48,7 @@ def run():
 if __name__ == '__main__':
     try:
         run()
-    except Exception, detail:
-        print "Exited with error:", str(detail)
+    except Exception as detail:
+        print("Exited with error:", str(detail))
         raise
-    print "Completed successfully"
+    print("Completed successfully")
