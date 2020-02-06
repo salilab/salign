@@ -19,7 +19,7 @@ module load modeller/9.23
 date
 """ % "\n".join(commands)
     r = runnercls(script)
-    r.set_sge_options("-o output.error -j y -l netappsali=1G -p -4 "
+    r.set_sge_options("-o output.error -j y -p -4 "
                       "-l h_rt=72:00:00 -r y -N salign")
     return r
 
