@@ -14,7 +14,7 @@ def make_sge_script(runnercls, commands):
     script = """
 date
 hostname
-module load modeller/9.23
+module load modeller/9.24
 %s
 date
 """ % "\n".join(commands)
