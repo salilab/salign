@@ -14,6 +14,7 @@ def make_sge_script(runnercls, commands):
     script = """
 date
 hostname
+module load Sali
 module load modeller/9.24
 %s
 date
@@ -55,7 +56,7 @@ def make_twostep_script(runnercls, tool):
     return make_sge_script(runnercls, commands)
 
 class Job(saliweb.backend.Job):
-    runnercls = saliweb.backend.SaliSGERunner
+    runnercls = saliweb.backend.WyntonSGERunner
 
     def get_tool(self):
         with open('inputs.json') as fh:
