@@ -96,10 +96,11 @@ class Job(saliweb.backend.Job):
         intmedlogcount = 0
         for intmed_log in intmed_logs:
             if os.path.exists(intmed_log):
-                for line in open(intmed_log):
-                    self.check_line_error(line, errorcodes)
-                    if "Completed successfully" in line:
-                        compl_succ_intmed += 1
+                with open(intmed_log) as fh:
+                    for line in fh:
+                        self.check_line_error(line, errorcodes)
+                        if "Completed successfully" in line:
+                            compl_succ_intmed += 1
                 intmedlogcount += 1
         if len(intmed_logs) > 0 and intmedlogcount == 0:
             raise MissingLogError("No intermediate log files exist")
@@ -108,22 +109,23 @@ class Job(saliweb.backend.Job):
     def check_mod_log(self, mod_log, intmed_logs, errorcodes):
         """Find quality score and possible errors in main MODELLER log file"""
         q_score_re = re.compile("Raw QUALITY_SCORE of the multiple "
-                                "alignment\s*:\s*([\d\.-]+)\s*$")
-        q_score_pct_re = re.compile("QUALITY_SCORE \(percentage\)\s*:"
-                                    "\s*([\d\.-]+)\s*$")
+                                r"alignment\s*:\s*([\d\.-]+)\s*$")
+        q_score_pct_re = re.compile(r"QUALITY_SCORE \(percentage\)\s*:"
+                                    r"\s*([\d\.-]+)\s*$")
         compl_succ = 0
         q_score = "Warning: no quality score found!"
         q_score_percent = "Warning: no percentage found!"
         if os.path.exists(mod_log):
-            for line in open(mod_log):
-                self.check_line_error(line, errorcodes)
-                if "Completed successfully" in line:
-                    compl_succ += 1
-                if "Raw QUALITY_SCORE" in line:
-                    q_score = q_score_re.search(line).group(1)
-                if "QUALITY_SCORE (percentage)" in line:
-                    q_score_percent = q_score_pct_re.search(line).group(1) \
-                                      + " %"
+            with open(mod_log) as fh:
+                for line in fh:
+                    self.check_line_error(line, errorcodes)
+                    if "Completed successfully" in line:
+                        compl_succ += 1
+                    if "Raw QUALITY_SCORE" in line:
+                        q_score = q_score_re.search(line).group(1)
+                    if "QUALITY_SCORE (percentage)" in line:
+                        q_score_percent = q_score_pct_re.search(line).group(1) \
+                                          + " %"
         elif len(intmed_logs) == 0:
             raise MissingLogError("No MODELLER log file exists")
         return compl_succ, q_score, q_score_percent
@@ -178,13 +180,13 @@ class Job(saliweb.backend.Job):
                 print("No MODELLER error codes were found, however the log file does not indicate successful completion. Usually this means that your job ran out of time (in which case you could try a smaller alignment, or download the script files and run it on your own computer). Please see if the log file provides more information.\n", file=fh)
 
     def send_job_completed_email(self):
-        fh = open('email_info')
-        email_info = fh.readline().rstrip('\r\n').split('|')
-        if email_info[0] == 'OK':
-            tool = self.get_tool()
-            self.email_success(tool, email_info[1], email_info[2])
-        else:
-            self.email_failure(fh.read())
+        with open('email_info') as fh:
+            email_info = fh.readline().rstrip('\r\n').split('|')
+            if email_info[0] == 'OK':
+                tool = self.get_tool()
+                self.email_success(tool, email_info[1], email_info[2])
+            else:
+                self.email_failure(fh.read())
 
     def email_success(self, tool, q_score, q_score_percent):
         msg = "---------- SALIGN JOB ID %s ----------\n\n" % self.name + \
