@@ -16,7 +16,7 @@ class Tests(saliweb.test.TestCase):
     def test_run_mod(self):
         """Check run_mod() function"""
         m = salign.run_mod('test.py')
-        self.assertEqual(m, 'python test.py > test.log')
+        self.assertEqual(m, 'python3 test.py > test.log')
 
     def test_make_onestep_script(self):
         """Check make_onestep_script()"""

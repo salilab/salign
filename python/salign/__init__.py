@@ -25,7 +25,7 @@ date
     return r
 
 def run_mod(scriptname):
-    return "python %s > %s" % (scriptname, scriptname[:-3] + '.log')
+    return "python3 %s > %s" % (scriptname, scriptname[:-3] + '.log')
 
 def make_onestep_script(runnercls, tool):
     if tool == 'str_str':
