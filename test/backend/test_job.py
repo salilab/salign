@@ -8,19 +8,18 @@ class JobTests(saliweb.test.TestCase):
         """Test run method"""
         for tool in ('str_str', '1s_sese', '2s_sese', 'str_seq'):
             j = self.make_test_job(salign.Job, 'RUNNING')
-            d = saliweb.test.RunInDir(j.directory)
-            with open('inputs.json', 'w') as fh:
-                json.dump({'tool':tool}, fh)
-            j.run()
-            del d
+            with saliweb.test.working_directory(j.directory):
+                with open('inputs.json', 'w') as fh:
+                    json.dump({'tool':tool}, fh)
+                j.run()
 
     def test_run_bad_tool(self):
         """Test run method with bad tool"""
         j = self.make_test_job(salign.Job, 'RUNNING')
-        d = saliweb.test.RunInDir(j.directory)
-        with open('inputs.json', 'w') as fh:
-            json.dump({'tool':'garbage'}, fh)
-        self.assertRaises(ValueError, j.run)
+        with saliweb.test.working_directory(j.directory):
+            with open('inputs.json', 'w') as fh:
+                json.dump({'tool':'garbage'}, fh)
+            self.assertRaises(ValueError, j.run)
 
 if __name__ == '__main__':
     unittest.main()
