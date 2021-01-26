@@ -4,7 +4,7 @@ from modeller import *
 
 def run():
     log.verbose()
-    env = environ()
+    env = Environ()
     HB_STR_DIR_HB
     HB_READ_ALI_HB
     HB_SALIGN_STR_SEGM_HB

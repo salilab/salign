@@ -4,9 +4,9 @@ from modeller import *
 
 def run():
     log.level(1, 0, 1, 1, 1)
-    env = environ()
+    env = Environ()
 
-    aln = alignment(env, file='HB_ALIFILE_HB', alignment_format='PIR')
+    aln = Alignment(env, file='HB_ALIFILE_HB', alignment_format='PIR')
 
     aln.salign(rr_file='${LIB}/blosum62.sim.mat',
                gap_penalties_1d=(HB_GAP_PEN_1D_HB), output='',

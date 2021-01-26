@@ -32,9 +32,9 @@ def frange(start,end=None,inc=None):
 def salign_fw_gaps1(aln,fil,fw,ogp,egp):
 
     log.verbose
-    env = environ()
+    env = Environ()
     env.io.atom_files_directory = 'HB_STR_DIR_HB'
-# aln = alignment(env)
+# aln = Alignment(env)
 # aln.append(file=fil, align_codes='all')
     nseg = 2
 
@@ -62,9 +62,9 @@ def salign_fw_gaps1(aln,fil,fw,ogp,egp):
 def salign_fw_gaps3(aln,fil,fw,ogp3d,egp3d,wf):
 
     log.verbose
-    env = environ()
+    env = Environ()
     env.io.atom_files_directory = 'HB_STR_DIR_HB'
-# aln = alignment(env)
+# aln = Alignment(env)
 # aln.append(file=fil, align_codes='all')
     nseg = 2
     ogp = ogp3d
@@ -95,9 +95,9 @@ def salign_fw_gaps3(aln,fil,fw,ogp3d,egp3d,wf):
 def salign_fw_local_gaps1(aln,fil,fw,ogp,egp,mat_off):
 
     log.verbose
-    env = environ()
+    env = Environ()
     env.io.atom_files_directory = 'HB_STR_DIR_HB'
-# aln = alignment(env)
+# aln = Alignment(env)
 # aln.append(file=fil, align_codes='all')
     nseg = 2
 
@@ -125,9 +125,9 @@ def salign_fw_local_gaps1(aln,fil,fw,ogp,egp,mat_off):
 def salign_fw_local_gaps3(aln,fil,fw,ogp3d,egp3d,mat_off,mat_off_3d,wf):
 
     log.verbose
-    env = environ()
+    env = Environ()
     env.io.atom_files_directory = 'HB_STR_DIR_HB'
-# aln = alignment(env)
+# aln = Alignment(env)
 # aln.append(file=fil, align_codes='all')
     nseg = 2
     ogp = ogp3d
@@ -155,9 +155,9 @@ def salign_fw_local_gaps3(aln,fil,fw,ogp3d,egp3d,mat_off,mat_off_3d,wf):
 
 def run():
     log.verbose
-    env = environ()
+    env = Environ()
     env.io.atom_files_directory = 'HB_STR_DIR_HB'
-    aln = alignment(env)
+    aln = Alignment(env)
 
     HB_SALIGN_STR_SEGM_HB
 
@@ -176,7 +176,7 @@ def run():
     win_ogp3d = None
 
     #log.verbose
-    #env = environ()
+    #env = Environ()
     #env.io.atom_files_directory = 'HB_STR_DIR_HB'
 
 
@@ -191,7 +191,7 @@ def run():
     for ogp in frange(HB_OGP_1D_HB,1,HB_OGP_1D_STEP_HB):
         for egp in frange(HB_EGP_1D_HB,1,HB_EGP_1D_STEP_HB):
             for mo in frange(-3.0, -0.05, 0.3) :
-                aln = alignment(env)
+                aln = Alignment(env)
                 aln.append(file=fil, align_codes='all')
                 try:
                     qwlty1 = salign_fw_local_gaps1(aln,fil,fw1,ogp,egp,mo)
@@ -210,7 +210,7 @@ def run():
     # -- Iterating over gap panelties 3D to get final alignments
     for ogp3d in frange(HB_OGP_3D_HB,HB_OGP_3D_ROOF_HB,1) :
         for egp3d in range (HB_EGP_3D_HB,HB_EGP_3D_ROOF_HB,1) :
-            aln = alignment(env)
+            aln = Alignment(env)
             aln.append(file=opfile, align_codes='all')
             try:
                 qwlty2 = salign_fw_gaps3(aln,opfile,fw2,ogp3d,egp3d,poi)
@@ -236,7 +236,7 @@ def run():
         for ogp in frange(0.0,2.2,0.3):
             for egp in frange(0.1,2.3,0.3):
                 for mo in frange (-3.0, -0.05, 0.3) :
-                    aln = alignment(env)
+                    aln = Alignment(env)
                     aln.append(file=fil, align_codes='all')
                     try:
                         qwlty1 = salign_fw_local_gaps1(aln,fil,fw3,ogp,egp,mo)
@@ -255,7 +255,7 @@ def run():
         for ogp3d in frange(HB_OGP_3D_HB,HB_OGP_3D_ROOF_HB,1) :
             for egp3d in range (HB_EGP_3D_HB,HB_EGP_3D_ROOF_HB,1) :
 
-                aln = alignment(env)
+                aln = Alignment(env)
                 aln.append(file=opfile, align_codes='all')
                 try:
                     qwlty2 = salign_fw_gaps3(aln,opfile,fw2,ogp3d,egp3d,poi)
@@ -274,7 +274,7 @@ def run():
     if win_ogp3d is None:
         raise ModellerError("Structure alignment failed")
 
-    aln = alignment(env)
+    aln = Alignment(env)
     aln.append(file=opfile, align_codes = 'all')
     salign_fw_gaps3(aln,opfile,fw2,win_ogp3d,win_egp3d,nejon)
 

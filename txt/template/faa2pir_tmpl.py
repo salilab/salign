@@ -3,9 +3,9 @@ from modeller import *
 
 def run():
     log.level(1, 0, 1, 1, 1)
-    env = environ()
+    env = Environ()
 
-    aln = alignment(env, file='HB_ALIFILE_HB',
+    aln = Alignment(env, file='HB_ALIFILE_HB',
                     alignment_format='HB_ALIFORMAT_HB')
     aln.write(file='HB_ALI_OUT_HB', alignment_format='PIR')
 

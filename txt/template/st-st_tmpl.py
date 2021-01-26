@@ -4,9 +4,9 @@ from modeller import *
 
 def run():
     log.verbose()
-    env = environ()
+    env = Environ()
     env.io.atom_files_directory = 'HB_STR_DIR_HB'
-    aln = alignment(env)
+    aln = Alignment(env)
 
     HB_SALIGN_STR_SEGM_HB
 
