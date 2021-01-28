@@ -1296,12 +1296,12 @@ sub strstr_topf
   if ($segm_count > 1) # Loop if more than one segment.
   {
      $tf_str_segm .="): \n";
-     $tf_str_segm .="       mdl = model(env, file=_code, model_segment=(_start, _end))\n";
+     $tf_str_segm .="       mdl = Model(env, file=_code, model_segment=(_start, _end))\n";
      $tf_str_segm .="       aln.append_model(mdl, atom_files=_code, align_codes=_code+_code_ap)";
   }
   else # Only one segment. Dont do loop.
   {
-     $tf_str_segm = "mdl = model(env, file='$single_segm[0]', model_segment=(";
+     $tf_str_segm = "mdl = Model(env, file='$single_segm[0]', model_segment=(";
      $tf_str_segm .= "'$single_segm[1]', '$single_segm[2]'))\n";
      $tf_str_segm .= "    aln.append_model(mdl, atom_files='$single_segm[0]', ";
      $tf_str_segm .= "align_codes='$single_segm[0]$single_segm[3]')";
@@ -1546,12 +1546,12 @@ sub sese_stse_topf
 	if ($segm_count > 1) # Loop if more than one segment.
         {
            $tf_str_segm .="): \n";
-           $tf_str_segm .="       mdl = model(env, file=_code, model_segment=(_start, _end))\n";
+           $tf_str_segm .="       mdl = Model(env, file=_code, model_segment=(_start, _end))\n";
            $tf_str_segm .="       aln.append_model(mdl, atom_files=_code, align_codes=_code+_code_ap)";
         }
         else # Only one segment. Dont do loop.
         {
-           $tf_str_segm = "mdl = model(env, file='$single_segm[0]', model_segment=(";
+           $tf_str_segm = "mdl = Model(env, file='$single_segm[0]', model_segment=(";
            $tf_str_segm .= "'$single_segm[1]', '$single_segm[2]'))\n";
            $tf_str_segm .= "    aln.append_model(mdl, atom_files='$single_segm[0]', ";
            $tf_str_segm .= "align_codes='$single_segm[0]$single_segm[3]')";
@@ -1585,13 +1585,13 @@ sub sese_stse_topf
   my $read_ali_line;
   unless ( $fin_alipath eq '' )
   {
-     $read_ali_line  = "aln = alignment(env, file= '$fin_alipath', ";
+     $read_ali_line  = "aln = Alignment(env, file= '$fin_alipath', ";
      $read_ali_line .= "align_codes='all', ";
      $read_ali_line .= "alignment_format= '$fin_aliformat')";
   }
   else
   {
-     $read_ali_line = "aln = alignment(env)";
+     $read_ali_line = "aln = Alignment(env)";
   }
   
   my $overhangs = $inputs->{'overhangs'};
