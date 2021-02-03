@@ -33,7 +33,7 @@ def salign_fw_gaps1(aln,fil,fw,ogp,egp):
 
     log.verbose
     env = Environ()
-    env.io.atom_files_directory = 'HB_STR_DIR_HB'
+    env.io.atom_files_directory = ['HB_STR_DIR_HB']
 # aln = Alignment(env)
 # aln.append(file=fil, align_codes='all')
     nseg = 2
@@ -63,7 +63,7 @@ def salign_fw_gaps3(aln,fil,fw,ogp3d,egp3d,wf):
 
     log.verbose
     env = Environ()
-    env.io.atom_files_directory = 'HB_STR_DIR_HB'
+    env.io.atom_files_directory = ['HB_STR_DIR_HB']
 # aln = Alignment(env)
 # aln.append(file=fil, align_codes='all')
     nseg = 2
@@ -96,7 +96,7 @@ def salign_fw_local_gaps1(aln,fil,fw,ogp,egp,mat_off):
 
     log.verbose
     env = Environ()
-    env.io.atom_files_directory = 'HB_STR_DIR_HB'
+    env.io.atom_files_directory = ['HB_STR_DIR_HB']
 # aln = Alignment(env)
 # aln.append(file=fil, align_codes='all')
     nseg = 2
@@ -126,7 +126,7 @@ def salign_fw_local_gaps3(aln,fil,fw,ogp3d,egp3d,mat_off,mat_off_3d,wf):
 
     log.verbose
     env = Environ()
-    env.io.atom_files_directory = 'HB_STR_DIR_HB'
+    env.io.atom_files_directory = ['HB_STR_DIR_HB']
 # aln = Alignment(env)
 # aln.append(file=fil, align_codes='all')
     nseg = 2
@@ -156,7 +156,7 @@ def salign_fw_local_gaps3(aln,fil,fw,ogp3d,egp3d,mat_off,mat_off_3d,wf):
 def run():
     log.verbose
     env = Environ()
-    env.io.atom_files_directory = 'HB_STR_DIR_HB'
+    env.io.atom_files_directory = ['HB_STR_DIR_HB']
     aln = Alignment(env)
 
     HB_SALIGN_STR_SEGM_HB
@@ -177,7 +177,7 @@ def run():
 
     #log.verbose
     #env = Environ()
-    #env.io.atom_files_directory = 'HB_STR_DIR_HB'
+    #env.io.atom_files_directory = ['HB_STR_DIR_HB']
 
 
     # -- Iterating over values of gap penalties and nsegm

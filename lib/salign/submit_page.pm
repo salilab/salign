@@ -1418,7 +1418,7 @@ sub sese_stse_topf
   if ( $top_type eq 'stse' )
   {
      $ali_type = "'pairwise'";
-     $str_dir = "env.io.atom_files_directory=" . "'" . $str_dir . "'";
+     $str_dir = "env.io.atom_files_directory=" . "['" . $str_dir . "']";
      $gap_fctn = "gap_function=True,";
      $gap_pen_2D = "gap_penalties_2d=(";
      $gap_pen_2D .= $inputs->{'2D_1'} . ', ' . $inputs->{'2D_2'} . ', ';
@@ -1434,7 +1434,7 @@ sub sese_stse_topf
   { 
      if ( $top_type eq 'sese_pdbs' ) # PDBs included that must be parsed for seqs
      {
-        $str_dir = "env.io.atom_files_directory=" . "'" . $str_dir . "'";
+        $str_dir = "env.io.atom_files_directory=" . "['" . $str_dir . "']";
         my %str_segm = %$str_segm_ref;
         $tf_str_segm .= "for (_code, _start, _end, _code_ap) in (";
         my $segm_count = 0;
