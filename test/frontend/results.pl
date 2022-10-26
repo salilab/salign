@@ -120,7 +120,7 @@ my $t = new saliweb::Test('salign');
     my $out = stdout_from { $frontend->download_results_file($job,
                                                "showfile.cxc") };
     chdir("/");
-    like($out, '/^Content\-type: text\/plain.*' .
+    like($out, '/^Content\-type: application\/x\-chimerax.*' .
                'close session.*' .
                'open http.*str_str_out\.ali/ms', "chimerax script file");
 }
