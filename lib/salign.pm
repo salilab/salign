@@ -8,6 +8,7 @@ use salign::index_page;
 use salign::submit_page;
 use salign::results_page;
 use salign::chimera;
+use salign::chimerax;
 use salign::constants;
 use Cwd;
 use CGI;
@@ -97,6 +98,8 @@ sub download_results_file {
     my ($self, $job, $file) = @_;
     if ($file =~ /showfile\.chimerax/) {
         salign::chimera::showfile($self, $job);
+    } elsif ($file =~ /showfile\.cxc/) {
+        salign::chimerax::showfile($self, $job);
     } else {
         $self->SUPER::download_results_file($job, $file);
     }

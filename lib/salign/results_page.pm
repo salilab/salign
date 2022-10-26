@@ -45,7 +45,8 @@ sub show_files {
 	{
             my @alignfiles = glob("*str_out.ali");
             if ($#alignfiles > -1) {
-                $msg .= $q->Tr($q->td($q->a({-href=>$job->get_results_file_url("showfile.chimerax")},"Launch Chimera")));
+                $msg .= $q->Tr($q->td($q->a({-href=>$job->get_results_file_url("showfile.chimerax")},"Launch legacy Chimera")));
+                $msg .= $q->Tr($q->td($q->a({-href=>$job->get_results_file_url("showfile.cxc")},"Launch ChimeraX")));
             }  
         }  
     return $msg;

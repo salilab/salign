@@ -101,3 +101,26 @@ my $t = new saliweb::Test('salign');
                '</commands>.*' .
                '</ChimeraPuppet>/ms', "chimera script file");
 }
+
+# Check ChimeraX launch script
+{
+    my $frontend = $t->make_frontend();
+    my $tmpdir = tempdir(CLEANUP=>1);
+    my $job = new saliweb::frontend::CompletedJob($frontend,
+                        {name=>'testjob', passwd=>'foo', directory=>$tmpdir,
+                         archive_time=>'2009-01-01 08:45:00'});
+    ok(chdir($tmpdir), "chdir into tempdir");
+
+    # Should die if no alignment file
+    dies_ok { $frontend->download_results_file($job, "showfile.cxc") };
+
+    ok(open(FH, ">", "str_str_out.ali"), "open alignment file");
+    ok(close(FH), "close alignment file");
+
+    my $out = stdout_from { $frontend->download_results_file($job,
+                                               "showfile.cxc") };
+    chdir("/");
+    like($out, '/^Content\-type: text\/plain.*' .
+               'close session.*' .
+               'open http.*str_str_out\.ali/ms', "chimerax script file");
+}
