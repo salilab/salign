@@ -10,7 +10,7 @@ class MissingLogError(Exception):
 class ModellerImportError(Exception):
     pass
 
-def make_sge_script(runnercls, commands):
+def make_sge_script(runnercls, commands, jobname):
     script = """
 date
 hostname
@@ -21,21 +21,22 @@ date
 """ % "\n".join(commands)
     r = runnercls(script)
     r.set_sge_options("-o output.error -j y -p -4 "
-                      "-l h_rt=72:00:00 -r y -N salign")
+                      "-l h_rt=72:00:00 -r y")
+    r.set_sge_name(jobname)
     return r
 
 def run_mod(scriptname):
     return "python3 %s > %s" % (scriptname, scriptname[:-3] + '.log')
 
-def make_onestep_script(runnercls, tool):
+def make_onestep_script(runnercls, tool, jobname):
     if tool == 'str_str':
         scriptname = 'str-str.py'
     else:
         scriptname = 'seq-seq.py'
     commands = [run_mod(scriptname)]
-    return make_sge_script(runnercls, commands)
+    return make_sge_script(runnercls, commands, jobname)
 
-def make_twostep_script(runnercls, tool):
+def make_twostep_script(runnercls, tool, jobname):
     if tool == 'str_seq':
         top_file1 = 'str-str.py'
         top_file2 = 'seq-seq.py'
@@ -53,7 +54,7 @@ def make_twostep_script(runnercls, tool):
     commands = [run_mod(top_file1), run_mod(top_file2),
                 "cat %s %s > %s" % (file2fuse_1, file2fuse_2, fuse_file),
                 run_mod(top_file3)]
-    return make_sge_script(runnercls, commands)
+    return make_sge_script(runnercls, commands, jobname)
 
 class Job(saliweb.backend.Job):
     runnercls = saliweb.backend.WyntonSGERunner
@@ -65,9 +66,9 @@ class Job(saliweb.backend.Job):
     def run(self):
         tool = self.get_tool()
         if tool in ('str_str', '1s_sese'):
-            return make_onestep_script(self.runnercls, tool)
+            return make_onestep_script(self.runnercls, tool, self.name)
         elif tool in ('2s_sese', 'str_seq'):
-            return make_twostep_script(self.runnercls, tool)
+            return make_twostep_script(self.runnercls, tool, self.name)
         else:
             raise ValueError("Tool %s not recognized" % tool)
 
