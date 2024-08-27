@@ -40,9 +40,11 @@ jobs:
       run: |
         scons coverage=true python=$(which python) test
     - name: Upload Python coverage to codecov
-    - uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v4
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     - name: Upload Perl coverage to codecov
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: |
         cover -report codecov
