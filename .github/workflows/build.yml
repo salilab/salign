@@ -26,7 +26,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install coverage scons ihm
-        cpanm --quiet --notest --skip-satisfied Devel::Cover::Report::Codecov Test::Exception Test::Output Test::MockModule Devel::Cover MIME::Lite DBI CGI Error
+        cpanm --quiet --notest --skip-satisfied Devel::Cover::Report::Codecov Test::Exception Test::Output Test::MockModule Devel::Cover MIME::Lite DBI CGI Error DB_File
         # Patch Devel::Cover::Report::Codecov to support GitHub Actions
         # from https://github.com/codecov/codecov-perl/pull/41
         reportdir=$(dirname $(perldoc -l Devel::Cover::Report::Codecov) )
