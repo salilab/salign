@@ -1,4 +1,4 @@
-[![Build Status](https://github.com/salilab/salign/workflows/build/badge.svg?branch=main)](https://github.com/salilab/salign/actions?query=workflow%3Abuild)
+[![Build Status](https://github.com/salilab/salign/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/salilab/salign/actions/workflows/build.yml)
 [![codecov](https://codecov.io/gh/salilab/salign/branch/main/graph/badge.svg)](https://codecov.io/gh/salilab/salign)
 
 This is the source code for the [SALIGN](https://salilab.org/salign/) web
