@@ -44,7 +44,5 @@ jobs:
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     - name: Upload Perl coverage to codecov
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: |
         cover -report codecov
