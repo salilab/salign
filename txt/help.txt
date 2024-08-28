@@ -35,7 +35,7 @@
 <br>
     Alignment files: <a href="/salign/html/formats.html#pir">MODELLER PIR</a> or <a href="/salign/html/formats.html#fasta">FASTA</a>
 <br>    
-    Structure files: <a href="http://www.rcsb.org/pdb/">PDB or mmCIF</a> format (atomic coordinate files can have '.ent', '.pdb', '.cif' or no extension at all)
+    Structure files: <a href="https://www.wwpdb.org/documentation/file-format">PDB or mmCIF</a> format (atomic coordinate files can have '.ent', '.pdb', '.cif' or no extension at all)
 <br>    
     Compressed files (.zip or .tar.gzip) consisting of files of one or more of the above formats are also allowed.
 <br><br>
@@ -182,7 +182,7 @@ not a folder containing the files.</p>
 <p>If structures have been aligned, the results page provides a link that
 retrieves the aligned structure files and opens them locally in the 
 molecular graphics viewer Chimera. For this function, the user must have
-Chimera installed on their computer (<a href="http://www.cgl.ucsf.edu/chimera/download.html"> http://www.cgl.ucsf.edu/chimera/download.html)</a>. On Mac, the launcher downloads a file that needs to be clicked in order to start Chimera.
+<a href="https://www.cgl.ucsf.edu/chimera/download.html>Chimera</a> installed on their computer. On Mac, the launcher downloads a file that needs to be clicked in order to start Chimera.
 </p>
 <br>
 

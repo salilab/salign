@@ -59,8 +59,8 @@ sub get_footer {
 <div id="address">
 <hr />
         <p><b>
-        <a target="_blank" href="http://www.ncbi.nlm.nih.gov/pubmed/22618536">
-        SALIGN : A webserver for alignment of multiple protein sequences and structures. Bioinformatics 2012; doi: 10.1093/bioinformatics/bts302.<br />Hannes Braberg, Ben Webb, Elina Tjioe, Ursula Pieper, Andrej Sali, Mallur S. Madhusudhan.</a>&nbsp;<a target="_blank" href="http://salilab.org/pdf/Braberg_Bioinformatics_2012.pdf"><img src="$htmlroot/pdf.gif" alt="PDF" /></a><br />
+        <a target="_blank" href="https://pubmed.ncbi.nlm.nih.gov/22618536/">
+        SALIGN : A webserver for alignment of multiple protein sequences and structures. Bioinformatics 2012; doi: 10.1093/bioinformatics/bts302.<br />Hannes Braberg, Ben Webb, Elina Tjioe, Ursula Pieper, Andrej Sali, Mallur S. Madhusudhan.</a>&nbsp;<a target="_blank" href="https://salilab.org/pdf/Braberg_Bioinformatics_2012.pdf"><img src="$htmlroot/pdf.gif" alt="PDF" /></a><br />
         </b></p>
 </div>
 FOOTER

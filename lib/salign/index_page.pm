@@ -2340,10 +2340,10 @@ sub print_body1a_intro {
 	<table>
 		<tr><td colspan="2"><p>
 				SALIGN is a general alignment module of the modeling program 
-				<a href="http://salilab.org/modeller" target="_blank">MODELLER</a>.
+				<a href="https://salilab.org/modeller" target="_blank">MODELLER</a>.
 				The alignments are computed using dynamic programming, making use of several features of the protein sequences and structures.
 				SALIGN benchmarks from published papers are 
-				<a href="http://salilab.org/projects/salign/" target="_blank">also available</a>.
+				<a href="https://salilab.org/projects/salign/" target="_blank">also available</a>.
 				<br /><br />
 		</p></td></tr>
 BODY1a
