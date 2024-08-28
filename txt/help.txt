@@ -182,7 +182,7 @@ not a folder containing the files.</p>
 <p>If structures have been aligned, the results page provides a link that
 retrieves the aligned structure files and opens them locally in the 
 molecular graphics viewer Chimera. For this function, the user must have
-<a href="https://www.cgl.ucsf.edu/chimera/download.html>Chimera</a> installed on their computer. On Mac, the launcher downloads a file that needs to be clicked in order to start Chimera.
+<a href="https://www.cgl.ucsf.edu/chimera/download.html">Chimera</a> installed on their computer. On Mac, the launcher downloads a file that needs to be clicked in order to start Chimera.
 </p>
 <br>
 
