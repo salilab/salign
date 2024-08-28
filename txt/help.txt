@@ -35,7 +35,7 @@
 <br>
     Alignment files: <a href="/salign/html/formats.html#pir">MODELLER PIR</a> or <a href="/salign/html/formats.html#fasta">FASTA</a>
 <br>    
-    Structure files: <a href="http://www.rcsb.org/pdb/">PDB</a> format (atomic coordinate files can have '.ent', '.pdb' or no extension at all)
+    Structure files: <a href="http://www.rcsb.org/pdb/">PDB or mmCIF</a> format (atomic coordinate files can have '.ent', '.pdb', '.cif' or no extension at all)
 <br>    
     Compressed files (.zip or .tar.gzip) consisting of files of one or more of the above formats are also allowed.
 <br><br>
