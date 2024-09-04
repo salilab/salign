@@ -863,7 +863,7 @@ sub chk_alistrs
 		    next;
 	         }
 	      }
-              if (pdb_code_exists($pdb_code))
+              if (pdb_code_exists($pdb_code, "PDB", "MMCIF", "IHM"))
 	      {	      
 	         push @{ $lib_PDBs{'ali'}{$pdb_code} }, $bounds;
                  push @pass, $.;
@@ -1023,7 +1023,7 @@ sub chk_alistrs
 		    next;
 	         }
 	      }
-              if (pdb_code_exists($pdb_code))
+              if (pdb_code_exists($pdb_code, "PDB", "MMCIF", "IHM"))
 	      {	      
 	         push @{ $lib_PDBs{'ali'}{$pdb_code} }, $bounds;
                  push @pass, $.;

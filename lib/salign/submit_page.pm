@@ -987,8 +987,8 @@ sub cp_PDBs
 
   foreach my $lib_str ( keys %{ $str_segm{'lib'} } )
   {
-     if (pdb_code_exists($lib_str)) {
-         get_pdb_code($lib_str, $common_dir);
+     if (pdb_code_exists($lib_str, "PDB", "MMCIF", "IHM")) {
+         get_pdb_code($lib_str, $common_dir, "PDB", "MMCIF", "IHM");
      }
   }   
   
@@ -1014,8 +1014,8 @@ sub cp_PDBs_noUpl
 
   foreach my $lib_str ( keys %{ $str_segm{'lib'} } )
   {
-     if (pdb_code_exists($lib_str)) {
-         get_pdb_code($lib_str, $common_dir);
+     if (pdb_code_exists($lib_str, "PDB", "MMCIF", "IHM")) {
+         get_pdb_code($lib_str, $common_dir, "PDB", "MMCIF", "IHM");
      }
   }   
   return('structures');
