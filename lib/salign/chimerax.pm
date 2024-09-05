@@ -19,7 +19,7 @@ sub showfile {
     print "open " . $job->get_results_file_url($alignfile) . "\n";
     # Assume models are numbered sequentially
     foreach my $i (1 .. $#pdbfiles + 1) {
-        print "sequence associate #$i model$i\@\n";
+        print "sequence associate #$i :$i\n";
     }
 }
 
