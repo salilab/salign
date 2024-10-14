@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Braberg"
+  given-names: "Hannes"
+- family-names: "Webb"
+  given-names: "Benjamin M"
+- family-names: "Tjioe"
+  given-names: "Elina"
+- family-names: "Pieper"
+  given-names: "Ursula"
+- family-names: "Sali"
+  given-names: "Andrej"
+- family-names: "Madhusudhan"
+  given-names: "M S"
+title: "SALIGN"
+url: "https://github.com/salilab/salign"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Braberg"
+    given-names: "Hannes"
+  - family-names: "Webb"
+    given-names: "Benjamin M"
+  - family-names: "Tjioe"
+    given-names: "Elina"
+  - family-names: "Pieper"
+    given-names: "Ursula"
+  - family-names: "Sali"
+    given-names: "Andrej"
+  - family-names: "Madhusudhan"
+    given-names: "M S"
+  doi: "10.1093/bioinformatics/bts302"
+  journal: "Bioinformatics"
+  month: 8
+  start: 2072
+  end: 2073
+  title: "SALIGN: a web server for alignment of multiple protein sequences and structures"
+  volume: 28
+  issue: 15
+  year: 2012
